@@ -1,0 +1,24 @@
+[user]
+	name = Jason Raimondi
+	email = jason@raimondi.us
+	signingkey = B9E74720
+[commit]
+	template = /Users/jason/.stCommitMsg
+	gpgsign = true
+[difftool "sourcetree"]
+	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
+	path = 
+[mergetool "sourcetree"]
+	cmd = /Applications/Sourcetree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+	trustExitCode = true
+[core]
+	excludesfile = /Users/jason/.gitignore_global
+	quotepath = false
+[color]
+	ui = auto
+[gpg]
+	program = gpg2
+[pull]
+	rebase = false
+[init]
+	defaultBranch = master

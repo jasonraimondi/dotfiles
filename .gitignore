@@ -1,0 +1,10 @@
+.idea
+
+aws/dot-aws/credentials
+
+kube/dot-kube/config
+kube/dot-kube/kubectx
+
+ssh/config
+
+zsh/dot-zsh/_SECRETS.zsh

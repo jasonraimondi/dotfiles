@@ -1,0 +1,6 @@
+esbuild 
+esbuild-register
+ts-node
+typescript
+zx
+@vercel/ncc
