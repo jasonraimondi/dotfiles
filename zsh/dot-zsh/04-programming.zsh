@@ -19,3 +19,6 @@ test -e $HOME/.krew/bin && export PATH="$HOME/.krew/bin:$PATH";
 
 # Minio
 test -e /usr/local/bin/mc && complete -o nospace -C /usr/local/bin/mc mc;
+
+# iTerm2
+test -e $HOME/.iterm2_shell_integration.zsh && source "${HOME}/.iterm2_shell_integration.zsh"

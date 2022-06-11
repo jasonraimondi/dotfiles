@@ -1,6 +1,7 @@
 alias myip="dig +short myip.opendns.com @resolver1.opendns.com"
 
 alias jr="cd ~/Code/jasonraimondi/jasonraimondi"
+alias jcp="cd ~/Code/jasonraimondi/jasonraimondi"
 
 alias stree="smerge"
 # alias cat="bat -p"
@@ -49,14 +50,9 @@ alias tn="tmux new -s"
 alias tl="tmux list-sessions"
 alias tls="tmux list-sessions"
 
-# Intellij 
-alias rmine="rubymine"
-alias wstorm="webstorm"
-alias gland="goland"
-
 # Dotfiles
-alias dot="cd $DOTFILES_HOME"
-alias sdot="subl $DOTFILES_HOME"
-alias cdot="code $DOTFILES_HOME"
+alias dot="cd ~/dotfiles"
+alias sdot="subl ~/dotfiles"
+alias cdot="code ~/dotfiles"
 
 alias screenfetch="neofetch"

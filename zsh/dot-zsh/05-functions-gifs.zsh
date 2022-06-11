@@ -1,6 +1,59 @@
+function youtube-gif() {
+  set -x
+
+  if [ $# -eq 0 ]
+  then
+    echo "No arguments supplied"
+    return 1;
+  fi
+
+  local STAMP=$(date +%Y-%m-%d_%H-%M)
+
+  local YOUTUBE_LINK=$1
+  local START=$2
+  local DURATION=$3
+
+  youtube-dl -o "$STAMP.input" --merge-output-format mkv "$YOUTUBE_LINK"
+
+  ffmpeg -i "$STAMP.input.mkv" -ss $START -t $DURATION "$STAMP.output.mkv"
+  ffmpeg -i "$STAMP.output.mkv" -vf "fps=10,scale=480:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 "$STAMP.output.gif"
+  ffmpeg -i "$STAMP.output.gif" -vf "fps=5,scale=480:-1,smartblur=ls=-0.5,crop=iw:ih-2:0:0" "$STAMP.result.gif"
+  
+  gifsicle -O3 "$STAMP.result.gif" -o "$STAMP.result_optimized.gif"
+}
+
+function gifsnip() {
+  local STAMP=$(date +%Y-%m-%d_%H-%M)
+
+  local INPUT=$1
+  local START=$2
+  local DURATION=$3
+
+  ffmpeg -i "$INPUT" -ss $START -t $DURATION "$STAMP.output.mp4"
+  ffmpeg -i "$STAMP.output.mp4" -vf "fps=10,scale=480:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 "$STAMP.output.gif"
+  ffmpeg -i "$STAMP.output.gif" -vf "fps=5,scale=480:-1,smartblur=ls=-0.5,crop=iw:ih-2:0:0" "$STAMP.result.gif"
+  
+  gifsicle -O3 "$STAMP.result.gif" -o "$STAMP.result_optimized.gif"
+}
+
+function gifit() {
+  set -x
+  if [ $# -eq 0 ]
+  then
+    echo "No arguments supplied"
+    return 1;
+  fi
+
+  local INPUT_PATH=$1
+  local STAMP=$(date +%Y-%m-%d_%H-%M)
+
+  ffmpeg -i "$INPUT_PATH" "$STAMP.output.mp4"
+  ffmpeg -i "$STAMP.output.mp4" -vf "fps=10,scale=480:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 "$STAMP.output.gif"
+  ffmpeg -i "$STAMP.output.gif" -vf "fps=5,scale=480:-1,smartblur=ls=-0.5,crop=iw:ih-2:0:0" result.gif
+  gifsicle -O3 "$STAMP.result.gif" -o "$STAMP.result_optimized.gif"
+}
 
 # https://askubuntu.com/a/654305
-
 function gifopt() {
     # args: $input_file ($loss_level)
     if [ -z "$2" ]
