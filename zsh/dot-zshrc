@@ -4,10 +4,4 @@ if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
 fi
 
 # Customize to your needs...
-export DOTFILES_HOME=$HOME/dotfiles
-
-if test -e /opt/homebrew/bin/brew; then
-  eval "$(/opt/homebrew/bin/brew shellenv)"
-fi
-
 source "${HOME}/.zsh/_main.zsh"

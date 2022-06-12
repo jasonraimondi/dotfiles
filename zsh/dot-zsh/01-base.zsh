@@ -1,4 +1,5 @@
-setopt EXTENDED_HISTORY # add timestamps to history
+# add timestamps to history
+setopt EXTENDED_HISTORY
 
-# Dotfiles Bin Directory
+# add bin repository
 test -e $DOTFILES_HOME/bin && PATH="$PATH:$DOTFILES_HOME/bin"

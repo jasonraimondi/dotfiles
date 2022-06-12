@@ -12,23 +12,27 @@ bash setup.sh
 
 ## GNU stow
 
-[GNU stow](https://www.gnu.org/software/stow/), or just `stow`, is a symbolic link manager. When using with dotfiles, stow maintains symlinks from your dotfiles directory, to the home directory for you.
+[GNU stow](https://www.gnu.org/software/stow/), or just `stow`, manages symbolic links from your dotfiles directory to the home directory.
 
-To get stow on MacOS, first you need [Homebrew](https://brew.sh/).
+To get stow on MacOS, use [homebrew](https://brew.sh/).
 
 ```bash
 brew install stow
 ```
 
-Checkout this article to get started: https://alexpearce.me/2016/02/managing-dotfiles-with-stow/
+Checkout this article for a more detailed explanation on using stow https://alexpearce.me/2016/02/managing-dotfiles-with-stow/
 
 ## zsh
 
-Our [~/.zshrc](zsh/dot-zshrc#L11) starts the main import.
+The [~/.zshrc](zsh/dot-zshrc) starts the main import.
+
+```bash
+source "${HOME}/.zsh/_main.zsh"
+```
 
 ### Prezto — Instantly Awesome Zsh
 
-[Prezto](https://github.com/sorin-ionescu/prezto) is included as a submodule and can be installed/upgraded:
+[Prezto](https://github.com/sorin-ionescu/prezto) is the chosen included zsh framework.
 
 ```bash
 cd dotfiles
@@ -52,3 +56,7 @@ https://thoughtbot.com/blog/brewfile-a-gemfile-but-for-homebrew
 cd dotfiles
 brew bundle
 ```
+
+## Misc
+
+Ascii art generated using https://www.coolgenerator.com/ascii-text-generator with **banner** font
