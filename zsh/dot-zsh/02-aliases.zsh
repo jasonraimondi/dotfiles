@@ -1,9 +1,12 @@
-alias myip="dig +short myip.opendns.com @resolver1.opendns.com"
+# reload zsh config
+alias reload!='RELOAD=1 source ~/.zshrc'
+
 
 alias jr="cd ~/Code/jasonraimondi/jasonraimondi"
 alias jcp="cd ~/Code/jasonraimondi/jasonraimondi"
 
 alias stree="smerge"
+alias vim="nvim"
 # alias cat="bat -p"
 
 # folder helpers
@@ -31,11 +34,9 @@ alias poweroff="sudo poweroff"
 alias halt="sudo halt"
 alias shutdown="sudo shutdown"
 
-
 ## set some other defaults ##
 alias df="df -H"
-alias du="du -ch"
-alias hdd="sudo hdparm -C /dev/sd[a-l]"
+alias du="ncdu --color dark -rr -x --exclude .git --exclude node_modules"
 
 # Git
 alias glog='git log --graph --pretty=format:"%Cred%h%Creset %an: %s - %Creset %C(yellow)%d%Creset %Cgreen(%cr)%Creset" --abbrev-commit --date=relative'
@@ -55,4 +56,7 @@ alias dot="cd ~/dotfiles"
 alias sdot="subl ~/dotfiles"
 alias cdot="code ~/dotfiles"
 
+# System
 alias screenfetch="neofetch"
+alias hdd="sudo hdparm -C /dev/sd[a-l]"
+alias myip="dig +short myip.opendns.com @resolver1.opendns.com"
