@@ -24,11 +24,13 @@ Checkout this article for a more detailed explanation on using stow https://alex
 
 ## zsh
 
-The [~/.zshrc](zsh/dot-zshrc) starts the main import.
+The [~/.zshrc](zsh/dot-zshrc) imports our main entrypoint.
 
 ```bash
 source "${HOME}/.zsh/_main.zsh"
 ```
+
+The [~/.zsh/_main.zsh](zsh/dot-zsh/_main.zsh) file globs all zsh files in the `zsh/dot-zsh/*.zsh` directory and loads them.
 
 ### Prezto — Instantly Awesome Zsh
 
