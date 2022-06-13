@@ -5,20 +5,62 @@
 [commit]
 	template = /Users/jason/.stCommitMsg
 	gpgsign = true
+[core]
+	excludesfile = /Users/jason/.gitignore_global
+	quotepath = false
+[gpg]
+	program = gpg2
+[pull]
+	rebase = false
+[init]
+	defaultBranch = main
+[help]
+  autocorrect = 1
+
+# Theme
+[color]
+  branch = auto
+  diff = auto
+  interactive = auto
+  status = auto
+  ui = true
+[color "branch"]
+  current = green
+  remote = yellow
+
+# Aliases
+[alias]
+  a = add
+  aliases = !git config --get-regexp \"alias.*\" | sed \"s/alias.//\"
+  br = branch
+  ci = commit --interactive
+  cm = commit -m
+  co = checkout
+  df = diff
+  ds = diff --stat -r
+  f = fetch
+  fo = fetch origin
+  get = !git pull --rebase && git submodule update --init --recursive
+  lg = log -10 --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'
+  log = log --color --graph
+  p = push
+  pf = push --force
+  po = !sh -c 'git push $1 --set-upstream origin $(git branch --show-current)'
+  ps = !git pull && git sweep
+  re = remote
+  remote = remote -v
+  serve = !git daemon --reuseaddr --verbose  --base-path=. --export-all ./.git
+  st = status -sb
+  sweep = !git branch --merged master | grep -v 'master$' | xargs git branch -d && git remote prune origin
+  undo = reset --hard
+  unstage = reset HEAD --
+  untrack = rm --cache --
+  zip = !sh -c 'git archive HEAD -o $(basename $PWD).zip'
+
+# Sourcetree
 [difftool "sourcetree"]
 	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
 	path = 
 [mergetool "sourcetree"]
 	cmd = /Applications/Sourcetree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
 	trustExitCode = true
-[core]
-	excludesfile = /Users/jason/.gitignore_global
-	quotepath = false
-[color]
-	ui = auto
-[gpg]
-	program = gpg2
-[pull]
-	rebase = false
-[init]
-	defaultBranch = master
