@@ -2,7 +2,23 @@
 
 set -euox
 
+# Ask for the administrator password
+sudo -v
+
 git submodule update --init --recursive
+
+if ! command -v xcode-select &> /dev/null; then
+    sudo xcode-select --install
+fi
+
+# Install Homebrew https://brew.sh
+if command -v brew &> /dev/null; then
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+
+if [[ -f Brewfile ]];then
+  brew bundle
+fi
 
 #  _______ _________ _______          
 # (  ____ \\__   __/(  ___  )|\     /|
@@ -12,7 +28,6 @@ git submodule update --init --recursive
 #       ) |   | |   | |   | || || || |
 # /\____) |   | |   | (___) || () () |
 # \_______)   )_(   (_______)(_______)
-                                    
 
 stow -v -R --dotfiles asdf
 stow -v -R --dotfiles aws
@@ -26,7 +41,6 @@ stow -v -R --dotfiles zsh
 stow -v -t ~/.ssh ssh
 stow -v -t ~/Library/Spelling dictionary
 
-
 #  _______  _______  ______   _______ 
 # (  ___  )(  ____ \(  __  \ (  ____ \
 # | (   ) || (    \/| (  \  )| (    \/
@@ -34,7 +48,11 @@ stow -v -t ~/Library/Spelling dictionary
 # |  ___  |(_____  )| |   | ||  __)   
 # | (   ) |      ) || |   ) || (      
 # | )   ( |/\____) || (__/  )| )      
-# |/     \|\_______)(______/ |/       
+# |/     \|\_______)(______/ |/    
+
+if ! test -e $HOME/.asdf; then
+  git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.10.0
+fi
 
 asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
 asdf install nodejs latest
@@ -170,6 +188,17 @@ defaults write com.apple.NetworkBrowser BrowseAllInterfaces 1
 
 # Screen saver password lock
 # /usr/bin/profiles -I -F askforpassworddelay.config
+
+# Change screenshot save destination to ~/Pictures/screenshots
+mkdir -p ~/Pictures/screenshots
+defaults write com.apple.screencapture location ~/Pictures/screenshots
+# Remove screenshot from screenshot filename
+defaults write com.apple.screencapture name ""
+# Change screenshot save format to png
+defaults write com.apple.screencapture type png
+# Do not include shadows in screenshots
+defaults write com.apple.screencapture disable-shadow -bool true
+killall SystemUIServer
 
 # Update Rectangle.app's default config to spectacle
 # If you wish to change the default shortcuts after first launch, use the following command.
