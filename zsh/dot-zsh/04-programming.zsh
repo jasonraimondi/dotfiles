@@ -15,8 +15,14 @@ if test -e $HOME/.asdf; then
     direnv() { asdf exec direnv "$@"; }
 fi
 
+
+if command -v pnpm &> /dev/null; then
+    export PNPM_HOME="/Users/jason/Library/pnpm"
+    prepend_path "$PNPM_HOME"
+fi
+
 # Golang
-if test -e $HOME/Code/go; then
+if command -v go &> /dev/null; then
     export GO111MODULE=on; 
     export GOPATH="$HOME/Code/go"; 
     prepend_path "/usr/local/go/bin"

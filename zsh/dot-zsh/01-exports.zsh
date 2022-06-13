@@ -2,6 +2,10 @@ export GPG_TTY=$(tty)
 export EDITOR='nvim'
 export GIT_EDITOR='nvim'
 
+# homebrew stop analytics
+export HOMEBREW_NO_ANALYTICS=1
+# export HOMEBREW_NO_ENV_HINTS=1
+
 # blocks post install messages from some node_modules
 export ADBLOCK=true
 export NEXT_TELEMETRY_DISABLED=1

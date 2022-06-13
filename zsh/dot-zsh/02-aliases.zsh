@@ -60,3 +60,7 @@ alias cdot="code ~/dotfiles"
 alias screenfetch="neofetch"
 alias hdd="sudo hdparm -C /dev/sd[a-l]"
 alias myip="dig +short myip.opendns.com @resolver1.opendns.com"
+
+
+alias serve="ruby -run -e httpd . -p 8000"
+
