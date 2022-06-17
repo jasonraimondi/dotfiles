@@ -20,4 +20,4 @@ function append_path() {
 }
 
 # add bin repository
-test -e $DOTFILES_HOME/bin && prepend_path "$DOTFILES_HOME/bin"
+prepend_path "$DOTFILES_HOME/bin"
