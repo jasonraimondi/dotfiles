@@ -1,48 +1,63 @@
-# reload zsh config
+# Reload zsh config
 alias reload!='RELOAD=1 source ~/.zshrc'
 
+# Dotfiles
+alias dot="cd $DOTFILES_HOME"
+alias cdot="$GUI_EDITOR $DOTFILES_HOME"
 
-alias jr="cd ~/Code/jasonraimondi/jasonraimondi"
-alias jcp="cd ~/Code/jasonraimondi/jasonraimondi"
-
+# Default programs
 alias stree="smerge"
 alias vim="nvim"
-# alias cat="bat -p"
 
-# folder helpers
-alias l="ls -lFh"     #size,show type,human readable
-alias lla="ls -lAFh"   #long list,show almost all,show type,human readable
-alias llr="ls -tRFh"   #sorted by date,recursive,show type,human readable
-alias llt="ls -ltFh"   #long list,sorted by date,show type,human readable
-alias ll="ls -lFh"    #long list
-alias ldot="ls -ld .*"
+# Default options
 alias mv="mv -i"
 alias cp="cp -pi"
 alias mkdir="mkdir -p"
+alias rsync="rsync -vh"
+alias json="json -c"
+alias psgrep="psgrep -i"
+alias df="df -H"
+alias du="ncdu --color dark -rr -x --exclude .git --exclude node_modules"
 
-# become root #
+# folder helpers
+alias l="ls -lFh"     
+alias ll="ls -lFh"    
+alias lla="ls -lAFh"   
+alias llr="ls -tRFh"   
+alias llt="ls -ltFh"   
+alias ldot="ls -ld .*"
+
+# root
 alias sudo="sudo "
 alias root="sudo -i"
 
+# Navigation
 alias ..="cd .."
 alias ...="cd ../.."
-alias ....="cd ../../../"
+alias ....="cd ../../.."
+alias .....="cd ../../../.."
+alias -- -="cd -"                  # Go to previous dir with -
+alias cd.='cd $(readlink -f .)'    # Go to real dir (i.e. if current dir is linked)
 
-# reboot / halt / poweroff
+# Reboot / Halt / Poweroff
 alias reboot="sudo reboot"
 alias poweroff="sudo poweroff"
 alias halt="sudo halt"
 alias shutdown="sudo shutdown"
 
-## set some other defaults ##
-alias df="df -H"
-alias du="ncdu --color dark -rr -x --exclude .git --exclude node_modules"
+# List declared aliases, functions, paths
+alias aliases="alias | sed 's/=.*//'"
+alias functions="declare -f | grep '^[a-z].* ()' | sed 's/{$//'"
+alias paths='echo -e ${PATH//:/\\n}'
+
+# Network
+alias flushdns="dscacheutil -flushcache && killall -HUP mDNSResponder"
+alias ip="dig +short myip.opendns.com @resolver1.opendns.com"
+alias ipe="curl -s ipinfo.io | jq -r '.ip'"
+alias ipl="ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1'"
 
 # Git
 alias glog='git log --graph --pretty=format:"%Cred%h%Creset %an: %s - %Creset %C(yellow)%d%Creset %Cgreen(%cr)%Creset" --abbrev-commit --date=relative'
-alias gaa="git add . "
-alias gcm="git commit -m "
-alias gb="git branch"
 alias gfa='git fetch --all --prune'
 
 # Tmux
@@ -51,16 +66,12 @@ alias tn="tmux new -s"
 alias tl="tmux list-sessions"
 alias tls="tmux list-sessions"
 
-# Dotfiles
-alias dot="cd ~/dotfiles"
-alias sdot="subl ~/dotfiles"
-alias cdot="code ~/dotfiles"
-
 # System
 alias screenfetch="neofetch"
 alias hdd="sudo hdparm -C /dev/sd[a-l]"
-alias myip="dig +short myip.opendns.com @resolver1.opendns.com"
 
-
-alias serve="ruby -run -e httpd . -p 8000"
-
+# Request using GET, POST, etc. method
+for METHOD in GET HEAD POST PUT DELETE TRACE OPTIONS; do
+  alias "$METHOD"="lwp-request -m '$METHOD'"
+done
+unset METHOD
