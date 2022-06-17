@@ -32,3 +32,24 @@ function extract () {
     echo "'$1' is not a valid file"
   fi
 }
+
+
+# Create a new directory and enter it
+function mk() {
+  mkdir -p "$@" && cd "$@"
+}
+
+# Show disk usage of current folder, or list with depth
+function duf() {
+  du --max-depth=${1:-0} -c | sort -r -n | awk '{split("K M G",v); s=1; while($1>1024){$1/=1024; s++} print int($1)v[s]"\t"$2}'
+}
+
+# Get IP from hostname
+function hostname2ip() {
+  ping -c 1 "$1" | egrep -m1 -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'
+}
+
+# Find real from shortened url
+function unshorten() {
+  curl -sIL $1 | sed -n 's/Location: *//p'
+}
