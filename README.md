@@ -1,6 +1,28 @@
-# Jason's Dotfiles
+```md
+  _____   ____ _______ ______ _____ _      ______  _____ 
+ |  __ \ / __ \__   __|  ____|_   _| |    |  ____|/ ____|
+ | |  | | |  | | | |  | |__    | | | |    | |__  | (___  
+ | |  | | |  | | | |  |  __|   | | | |    |  __|  \___ \ 
+ | |__| | |__| | | |  | |     _| |_| |____| |____ ____) |
+ |_____/ \____/  |_|  |_|    |_____|______|______|_____/ 
 
-Maintaining your machine's configs in git is :fire:
+
+ asdf         > asdf for maintaining language versions
+ aws          > amazon is taking over the world
+ bin          > custom bin scripts
+ brew         > homebrew all the things
+ config       > for the .config
+ dictionary   > extend the macos dictionary
+ git          > global git config and aliases
+ iterm2       > iterm2 scripts
+ mackup       > application settings sync 
+ ssh          > ssh config
+ tmux         > tmux config
+ ubersicht    > ubersicht widgets
+ vim          > vim configs
+ zsh          > shell configuration 🔥🔥
+
+```
 
 ## Usage
 
@@ -61,4 +83,4 @@ brew bundle
 
 ## Misc
 
-Ascii art generated using https://www.coolgenerator.com/ascii-text-generator with **banner** font
+Ascii art generated using https://www.coolgenerator.com/ascii-text-generator with **big** font
