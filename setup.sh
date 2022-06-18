@@ -39,6 +39,7 @@ stow -v -R --dotfiles ubersicht
 stow -v -R --dotfiles vim
 stow -v -R --dotfiles zsh
 stow -v -t ~/.ssh ssh
+stow -v -t ~/.config config
 stow -v -t ~/Library/Spelling dictionary
 
 #  _______  _______  ______   _______ 
