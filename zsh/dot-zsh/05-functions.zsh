@@ -6,6 +6,10 @@ function e() {
 	fi
 }
 
+function latest() {
+  curl -sL "https://api.github.com/repos/$1/releases/latest" | jq -r ".tag_name"
+}
+
 function versions() {
     echo "node: $(node --version)"
     echo "npm: $(npm --version)"
