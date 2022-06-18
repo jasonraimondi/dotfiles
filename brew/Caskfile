@@ -1,0 +1,99 @@
+# see https://github.com/Homebrew/homebrew-bundle
+# see https://github.com/kevinpapst/mac-os-setup/blob/master/Brewfile
+cask_args appdir: "/Applications"
+
+# A CLI tool upgrading every outdated app installed by Homebrew Cask
+# INFO: brew cu
+tap 'buo/cask-upgrade'
+
+# Casks
+cask "1password"
+# cask "aerial" # screensaver showing the AppleTV aerial videos
+cask "airtable"
+cask "alfred"
+cask "appcleaner"
+# cask "arduino"
+# cask "aware"
+cask "bartender"
+cask "battle-net"
+cask "beyond-compare"
+cask "blender"
+cask "brave-browser"
+# cask "calibre"
+cask "chromium"
+cask "discord"
+cask "docker"
+# cask "docker-edge"
+cask "dropbox"
+# cask "fantastical"
+cask "figma"
+cask "firefox-developer-edition"
+cask "firefox"
+
+# cask "gimp"
+# cask "gitify"
+# cask "gmvault" # backup & restore gmail accounts
+cask "godot"
+cask "google-chrome"
+cask "gpg-suite"
+cask "handbrake"
+cask "hey"
+cask "inkscape"
+cask "iterm2"
+cask "jetbrains-toolbox"
+cask "karabiner-elements"
+cask "keepingyouawake"
+# cask "kodi"
+cask "lens"
+cask "libreoffice"
+cask "little-snitch", force: true
+# cask "macsvg"
+cask "malwarebytes"
+cask "microsoft-edge"
+# cask "miro-formerly-realtimeboard"
+cask "notion"
+cask "obs", force: true
+# cask "olive"
+# cask "paw"
+# cask "postgres"
+cask "prisma-studio"
+cask "rectangle"
+cask "runjs"
+# cask "rocket"
+# cask "roku-remote-tool"
+cask "safari-technology-preview"
+cask "slack"
+cask "sourcetree"
+cask "steam"
+cask "sync"
+cask "sublime-text"
+cask "sublime-merge"
+cask "tableplus", force: true
+cask "telegram"
+cask "the-unarchiver"
+cask "tor-browser"
+cask "transmission"
+cask "transmit"
+cask "tuple"
+cask "ubersicht"
+# cask "virtualbox", force: true
+# cask "virtualbox-extension-pack"
+# cask "viscosity"
+cask "visual-studio-code"
+cask "vlc"
+cask "wireshark"
+
+# ==== Quick Look Plugins ====
+# @see https://github.com/sindresorhus/quick-look-plugins
+cask "qlcolorcode"
+cask "qlimagesize"
+cask "qlmarkdown"
+cask "qlprettypatch"
+cask "qlstephen"
+cask "qlvideo"
+cask "quicklook-csv"
+cask "quicklook-json"
+cask "quicklookase"
+cask "webpquicklook"
+# cask "betterzipql"
+cask "suspicious-package" # http://www.mothersruin.com/software/SuspiciousPackage/

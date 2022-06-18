@@ -1,34 +1,14 @@
 #!/bin/bash
 
-set -euox
+set -euo pipefail
 
 # Ask for the administrator password
 sudo -v
 
+# First, clone submodules to get deps like zprezto
 git submodule update --init --recursive
 
-if ! command -v xcode-select &> /dev/null; then
-    sudo xcode-select --install
-fi
-
-# Install Homebrew https://brew.sh
-if command -v brew &> /dev/null; then
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-fi
-
-if [[ -f Brewfile ]];then
-  brew bundle
-fi
-
-#  _______ _________ _______          
-# (  ____ \\__   __/(  ___  )|\     /|
-# | (    \/   ) (   | (   ) || )   ( |
-# | (_____    | |   | |   | || | _ | |
-# (_____  )   | |   | |   | || |( )| |
-#       ) |   | |   | |   | || || || |
-# /\____) |   | |   | (___) || () () |
-# \_______)   )_(   (_______)(_______)
-
+# Set symlinks using stow
 stow -v -R --dotfiles asdf
 stow -v -R --dotfiles aws
 stow -v -R --dotfiles git
@@ -42,6 +22,23 @@ stow -v -t ~/.ssh ssh
 stow -v -t ~/.config config
 stow -v -t ~/Library/Spelling dictionary
 
+# Install homebrew from https://brew.sh
+if ! command -v brew &> /dev/null; then
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+
+
+# Install applications using homebrew & casks
+brew bundle --file brew/Brewfile --no-lock
+brew bundle --file brew/Fontfile --no-lock
+brew bundle --file brew/Caskfile --no-lock
+brew bundle --file brew/Macfile --no-lock
+
+if ! command -v xcode-select &> /dev/null; then
+  sudo xcode-select --install
+fi
+
+
 #  _______  _______  ______   _______ 
 # (  ___  )(  ____ \(  __  \ (  ____ \
 # | (   ) || (    \/| (  \  )| (    \/
@@ -52,40 +49,34 @@ stow -v -t ~/Library/Spelling dictionary
 # |/     \|\_______)(______/ |/    
 
 if ! test -e $HOME/.asdf; then
-  git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.10.0
+  ASDF_VERSION=$(curl -sL https://api.github.com/repos/asdf-vm/asdf/releases/latest | jq -r ".tag_name")
+  git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch "$ASDF_VERSION"
+  unset ASDF_VERSION;
 fi
 
-asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
+asdf update
+
+asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git || true
 asdf install nodejs latest
-asdf global nodejs latest
 
-asdf plugin add pnpm
-asdf install latest pnpm
-
-asdf plugin add ruby https://github.com/asdf-vm/asdf-ruby.git
+asdf plugin add ruby https://github.com/asdf-vm/asdf-ruby.git || true
 asdf install ruby latest
-asdf global ruby latest
 
-asdf plugin add elixir https://github.com/asdf-vm/asdf-elixir.git
+asdf plugin add elixir https://github.com/asdf-vm/asdf-elixir.git || true
 asdf install elixir latest
-asdf global elixir latest
 
-asdf plugin add erlang https://github.com/asdf-vm/asdf-erlang.git
+asdf plugin add erlang https://github.com/asdf-vm/asdf-erlang.git || true
 asdf install erlang latest
-asdf global erlang latest
 
-asdf plugin-add deno https://github.com/asdf-community/asdf-deno.git
+asdf plugin add deno https://github.com/asdf-community/asdf-deno.git || true
 asdf install deno latest
-asdf global deno latest
 
 # brew install gmp libsodium imagemagick bison re2c gd libiconvbr libpq
-asdf plugin-add php https://github.com/asdf-community/asdf-php.git
-asdf install php latest
-asdf global php latest
+# asdf plugin add php https://github.com/asdf-community/asdf-php.git || true
+# asdf install php latest
 
-asdf plugin-add rust https://github.com/asdf-community/asdf-rust.git
+asdf plugin add rust https://github.com/asdf-community/asdf-rust.git || true
 asdf install rust latest
-asdf global rust latest
 
 #  _______           _______ _________ _______  _______                                              
 # (  ____ \|\     /|(  ____ \\__   __/(  ____ \(       )                                             
@@ -205,3 +196,5 @@ killall SystemUIServer
 # If you wish to change the default shortcuts after first launch, use the following command.
 # True is for the recommended shortcuts, false is for Spectacle's.
 defaults write com.knollsoft.Rectangle alternateDefaultShortcuts -bool true
+
+echo "✅ SUCCESS"
