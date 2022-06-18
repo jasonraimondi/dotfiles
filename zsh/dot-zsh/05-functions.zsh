@@ -6,7 +6,7 @@ function versions() {
 }
 
 function nname () {
-  make --no-print-directory -C $HOME/dotfiles/bin/namer;
+	deno run -q --allow-read $HOME/dotfiles/misc/namer/namer.ts
 }
 
 function fname() { 
