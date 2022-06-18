@@ -1,3 +1,11 @@
+function e() {
+	if [ "$1" = "" ] ; then
+	  exec $EDITOR .
+	else
+	  exec $EDITOR "$1"
+	fi
+}
+
 function versions() {
     echo "node: $(node --version)"
     echo "npm: $(npm --version)"
