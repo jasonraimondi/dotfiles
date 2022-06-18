@@ -22,11 +22,15 @@ stow -v -t ~/.ssh ssh
 stow -v -t ~/.config config
 stow -v -t ~/Library/Spelling dictionary
 
+# Install xcode developer tools
+if ! command -v xcode-select &> /dev/null; then
+  sudo xcode-select --install
+fi
+
 # Install homebrew from https://brew.sh
 if ! command -v brew &> /dev/null; then
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
-
 
 # Install applications using homebrew & casks
 brew bundle --file brew/Brewfile --no-lock
@@ -34,20 +38,7 @@ brew bundle --file brew/Fontfile --no-lock
 brew bundle --file brew/Caskfile --no-lock
 brew bundle --file brew/Macfile --no-lock
 
-if ! command -v xcode-select &> /dev/null; then
-  sudo xcode-select --install
-fi
-
-
-#  _______  _______  ______   _______ 
-# (  ___  )(  ____ \(  __  \ (  ____ \
-# | (   ) || (    \/| (  \  )| (    \/
-# | (___) || (_____ | |   ) || (__    
-# |  ___  |(_____  )| |   | ||  __)   
-# | (   ) |      ) || |   ) || (      
-# | )   ( |/\____) || (__/  )| )      
-# |/     \|\_______)(______/ |/    
-
+# asdf  
 if ! test -e $HOME/.asdf; then
   ASDF_VERSION=$(curl -sL https://api.github.com/repos/asdf-vm/asdf/releases/latest | jq -r ".tag_name")
   git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch "$ASDF_VERSION"
@@ -78,24 +69,7 @@ asdf install deno latest
 asdf plugin add rust https://github.com/asdf-community/asdf-rust.git || true
 asdf install rust latest
 
-#  _______           _______ _________ _______  _______                                              
-# (  ____ \|\     /|(  ____ \\__   __/(  ____ \(       )                                             
-# | (    \/( \   / )| (    \/   ) (   | (    \/| () () |                                             
-# | (_____  \ (_) / | (_____    | |   | (__    | || || |                                             
-# (_____  )  \   /  (_____  )   | |   |  __)   | |(_)| |                                             
-#       ) |   ) (         ) |   | |   | (      | |   | |                                             
-# /\____) |   | |   /\____) |   | |   | (____/\| )   ( |                                             
-# \_______)   \_/   \_______)   )_(   (_______/|/     \|                                             
-                                                                                                   
-#  _______  _______  _______  _______  _______  _______  _______  _        _______  _______  _______ 
-# (  ____ )(  ____ )(  ____ \(  ____ \(  ____ \(  ____ )(  ____ \( (    /|(  ____ \(  ____ \(  ____ \
-# | (    )|| (    )|| (    \/| (    \/| (    \/| (    )|| (    \/|  \  ( || (    \/| (    \/| (    \/
-# | (____)|| (____)|| (__    | (__    | (__    | (____)|| (__    |   \ | || |      | (__    | (_____ 
-# |  _____)|     __)|  __)   |  __)   |  __)   |     __)|  __)   | (\ \) || |      |  __)   (_____  )
-# | (      | (\ (   | (      | (      | (      | (\ (   | (      | | \   || |      | (            ) |
-# | )      | ) \ \__| (____/\| )      | (____/\| ) \ \__| (____/\| )  \  || (____/\| (____/\/\____) |
-# |/       |/   \__/(_______/|/       (_______/|/   \__/(_______/|/    )_)(_______/(_______/\_______)
-
+# Run MacOS Software Update 
 sudo softwareupdate -i -a
 
 # How to Allow Apps from Anywhere in Gatekeeper
