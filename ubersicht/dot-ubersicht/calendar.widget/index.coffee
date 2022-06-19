@@ -13,10 +13,10 @@ otherMonths: true
 refreshFrequency: 3600000
 
 style: """
-  bottom: 35%
+  top: 120px
   left: 10px
   color: #fff
-  font-family: 'Jetbrains Mono'
+  font-family: 'Fira Code'
 
   table
     border-collapse: collapse
@@ -29,16 +29,16 @@ style: """
 
   thead tr
     &:first-child td
-      font-size: 48px
+      font-size: 24px
       font-weight: 100
 
     &:last-child td
-      font-size: 24px
+      font-size: 18px
       padding-bottom: 10px
       font-weight: 500
 
   tbody td
-    font-size: 24px
+    font-size: 18px
 
   .today
     font-weight: bold

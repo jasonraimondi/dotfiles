@@ -18,9 +18,8 @@ export const className = {
     bottom: '10px',
     left: '10px',
     color: '#fff',
-    fontFamily: 'Jetbrains Mono',
-    fontWeight: 100,
-    fontSize: '24px'
+    fontFamily: 'Fira Code',
+    fontSize: '18px'
 }
 
 // Render the widget

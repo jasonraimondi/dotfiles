@@ -132,6 +132,7 @@ export const render = (state) => {
   return (
     <div
       style={{
+        paddingTop: '10px',
         display: 'flex',
         flexFlow: 'column',
         alignContent: 'space-between'

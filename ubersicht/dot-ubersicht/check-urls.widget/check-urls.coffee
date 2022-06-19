@@ -1,9 +1,9 @@
 style: """
 	color: white
 	left: 5px
-	top: 150px
+	bottom: 100px
 	font-size: 18px
-	font-family: "Jetbrains Mono"
+	font-family: "Fira Code"
 	border-radius: 6px
 	border: 0px solid #222
 
