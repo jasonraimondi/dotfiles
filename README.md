@@ -26,7 +26,7 @@
 
 ## Usage
 
-Take a look at the [setup.sh](./setup.sh) script and give it a run.
+Take a look at the [setup.sh](./setup.sh) script.
 
 ```bash
 bash setup.sh
