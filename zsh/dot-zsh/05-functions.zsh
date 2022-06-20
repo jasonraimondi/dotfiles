@@ -1,3 +1,15 @@
+# open github aka ogh
+function ogh() {
+	local REMOTE_NAME="$(git remote -v | awk '{print $2}' | head -n 1)"
+	if [[ $REMOTE_NAME == *"github"* ]]; then
+		local URL="https://github.com/${REMOTE_NAME:15:-4}"
+		echo "Opening $URL"
+	  open "$URL"
+	else
+		echo "This doesnt look like a github repository"
+	fi
+}
+
 function e() {
 	if [ "$1" = "" ] ; then
 	  exec $EDITOR .
