@@ -26,13 +26,13 @@
 
 ## Usage
 
-Take a look at the [setup.sh](./setup.sh) script.
+Take a look at the [setup.sh](./setup.sh) script to see how to put everything all together. 
 
 ```bash
 bash setup.sh
 ```
 
-## GNU stow
+## Stow
 
 [GNU stow](https://www.gnu.org/software/stow/), or just `stow`, manages symbolic links from your dotfiles directory to the home directory.
 
@@ -40,6 +40,26 @@ To get stow on MacOS, use [homebrew](https://brew.sh/).
 
 ```bash
 brew install stow
+```
+
+We are utilizing the `--dotfiles` flag. The following is from the stow manpage.
+
+```
+ --dotfiles
+
+   Enable special handling for "dotfiles" (files or folders whose name
+   begins with a period) in the package directory. If this option is
+   enabled, Stow will add a preprocessing step for each file or folder
+   whose name begins with "dot-", and replace the "dot-" prefix in the
+   name by a period (.). This is useful when Stow is used to manage
+   collections of dotfiles, to avoid having a package directory full of
+   hidden files.
+
+   For example, suppose we have a package containing two files,
+   stow/dot-bashrc and stow/dot-emacs.d/init.el. With this option, Stow
+   will create symlinks from .bashrc to stow/dot-bashrc and from
+   .emacs.d/init.el to stow/dot-emacs.d/init.el. Any other files, whose
+   name does not begin with "dot-", will be processed as usual.
 ```
 
 Checkout this article for a more detailed explanation on using stow https://alexpearce.me/2016/02/managing-dotfiles-with-stow/
@@ -68,7 +88,7 @@ stow -v -R --dotfiles zsh
 
 ### Custom .zsh files
 
-The main entrypoint for our custom .zsh files is [~/.zsh/_main.zsh](zsh/dot-zsh/_main.zsh).
+All file ending in `*.zsh` in the [~/.zsh](macos/zsh/dot-zsh) directory will be sourced.
 
 ## Brewfile
 
