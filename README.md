@@ -34,15 +34,13 @@ bash setup.sh
 
 ## Stow
 
-[GNU stow](https://www.gnu.org/software/stow/), or just `stow`, manages symbolic links from your dotfiles directory to the home directory.
-
-To get stow on MacOS, use [homebrew](https://brew.sh/).
+[GNU stow](https://www.gnu.org/software/stow/), or just `stow`, manages symbolic links from your dotfiles directory to the home directory. To get stow on MacOS, use [homebrew](https://brew.sh/).
 
 ```bash
 brew install stow
 ```
 
-We are utilizing the `--dotfiles` flag. The following is from the stow manpage.
+We are utilizing the `--dotfiles` flag. This allows us to have folders with `dot-example` that will convert to `.example`. The following is from the stow manpage.
 
 ```
  --dotfiles
