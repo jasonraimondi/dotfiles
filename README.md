@@ -72,7 +72,7 @@ source "${HOME}/.zsh/_main.zsh"
 
 The [~/.zsh/_main.zsh](zsh/dot-zsh/_main.zsh) file globs all zsh files in the `zsh/dot-zsh/*.zsh` directory and loads them.
 
-All file ending in `*.zsh` in the [~/.zsh](macos/zsh/dot-zsh) directory will be sourced.
+All file ending in `*.zsh` in the [~/.zsh](zsh/dot-zsh) directory will be sourced.
 
 ### Prezto — Instantly Awesome Zsh
 
