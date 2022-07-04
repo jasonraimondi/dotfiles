@@ -37,6 +37,7 @@ brew bundle --file brew/Brewfile --no-lock
 brew bundle --file brew/Fontfile --no-lock
 brew bundle --file brew/Caskfile --no-lock
 brew bundle --file brew/Macfile --no-lock
+brew cleanup
 
 # asdf  
 if ! test -e $HOME/.asdf; then
