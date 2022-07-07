@@ -76,8 +76,9 @@ sudo softwareupdate -i -a
 # How to Allow Apps from Anywhere in Gatekeeper
 sudo spctl --master-disable
 
-# Show the ~/Library folder.
+# Show the ~/Library and /Volumes folder
 chflags nohidden ~/Library
+sudo chflags nohidden /Volumes
 
 # Set a really fast key repeat.
 defaults write -g KeyRepeat -int 2
