@@ -19,11 +19,8 @@ brew "docker-compose"
 brew "doctl"
 brew "dive"
 brew "ffmpeg"
-brew "gh"
-brew "hub"
-brew "git-extras"
-brew "git"
-brew "gnu-sed"
+
+brew "gnu-sed", with_default_names: true
 # brew "gnupg2" I could progabably get rid of this
 brew "grep"
 brew "helm"
@@ -34,6 +31,7 @@ brew "mackup"
 brew "masscan"
 brew "minikube"
 brew "ncdu"
+brew "lynx" # cli web browser
 # brew "pinentry-mac"
 # brew "pinentry"
 brew "potatolabs/git-redate/git-redate"
@@ -53,6 +51,16 @@ brew "watch"
 brew "wget"
 brew "youtube-dl"
 brew "zsh"
+
+
+# git stuff
+brew "git"
+brew "git-lfs"
+brew "git-extras"
+brew "diff-so-fancy"
+brew "difftastic"
+brew "gh"
+brew "hub"
 
 # Image
 brew "advancecomp"
@@ -78,6 +86,9 @@ brew "pngcrush"
 brew "pngnq"
 brew "pngquant"
 brew "webp"
+
+brew "pigz"
+brew "zopfli"
 
 # Development
 # brew "deno"
