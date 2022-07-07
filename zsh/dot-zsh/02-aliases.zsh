@@ -3,7 +3,8 @@ alias reload!='RELOAD=1 source ~/.zshrc'
 
 # Dotfiles
 alias dot="cd $DOTFILES_HOME"
-alias cdot="$GUI_EDITOR $DOTFILES_HOME"
+alias edot="$GUI_EDITOR $DOTFILES_HOME"
+alias cdot="code $DOTFILES_HOME"
 
 # Default programs
 alias stree="smerge"
@@ -49,6 +50,7 @@ alias shutdown="sudo shutdown"
 alias aliases="alias | sed 's/=.*//'"
 alias functions="declare -f | grep '^[a-z].* ()' | sed 's/{$//'"
 alias paths='echo -e ${PATH//:/\\n}'
+alias path='paths'
 
 # Network
 alias flushdns="dscacheutil -flushcache && killall -HUP mDNSResponder"
