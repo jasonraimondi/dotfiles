@@ -3,6 +3,9 @@
 aws/dot-aws/credentials
 
 brew/Brewfile.lock.json
+
+config/karabiner/automatic_backups/
+
 kube/dot-kube/config
 kube/dot-kube/kubectx
 
