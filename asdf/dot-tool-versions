@@ -7,3 +7,4 @@ python 3.10.2
 rust 1.56.1
 direnv 2.30.3
 golang 1.18.3
+php 8.1.7
