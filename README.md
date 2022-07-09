@@ -24,13 +24,40 @@
 
 ```
 
+## Requirements
+
+Install [Homebrew](brew.sh)
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
 ## Usage
+
+Clone the repository
+
+```bash
+git clone git@github.com:jasonraimondi/dotfiles.git
+```
 
 Take a look at the [setup.sh](./setup.sh) script to see how to put everything all together. 
 
 ```bash
 bash setup.sh
 ```
+
+## SSH
+
+Setup your SSH key
+
+```bash
+ssh-keygen -t ed25519
+
+# this copies the new public key to your clipboard
+cat ~/.ssh/id_ed25519.pub | pbcopy
+```
+
+Add your SSH key to [GitHub](https://github.com/settings/keys)
 
 ## Stow
 
