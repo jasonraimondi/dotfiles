@@ -8,6 +8,8 @@ sudo -v
 # First, clone submodules to get deps like zprezto
 git submodule update --init --recursive
 
+brew install stow
+
 # Set symlinks using stow
 stow -v -R --dotfiles asdf
 stow -v -R --dotfiles aws
