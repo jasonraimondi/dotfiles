@@ -5,6 +5,7 @@ alias reload!='RELOAD=1 source ~/.zshrc'
 alias dot="cd $DOTFILES_HOME"
 alias edot="$GUI_EDITOR $DOTFILES_HOME"
 alias cdot="code $DOTFILES_HOME"
+alias gdot="smerge $DOTFILES_HOME"
 
 # Default programs
 alias stree="smerge"
