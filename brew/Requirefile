@@ -1,0 +1,14 @@
+tap "homebrew/cask"
+
+# see https://github.com/Homebrew/homebrew-bundle
+# see https://github.com/kevinpapst/mac-os-setup/blob/master/Brewfile
+cask_args appdir: "/Applications"
+
+# Brews
+brew "stow"
+brew "tmux"
+brew "nvim"
+
+# Casks
+cask "1password"
+cask "keepingyouawake"

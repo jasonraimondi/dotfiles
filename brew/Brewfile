@@ -17,6 +17,7 @@ brew "coreutils" # Those that come with macOS are outdated
 brew "curl"
 brew "docker-compose"
 brew "doctl"
+brew "dockutil"
 brew "dive"
 brew "ffmpeg"
 
