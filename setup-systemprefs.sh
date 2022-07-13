@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # How to Allow Apps from Anywhere in Gatekeeper
 sudo spctl --master-disable
 

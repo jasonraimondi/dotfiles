@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -euo pipefail
 
@@ -16,21 +16,10 @@ bash setup-systemprefs.sh
 # install the more important stuff first
 brew bundle --file brew/Requirefile --no-lock
 
-# Set symlinks using stow
-stow -v -R --dotfiles asdf
-stow -v -R --dotfiles aws
-stow -v -R --dotfiles git
-stow -v -R --dotfiles iterm2
-stow -v -R --dotfiles mackup
-stow -v -R --dotfiles tmux
-stow -v -R --dotfiles ubersicht
-stow -v -R --dotfiles vim
-stow -v -R --dotfiles zsh
-stow -v -t ~/.ssh ssh
-stow -v -t ~/Library/Spelling dictionary
-mkdir -p ~/.config && stow -v -t ~/.config config
+# set symlinks using stow
+bash setup-stow.sh
 
-# Run MacOS Software Update 
+# run MacOS Software Update 
 sudo softwareupdate -i -a
 
 # Accept XCode Stuff
@@ -43,7 +32,7 @@ function set_dock_icons() {
   dockutil --add ~/Pictures/screenshots --replacing=Screenshots --before=Downloads --label=Screenshots $FOLDER_OPTS
 }
 
-# set_dock_icons
+set_dock_icons
 
 # Install xcode developer tools
 if ! command -v xcode-select &> /dev/null; then
