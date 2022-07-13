@@ -1,3 +1,5 @@
+append_path "/Users/$USER/Library/Application Support/JetBrains/Toolbox/scripts"
+
 # ASDF
 if test -e $HOME/.asdf; then
     . $HOME/.asdf/asdf.sh
