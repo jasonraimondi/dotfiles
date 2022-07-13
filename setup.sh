@@ -11,6 +11,10 @@ git submodule update --init --recursive
 # make sure homebrew is sourced
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
+# copy templates over if missing
+[ ! -f git/dot-git-user ] && cp git/git-user.template git/dot-git-user
+
+# configure mac system preferences
 bash setup-systemprefs.sh
 
 # install the more important stuff first
