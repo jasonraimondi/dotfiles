@@ -9,7 +9,6 @@ tap 'buo/cask-upgrade'
 
 # Brews
 brew "asciinema"
-# brew "aws-iam-authenticator"
 brew "awscli"
 brew "bash"
 brew "bat"
@@ -20,11 +19,9 @@ brew "doctl"
 brew "dockutil"
 brew "dive"
 brew "ffmpeg"
-
 brew "gnu-sed", with_default_names: true
-# brew "gnupg2" I could progabably get rid of this
 brew "grep"
-brew "helm"
+# brew "helm"
 brew "httpie"
 brew "jq" # to pipe pretty json output from bash
 brew "kubernetes-cli"
@@ -32,10 +29,9 @@ brew "mackup"
 brew "masscan"
 brew "minikube"
 brew "ncdu"
+brew "libpq" # for postgres gem
 brew "lynx" # cli web browser
-# brew "pinentry-mac"
-# brew "pinentry"
-brew "potatolabs/git-redate/git-redate"
+brew "postgres"
 brew "restic"
 brew "rsync"
 brew "safe-rm"
@@ -53,7 +49,6 @@ brew "wget"
 brew "youtube-dl"
 brew "zsh"
 
-
 # git stuff
 brew "git"
 brew "git-lfs"
@@ -62,6 +57,7 @@ brew "diff-so-fancy"
 brew "difftastic"
 brew "gh"
 brew "hub"
+brew "potatolabs/git-redate/git-redate"
 
 # Image
 brew "advancecomp"
@@ -90,17 +86,3 @@ brew "webp"
 
 brew "pigz"
 brew "zopfli"
-
-# Development
-# brew "deno"
-# brew "go"
-# brew "hugo"
-# brew "node"
-# brew "php"
-# brew "composer"
-# brew "python"
-# brew "ruby"
-# brew "rust"
-# brew "yarn"
-# brew "fluxcd/tap/flux"
-# brew "quicktype"

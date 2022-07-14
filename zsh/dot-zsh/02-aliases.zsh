@@ -11,6 +11,11 @@ alias gdot="smerge $DOTFILES_HOME"
 alias stree="smerge"
 alias vim="nvim"
 
+alias rmine="rubymine"
+alias storm="webstorm"
+alias pstorm="phpstorm"
+alias gland="goland"
+
 # Default options
 alias mv="mv -i"
 alias cp="cp -pi"
