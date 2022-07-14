@@ -36,7 +36,9 @@ function set_dock_icons() {
   dockutil --add ~/Pictures/screenshots --replacing=Screenshots --before=Downloads --label=Screenshots $FOLDER_OPTS
 }
 
-set_dock_icons
+# broken until this gets fixed:
+#   https://github.com/Homebrew/homebrew-core/pull/97394
+# set_dock_icons
 
 # Install xcode developer tools
 if ! command -v xcode-select &> /dev/null; then
@@ -50,7 +52,7 @@ fi
 
 # Install applications using homebrew & casks
 for BREWFILE in Brewfile Fontfile Caskfile Macfile; do
-  brew bundle --file "brew/$BREFILE" --no-lock
+  brew bundle --file "brew/$BREWFILE" --no-lock
 done
 
 brew cleanup
