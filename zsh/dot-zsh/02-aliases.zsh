@@ -1,6 +1,9 @@
 # Reload zsh config
 alias reload!='RELOAD=1 source ~/.zshrc'
 
+# Enable aliases to be sudo’ed
+alias sudo='sudo '
+
 # Dotfiles
 alias dot="cd $DOTFILES_HOME"
 alias edot="$GUI_EDITOR $DOTFILES_HOME"
