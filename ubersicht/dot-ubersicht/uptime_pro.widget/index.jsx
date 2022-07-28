@@ -8,7 +8,7 @@ export const refreshFrequency = 60 * 1000;
 export const className = `
 bottom: 10px;
 right:  10px;
-font-family: "Fira Code";
+font-family: "FiraCode Nerd Font";
 color: #fff;
 
 div {

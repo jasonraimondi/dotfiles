@@ -4,7 +4,7 @@ export const className = `
   left: 10px;
   top: 180px;
 
-  font-family: "Fira Code";
+  font-family: "FiraCode Nerd Font";
   font-size: 18px;
   color: white;
 `;
