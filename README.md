@@ -45,6 +45,8 @@ cat ~/.ssh/id_ed25519.pub | pbcopy
 
 Add your SSH key to [GitHub](https://github.com/settings/keys)
 
+@TODO add section re: decrypting gpg files
+
 ## Stow
 
 [GNU stow](https://www.gnu.org/software/stow/), or just `stow`, manages symbolic links from your dotfiles directory to the home directory. To get stow on MacOS, use [homebrew](https://brew.sh/).

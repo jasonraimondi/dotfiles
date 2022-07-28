@@ -6,7 +6,8 @@ cask_args appdir: "/Applications"
 cask "font-lato"
 cask "font-go"
 
-# Nerd Fonts
+# Nerd Fonts for your IDE
+# https://www.nerdfonts.com/font-downloads
 cask "font-open-dyslexic-nerd-font"
 cask "font-fira-mono-nerd-font"
 cask "font-fira-code-nerd-font"
