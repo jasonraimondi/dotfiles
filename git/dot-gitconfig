@@ -69,6 +69,8 @@
   default = simple
   # Make `git push` push relevant annotated tags when pushing branches out.
   followTags = true
+  # Auto setup remote branches without needing --set-upstream
+  autoSetupRemote = true
   
 [color]
 
