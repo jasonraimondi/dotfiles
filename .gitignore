@@ -14,3 +14,4 @@ kube/dot-kube/kubectx
 ssh/config
 
 zsh/dot-zsh/00-SECRETS.zsh
+zsh/dot-zsh/99-custom.zsh
