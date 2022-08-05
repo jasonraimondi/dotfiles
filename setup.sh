@@ -6,7 +6,7 @@ set -euo pipefail
 sudo -v
 
 # copy templates over if missing
-[ ! -f git/dot-git-user ] && cp --no-clobber git/git-user.template git/dot-git-user
+[ ! -f git/dot-git-user ] && cp --no-clobber git/dot-git-user.template git/dot-git-user
 [ ! -f zsh/dot-zsh/99-custom.zsh ] && echo "# add private zsh customizations here\n# this file is not included in git" > zsh/dot-zsh/99-custom.zsh
 
 # configure mac system preferences
