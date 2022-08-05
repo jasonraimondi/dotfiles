@@ -1,6 +1,15 @@
 [user]
 
-  name = Jason Raimondi
-  email = jason@raimondi.us
+  name = Jason
+  email = jason@example.com
 #  signingkey = ###
-  
+# 
+# [gpg]
+# 
+#   program = gpg2
+# 
+# [commit]
+# 
+#   # https://help.github.com/articles/signing-commits-using-gpg/
+#   gpgsign = true
+# 

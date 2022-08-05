@@ -31,10 +31,6 @@
   # https://git-scm.com/docs/git-update-index#_untracked_cache
   untrackedCache = true
 
-[gpg]
-
-  program = gpg2
-
 [pull]
 
   rebase = false
@@ -101,10 +97,9 @@
   untracked = cyan
 
 [commit]
+
   # Add a custom template with std commit messages
   template = /Users/jason/.gitcommit
-  # https://help.github.com/articles/signing-commits-using-gpg/
-  gpgsign = true
 
 # Aliases
 [alias]
