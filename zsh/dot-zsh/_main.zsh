@@ -16,6 +16,6 @@ done
 
 end=$(gdate +%s.%N)
 
-runtime=$(python -c "print(${end} - ${start})")
+runtime=$(python -c "print('{:.0f}'.format((${end} - ${start}) * 1000))")
 
-echo "dotfiles: $runtime"
+echo "dotfiles in ${runtime}ms"
