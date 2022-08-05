@@ -6,6 +6,11 @@ cask_args appdir: "/Applications"
 # INFO: brew cu
 tap 'buo/cask-upgrade'
 
+# Browsers
+cask "brave-browser"
+cask "firefox-developer-edition"
+cask "firefox"
+
 # Casks
 cask "zoom"
 cask "1password"
@@ -18,8 +23,7 @@ cask "appcleaner"
 cask "bartender"
 cask "battle-net"
 cask "beyond-compare"
-cask "blender"
-cask "brave-browser"
+# cask "blender"
 # cask "calibre"
 cask "chromium"
 cask "discord"
@@ -28,8 +32,6 @@ cask "docker"
 cask "dropbox"
 # cask "fantastical"
 cask "figma"
-cask "firefox-developer-edition"
-cask "firefox"
 
 # cask "gimp"
 # cask "gitify"
@@ -45,7 +47,7 @@ cask "jetbrains-toolbox"
 cask "karabiner-elements"
 cask "keepingyouawake"
 # cask "kodi"
-cask "lens"
+# cask "lens"
 cask "libreoffice"
 cask "little-snitch", force: true
 # cask "macsvg"
@@ -53,7 +55,7 @@ cask "malwarebytes"
 cask "microsoft-edge"
 # cask "miro-formerly-realtimeboard"
 cask "notion"
-cask "obs", force: true
+# cask "obs", force: true
 # cask "olive"
 # cask "paw"
 # cask "postgres"
