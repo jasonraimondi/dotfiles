@@ -9,7 +9,7 @@ export const className = {
   bottom: "10px",
   left: "10px",
   color: "#fff",
-  fontFamily: "Fira Code",
+  fontFamily: "FiraCode Nerd Font",
   fontSize: "18px",
 };
 
