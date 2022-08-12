@@ -34,6 +34,7 @@ brew "libpq" # for postgres gem
 brew "postgres"
 brew "restic"
 brew "rsync"
+brew "overmind"
 brew "safe-rm"
 brew "smartmontools"
 brew "stow"

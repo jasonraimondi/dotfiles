@@ -21,6 +21,8 @@ export DOCKER_BUILDKIT=1
 # display how long all tasks over 10 seconds take
 export REPORTTIME=10
 
+# Hide homebrew hints (see `man brew`).
+export HOMEBREW_NO_ENV_HINTS=1
 
 # Enable persistent REPL history for `node`.
 export NODE_REPL_HISTORY=~/.node_history;
