@@ -39,7 +39,7 @@ fi
 asdf update
 
 # Install ASDF plugins
-for PLUGIN in deno direnv elixir erlang golang nodejs php python ruby rust; do
+for PLUGIN in deno direnv elixir erlang golang nodejs php pnpm python ruby rust; do
   asdf plugin-add "$PLUGIN" || true
 done
 
