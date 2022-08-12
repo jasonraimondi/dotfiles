@@ -1,0 +1,2 @@
+#!/usr/bin/env php
+<?php echo urldecode($argv[1]); echo "\n";
