@@ -7,3 +7,6 @@ alias serve="ruby -run -e httpd . -p 8000"
 
 # Node
 alias pnpm-up="pnpm add -g pnpm"
+
+# Ruby
+alias rspec="bundle exec rspec"
