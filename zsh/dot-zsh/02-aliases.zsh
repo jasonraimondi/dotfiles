@@ -1,5 +1,6 @@
 # Reload zsh config
 alias reload!='RELOAD=1 source ~/.zshrc'
+alias redock!="bash $DOTFILES_HOME/setup-dock.sh"
 
 # Enable aliases to be sudo’ed
 alias sudo='sudo '
