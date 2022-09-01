@@ -1,0 +1,2 @@
+# disable rubygem documentation to make bundler faster
+gem: --no-document
