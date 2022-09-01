@@ -31,7 +31,7 @@ brew "minikube"
 brew "ncdu"
 brew "libpq" # for postgres gem
 # brew "lynx" # cli web browser
-brew "postgres"
+# brew "postgres"
 brew "restic"
 brew "rsync"
 brew "overmind"
