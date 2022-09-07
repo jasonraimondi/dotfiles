@@ -8,4 +8,8 @@
 # 
 #   # https://help.github.com/articles/signing-commits-using-gpg/
 #   gpgsign = true
-
+#
+# ## Obsidian is the one that needs this..
+# [gpg]
+#    
+#    program = /usr/local/bin/gpg
