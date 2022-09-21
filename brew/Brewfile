@@ -59,6 +59,7 @@ brew "difftastic"
 brew "gh"
 brew "hub"
 brew "potatolabs/git-redate/git-redate"
+brew "git-duet/tap/git-duet"
 
 # Image
 brew "advancecomp"

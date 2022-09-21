@@ -6,6 +6,7 @@ brew/Brewfile.lock.json
 
 config/karabiner/automatic_backups/
 
+git/dot-git-authors
 git/dot-git-user
 
 kube/dot-kube/config
