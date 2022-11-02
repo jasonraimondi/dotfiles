@@ -103,6 +103,12 @@
 
 # Aliases
 [alias]
+  fp = push --force
+
+  ane = commit --amend --no-edit
+
+  subinit = git submodule update --init --recursive
+  subup = submodule update --recursive --remote
 
 	# View abbreviated SHA, description, and history graph of the latest 20 commits.
 	l = log --pretty=oneline -n 20 --graph --abbrev-commit

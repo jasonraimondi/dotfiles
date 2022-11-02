@@ -1,9 +1,9 @@
 set number
 
-set backspace=indent,eol,start " fixes backspace bug, backspace  over everything in insert mode
-
+set backspace=indent,eol,start 
 syntax on
-" color Tomorrow-Night
+
+color Tomorrow-Night
 
 set guifont=Menlo\ Regular:h18
 
