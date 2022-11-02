@@ -4,6 +4,19 @@
 [submodule "config/nvim"]
 	path = config/nvim
 	url = https://github.com/NvChad/NvChad
+
+[submodule "tmux/dot-tmux/plugins/tmux"]
+	path = tmux/dot-tmux/plugins/tmux
+	url = https://github.com/dracula/tmux
+
+[submodule "tmux/dot-tmux/plugins/tmux-resurrect"]
+	path = tmux/dot-tmux/plugins/tmux-resurrect
+	url = https://github.com/tmux-plugins/tmux-resurrect
+
+[submodule "tmux/dot-tmux/plugins/tmux-sensible"]
+	path = tmux/dot-tmux/plugins/tmux-sensible
+	url = https://github.com/tmux-plugins/tmux-sensible
+
 [submodule "tmux/dot-tmux/plugins/tpm"]
 	path = tmux/dot-tmux/plugins/tpm
 	url = https://github.com/tmux-plugins/tpm
