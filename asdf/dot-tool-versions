@@ -4,7 +4,7 @@ elixir 1.13.4-otp-24
 erlang 24.3.3
 deno 1.25.1
 python 3.10.6
-rust 1.56.1
+rust 1.65.0
 direnv 2.30.3
 golang 1.18.3
 php 8.1.7
