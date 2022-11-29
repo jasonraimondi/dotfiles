@@ -81,29 +81,6 @@ function mini-img() {
   exit 0
 }
 
-function fluxsync() {
-  set -x;
-
-  if [ $# -eq 0 ]
-  then
-    echo "env required"
-    return 1;
-  fi
-
-  local PREV_CTX=$(kubectl ctx --current)
-
-  if [[ "$1" == "production" ]]; then
-    kubectl ctx hitrecord-production
-  else
-    kubectl ctx hitrecord-staging
-  fi
-
-  flux reconcile image repository "$1" -n flux-system
-  flux reconcile source git flux-system -n flux-system
-
-  kubectl ctx $PREV_CTX
-}
-
 # Show all the names (CNs and SANs) listed in the SSL certificate
 # for a given domain
 function getcertnames() {
