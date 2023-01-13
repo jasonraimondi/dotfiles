@@ -18,16 +18,14 @@ brew bundle --file brew/Requirefile --no-lock
 # set symlinks using stow
 bash setup-stow.sh
 
-# broken until this gets fixed:
-#   https://github.com/Homebrew/homebrew-core/pull/97394
-# bash setup-dock.sh
-
 # Install applications using homebrew & casks
 for BREWFILE in Brewfile Fontfile Caskfile Macfile; do
   brew bundle --file "brew/$BREWFILE" --no-lock
 done
 
 brew cleanup
+
+bash setup-dock.sh
 
 # Install
 if ! test -e $HOME/.asdf; then
