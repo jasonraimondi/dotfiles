@@ -22,3 +22,4 @@ function append_path() {
 # add bin repository
 prepend_path "$DOTFILES_HOME/bin"
 prepend_path "$HOME/Library/Application Support/JetBrains/Toolbox/scripts"
+prepend_path "$HOME/.local/bin"
