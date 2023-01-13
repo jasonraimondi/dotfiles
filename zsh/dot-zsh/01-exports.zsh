@@ -2,8 +2,8 @@
 # https://stackoverflow.com/a/42265848/96656
 export GPG_TTY=$(tty);
 
-export EDITOR='nvim'
-export GIT_EDITOR='nvim'
+export EDITOR='vim'
+export GIT_EDITOR='vim'
 export GUI_EDITOR='subl'
 
 # homebrew stop analytics

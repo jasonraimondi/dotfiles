@@ -13,7 +13,6 @@ alias gdot="smerge $DOTFILES_HOME"
 
 # Default programs
 alias stree="smerge"
-alias vim="nvim"
 
 alias rmine="rubymine"
 alias storm="webstorm"
