@@ -5,6 +5,7 @@ set -euo pipefail
 dockutil --no-restart --remove all
 
 # applications
+dockutil --no-restart --add "/Applications/Music.app"
 dockutil --no-restart --add "/Applications/Calendars.app"
 dockutil --no-restart --add "/System/Applications/Reminders.app"
 dockutil --no-restart --add "/System/Applications/Notes.app"
@@ -19,7 +20,6 @@ dockutil --no-restart --add "/System/Applications/Messages.app"
 dockutil --no-restart --add "/Applications/Slack.app"
 dockutil --no-restart --add "/Applications/w3champions.app"
 dockutil --no-restart --add "/Applications/Discord.app"
-dockutil --no-restart --add "/Applications/Metatext.app"
 dockutil --no-restart --add "/Applications/Sublime Merge.app"
 dockutil --no-restart --add "/Applications/Visual Studio Code.app"
 dockutil --no-restart --add "/Applications/iTerm.app"
