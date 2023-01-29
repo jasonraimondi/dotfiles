@@ -2,7 +2,7 @@ nodejs 18.12.1 16.16.0
 ruby 3.1.0 2.7.5
 elixir 1.14.2-otp-25
 erlang 25.2
-deno 1.25.1
+deno 1.30.0
 python 3.10.6
 rust 1.65.0
 direnv 2.30.3
