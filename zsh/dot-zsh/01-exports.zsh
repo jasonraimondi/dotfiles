@@ -8,7 +8,9 @@ export GUI_EDITOR='subl'
 
 # homebrew stop analytics
 export HOMEBREW_NO_ANALYTICS=1
-# export HOMEBREW_NO_ENV_HINTS=1
+export HOMEBREW_NO_GOOGLE_ANALYTICS=1
+# Hide homebrew hints (see `man brew`).
+export HOMEBREW_NO_ENV_HINTS=1
 
 # blocks post install messages from some node_modules
 export ADBLOCK=true
@@ -20,9 +22,6 @@ export DOCKER_BUILDKIT=1
 
 # display how long all tasks over 10 seconds take
 export REPORTTIME=10
-
-# Hide homebrew hints (see `man brew`).
-export HOMEBREW_NO_ENV_HINTS=1
 
 # Enable persistent REPL history for `node`.
 export NODE_REPL_HISTORY=~/.node_history;
