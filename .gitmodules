@@ -16,3 +16,6 @@
 [submodule "tmux/dot-tmux/plugins/tpm"]
 	path = tmux/dot-tmux/plugins/tpm
 	url = https://github.com/tmux-plugins/tpm
+[submodule "vim/dot-vim/pack/themes/start/dracula"]
+	path = vim/dot-vim/pack/themes/start/dracula
+	url = https://github.com/dracula/vim.git

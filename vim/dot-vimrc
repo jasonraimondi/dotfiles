@@ -3,8 +3,6 @@ set number
 set backspace=indent,eol,start 
 syntax on
 
-color Tomorrow-Night
-
 set guifont=Menlo\ Regular:h18
 
 set hidden
@@ -29,3 +27,7 @@ map <D-A-UP> <C-w>W
 set showcmd
 set cursorline
 set lazyredraw
+
+packadd! dracula
+syntax enable
+colorscheme dracula
