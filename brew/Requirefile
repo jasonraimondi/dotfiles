@@ -7,8 +7,8 @@ cask_args appdir: "/Applications"
 # Brews
 brew "stow"
 brew "tmux"
-brew "nvim"
 
 # Casks
 cask "1password"
 cask "keepingyouawake"
+cask "firefox-developer-edition"
