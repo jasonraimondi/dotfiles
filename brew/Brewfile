@@ -9,6 +9,7 @@ tap 'buo/cask-upgrade'
 
 # Brews
 brew "asciinema"
+brew "atuin"
 brew "awscli"
 brew "bash"
 brew "bat"

@@ -14,6 +14,9 @@ for filename in $HOME/.zsh/**/*.zsh; do
   fi 
 done
 
+# Load atuin shell history
+eval "$(atuin init zsh --disable-up-arrow)"
+
 end=$(gdate +%s.%N)
 
 runtime=$(python -c "print('{:.0f}'.format((${end} - ${start}) * 1000))")
