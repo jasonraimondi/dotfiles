@@ -1,11 +1,10 @@
 nodejs 18.12.1 16.16.0
-ruby 3.1.0 2.7.5
+ruby   3.1.0 2.7.5
 elixir 1.14.3-otp-25
-erlang 25.2
-deno 1.30.0
+erlang 25.2.3
+deno   1.30.0
 python 3.10.6
-rust 1.65.0
+rust   1.67.1
 direnv 2.30.3
 golang 1.18.3
-php 8.1.7
-pnpm 7.9.1
+php    8.1.7
