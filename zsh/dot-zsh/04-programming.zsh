@@ -1,21 +1,21 @@
 append_path "/Users/$USER/Library/Application Support/JetBrains/Toolbox/scripts"
 
 # ASDF
-if test -e $HOME/.asdf; then
-    . $HOME/.asdf/asdf.sh
+# if test -e $HOME/.asdf; then
+#     . $HOME/.asdf/asdf.sh
     
-    # append completions to fpath
-    fpath=(${ASDF_DIR}/completions $fpath)
+#     # append completions to fpath
+#     fpath=(${ASDF_DIR}/completions $fpath)
 
-    # initialise completions with ZSH's compinit
-    autoload -Uz compinit && compinit
+#     # initialise completions with ZSH's compinit
+#     autoload -Uz compinit && compinit
 
-    # Hook direnv into your shell.
-    eval "$(asdf exec direnv hook bash)"
+#     # Hook direnv into your shell.
+#     eval "$(asdf exec direnv hook bash)"
 
-    # A shortcut for asdf managed direnv.
-    direnv() { asdf exec direnv "$@"; }
-fi
+#     # A shortcut for asdf managed direnv.
+#     direnv() { asdf exec direnv "$@"; }
+# fi
 
 
 if command -v pnpm &> /dev/null; then
