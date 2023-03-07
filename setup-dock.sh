@@ -23,6 +23,7 @@ dockutil --no-restart --add "/Applications/Visual Studio Code.app"
 dockutil --no-restart --add "/Applications/iTerm.app"
 # dockutil --no-restart --add "/System/Applications/App Store.app"
 dockutil --no-restart --add "/Applications/Thunderbird.app"
+dockutil --no-restart --add "/Applications/Transmit.app"
 dockutil --no-restart --add "/Applications/Calendars.app"
 dockutil --no-restart --add "/Applications/System Settings.app"
 
