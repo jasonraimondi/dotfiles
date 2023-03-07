@@ -5,8 +5,10 @@ tap "homebrew/cask"
 cask_args appdir: "/Applications"
 
 # Brews
+brew "atuin"
 brew "stow"
 brew "tmux"
+brew "zsh"
 
 # Casks
 cask "1password"
