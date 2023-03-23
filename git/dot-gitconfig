@@ -103,7 +103,7 @@
 
 # Aliases
 [alias]
-  fp = push --force
+  fp = push --force-with-lease
 
   ane = commit --amend --no-edit
 
