@@ -1,9 +1,10 @@
 append_path "/Users/$USER/Library/Application Support/JetBrains/Toolbox/scripts"
 
-if command -v pnpm &> /dev/null; then
-    export PNPM_HOME="/Users/jason/Library/pnpm"
-    prepend_path "$PNPM_HOME"
-fi
+export PNPM_HOME="$HOME/Library/pnpm"
+case ":$PATH:" in
+    *":$PNPM_HOME:"*) ;;
+    *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
 
 # Golang
 if command -v go &> /dev/null; then
