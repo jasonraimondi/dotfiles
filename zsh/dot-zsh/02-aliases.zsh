@@ -13,13 +13,11 @@ alias gdot="smerge $DOTFILES_HOME"
 
 # Default programs
 alias stree="smerge"
+
 alias rmine="rubymine"
 alias storm="webstorm"
 alias pstorm="phpstorm"
 alias gland="goland"
-function asdf() {
-  echo "WARNING: Use rtx instead of asdf"
-}
 
 # Default options
 alias mv="mv -i"
