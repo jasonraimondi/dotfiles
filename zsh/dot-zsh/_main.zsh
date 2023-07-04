@@ -9,10 +9,10 @@ fi
 # Load atuin shell history
 eval "$(atuin init zsh --disable-up-arrow)"
 
-# # rtx is a drop-in replacement for asdf
-# eval "$(rtx activate zsh)"
-# # rtx ide integration
-# export PATH="$HOME/.local/share/rtx/shims:$PATH"
+# rtx is a drop-in replacement for asdf
+eval "$(rtx activate zsh)"
+# rtx ide integration
+export PATH="$HOME/.local/share/rtx/shims:$PATH"
 
 # Loop over all the *.zsh files in this directory
 for filename in $HOME/.zsh/**/*.zsh; do

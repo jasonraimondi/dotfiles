@@ -27,21 +27,7 @@ brew cleanup
 
 bash setup-dock.sh
 
-# Install
-if ! test -e $HOME/.asdf; then
-  ASDF_VERSION=$(curl -sL https://api.github.com/repos/asdf-vm/asdf/releases/latest | jq -r ".tag_name")
-  git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch "$ASDF_VERSION"
-  unset ASDF_VERSION;
-fi
-
-asdf update
-
-# Install ASDF plugins
-for PLUGIN in deno direnv elixir erlang golang nodejs php pnpm python ruby rust; do
-  asdf plugin-add "$PLUGIN" || true
-done
-
-asdf plugin update --all
-asdf install
+rtx install
+rtx reshim
 
 echo "✅ SUCCESS"
