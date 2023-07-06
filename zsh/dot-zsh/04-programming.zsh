@@ -30,6 +30,11 @@ if command -v go &> /dev/null; then
     prepend_path "/usr/local/go/bin"
 fi
 
+if command -v podman &> /dev/null; then
+   export DOCKER_HOST="unix://$(podman machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}')"
+   echo $DOCKER_HOST
+fi
+
 # K8s
 test -e $HOME/.krew/bin && append_path "$HOME/.krew/bin";
 

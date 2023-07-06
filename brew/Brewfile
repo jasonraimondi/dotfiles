@@ -18,6 +18,9 @@ brew "curl"
 # brew "docker-compose"
 # brew "doctl"
 # brew "dockutil" # HOMEBREW DOCKUTIL DOES NOT WORK, MANUALLY INSTALL RELEASE FROM GITHUB
+brew "podman"
+brew "podman-compose"
+brew "docker-compose"
 brew "dive"
 brew "ffmpeg"
 brew "gnu-sed", with_default_names: true
