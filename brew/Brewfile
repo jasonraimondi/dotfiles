@@ -1,23 +1,18 @@
-tap "homebrew/cask"
-tap "homebrew/cask-fonts"
-tap "homebrew/cask-versions" # for docker-edge
-tap "potatolabs/git-redate"
+# tap "homebrew/cask"
+# tap "homebrew/cask-fonts"
+# tap "potatolabs/git-redate"
 
 # A CLI tool upgrading every outdated app installed by Homebrew Cask
 # INFO: brew cu
-tap 'buo/cask-upgrade'
+# tap 'buo/cask-upgrade'
 
 # Brews
 brew "asciinema"
 brew "atuin"
 brew "awscli"
 brew "bash"
-# brew "bat"
 brew "coreutils" # Those that come with macOS are outdated
 brew "curl"
-# brew "docker-compose"
-# brew "doctl"
-# brew "dockutil" # HOMEBREW DOCKUTIL DOES NOT WORK, MANUALLY INSTALL RELEASE FROM GITHUB
 brew "podman"
 brew "podman-compose"
 brew "docker-compose"
@@ -25,25 +20,16 @@ brew "dive"
 brew "ffmpeg"
 brew "gnu-sed", with_default_names: true
 brew "grep"
-# brew "helm"
-# brew "httpie"
 brew "jq" # to pipe pretty json output from bash
-# brew "kubernetes-cli"
-# brew "mackup"
 brew "masscan"
 brew "minikube"
-# brew "ncdu"
 brew "libpq" # for postgres gem
-# brew "lynx" # cli web browser
-# brew "postgres"
-# brew "restic"
+brew "restic"
 brew "rsync"
 brew "overmind"
 brew "safe-rm"
-# brew "smartmontools"
 brew "stow"
 brew "the_silver_searcher" # https://gist.github.com/indiesquidge/ec010eca3ffa254788c2#brew-install-the_silver_searcher
-# brew "telnet"
 brew "terraform"
 brew "trash"
 brew "tree"
