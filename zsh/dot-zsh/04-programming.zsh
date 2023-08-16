@@ -35,6 +35,8 @@ if command -v podman &> /dev/null; then
    echo $DOCKER_HOST
 fi
 
+test -e $HOME/.cargo/bin && append_path "$HOME/.cargo/bin";
+
 # K8s
 test -e $HOME/.krew/bin && append_path "$HOME/.krew/bin";
 
