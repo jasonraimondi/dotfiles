@@ -26,6 +26,7 @@ brew "minikube"
 brew "libpq" # for postgres gem
 brew "restic"
 brew "rsync"
+brew "rtx"
 brew "overmind"
 brew "safe-rm"
 brew "stow"
