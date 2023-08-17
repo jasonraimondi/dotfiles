@@ -32,7 +32,6 @@ fi
 
 if command -v podman &> /dev/null; then
    export DOCKER_HOST="unix://$(podman machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}')"
-   echo $DOCKER_HOST
 fi
 
 test -e $HOME/.cargo/bin && append_path "$HOME/.cargo/bin";
