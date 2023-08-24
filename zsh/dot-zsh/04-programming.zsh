@@ -14,7 +14,7 @@ if command -v go &> /dev/null; then
 fi
 
 if command -v podman &> /dev/null; then
-   export DOCKER_HOST="unix://$(podman machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}')"
+    prepend_path "$HOME/.local/share/containers/podman-desktop/extensions-storage/podman-desktop.compose/bin"
 fi
 
 test -e $HOME/.cargo/bin && append_path "$HOME/.cargo/bin";
