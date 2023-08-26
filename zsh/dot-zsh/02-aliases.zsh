@@ -1,6 +1,6 @@
 # Reload zsh config
 alias setup!="bash $DOTFILES_HOME/setup.sh"
-alias reload!='RELOAD=1 source ~/.zshrc'
+alias reload!='RELOAD=1 source ~/.zshrc; rtx reshim;'
 alias redock!="bash $DOTFILES_HOME/setup-dock.sh"
 
 # Enable aliases to be sudo’ed
