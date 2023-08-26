@@ -9,7 +9,6 @@
 # Brews
 brew "asciinema"
 brew "atuin"
-brew "awscli"
 brew "bash"
 brew "coreutils" # Those that come with macOS are outdated
 brew "curl"

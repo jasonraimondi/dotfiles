@@ -7,3 +7,4 @@ python    3.10.6
 rust      1.71.1
 golang    1.18.3
 terraform 1.5.5
+awscli    2.13.13
