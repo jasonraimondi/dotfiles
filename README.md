@@ -7,15 +7,15 @@
  |_____/ \____/  |_|  |_|    |_____|______|______|_____/ 
 
 
- asdf         > asdf for maintaining language versions
  aws          > amazon is taking over the world
  bin          > custom bin scripts
  brew         > homebrew all the things
- config       > for the .config
+ config       > for the noble apps using .config
  dictionary   > extend the macos dictionary
  git          > global git config and aliases
  iterm2       > iterm2 scripts
  mackup       > application settings sync 
+ rtx          > rtx for maintaining language versions
  ssh          > ssh config
  tmux         > tmux config
  ubersicht    > ubersicht widgets
