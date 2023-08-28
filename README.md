@@ -20,6 +20,7 @@
  tmux         > tmux config
  ubersicht    > ubersicht widgets
  vim          > vim configs
+ zprezto      > framework for Zsh 
  zsh          > shell configuration 🔥🔥
 
 ```

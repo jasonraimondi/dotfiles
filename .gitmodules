@@ -1,5 +1,5 @@
 [submodule "zsh/dot-zprezto"]
-	path = zsh/dot-zprezto
+	path = zprezto/dot-zprezto
 	url = https://github.com/sorin-ionescu/prezto.git
 [submodule "tmux/dot-tmux/plugins/tmux"]
 	path = tmux/dot-tmux/plugins/tmux
