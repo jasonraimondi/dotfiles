@@ -1,13 +1,1 @@
-[tools]
-node      = "20.5.1"
-ruby      = ["3.1.0", "2.7.5"]
-elixir    = "1.15.4-otp-26"
-erlang    = "26.0.2"
-deno      = "1.34.2"
-python    = "3.10.6"
-rust      = "1.71.1"
-golang    = "1.18.3"
-terraform = "1.5.5"
-awscli    = "2.13.13"
-zig       = "0.11.0"
-bun       = "0.8.1"
+../config/rtx/config.toml
