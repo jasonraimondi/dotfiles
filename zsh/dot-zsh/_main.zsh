@@ -24,6 +24,6 @@ done
 
 end=$(gdate +%s.%N)
 
-runtime=$(python -c "print('{:.0f}'.format((${end} - ${start}) * 1000))")
+runtime=$(echo "(${end} - ${start}) * 1000" | bc | xargs printf "%.0f")
 
 echo "dotfiles in ${runtime}ms"
