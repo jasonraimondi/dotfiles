@@ -12,8 +12,6 @@ brew "atuin"
 brew "bash"
 brew "coreutils" # Those that come with macOS are outdated
 brew "curl"
-brew "podman"
-brew "podman-compose"
 brew "docker-compose"
 brew "dive"
 brew "ffmpeg"
