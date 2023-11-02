@@ -1,5 +1,6 @@
 # Reload zsh config
 alias setup!="bash $DOTFILES_HOME/setup.sh"
+alias stow!="cd ~/; bash $DOTFILES_HOME/setup-stow.sh; cd -"
 alias reload!='RELOAD=1 source ~/.zshrc; rtx reshim;'
 alias redock!="bash $DOTFILES_HOME/setup-dock.sh"
 
