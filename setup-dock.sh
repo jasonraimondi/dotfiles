@@ -14,7 +14,7 @@ applications=(
     "/Applications/Firefox Developer Edition.app"
     # "/Applications/Brave Browser.app"
     "/Applications/Microsoft Edge.app"
-    "/Applications/Safari.app"
+    "/System/Applications/Safari.app"
     "/Applications/Obsidian.app"
     "/Applications/Discord.app"
     "/Applications/Sublime Merge.app"
@@ -26,6 +26,7 @@ applications=(
     "/Applications/iTerm.app"
     "/Applications/Transmit.app"
     "/Applications/Calendars.app"
+    "/Applications/Keymapp.app"
     "/System/Applications/System Settings.app"
 )
 
