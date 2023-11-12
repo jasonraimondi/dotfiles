@@ -3,6 +3,7 @@
 stow -v -R --dotfiles aws
 stow -v -R --dotfiles git
 stow -v -R --dotfiles iterm2
+stow -v -R --dotfiles mackup
 stow -v -R --dotfiles ruby
 stow -v -R --dotfiles rtx
 stow -v -R --dotfiles tmux
