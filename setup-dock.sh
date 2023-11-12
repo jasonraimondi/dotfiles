@@ -9,7 +9,7 @@ applications=(
     "/System/Applications/Messages.app"
     "/Applications/Slack.app"
     "/System/Applications/Music.app"
-    "/Applications/OpenSCAD.app"
+    # "/Applications/OpenSCAD.app"
     # "/Applications/Arc.app"
     "/Applications/Firefox Developer Edition.app"
     # "/Applications/Brave Browser.app"
@@ -21,13 +21,14 @@ applications=(
     "$HOME/Applications/WebStorm.app"
     "$HOME/Applications/RubyMine.app"
     "/Applications/Visual Studio Code.app"
+    "/Applications/Sublime Text.app"
     "/Applications/Linear.app"
-    "/Applications/Proxyman.app"
     "/Applications/iTerm.app"
     "/Applications/Transmit.app"
     "/Applications/Calendars.app"
-    "/Applications/Keymapp.app"
+    "/Applications/Proxyman.app"
     "/System/Applications/System Settings.app"
+    "/Applications/Keymapp.app"
 )
 
 # Loop through the array and apply dockutil
