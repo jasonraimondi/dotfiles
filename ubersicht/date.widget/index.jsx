@@ -2,7 +2,7 @@ import { css } from "uebersicht";
 
 export const className = `
   left: 10px;
-  top: 120px;
+  top: 130px;
 
   font-family: "Futura";
   font-size: 36px;

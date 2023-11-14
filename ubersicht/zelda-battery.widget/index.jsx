@@ -61,6 +61,7 @@ const HEARTS_IN_LAST_ROW = MAX_HEARTS % MAX_HEARTS_IN_ROW || MAX_HEARTS_IN_ROW;
  */
 export const className = {
   padding: 10,
+  paddingTop: 40,
 };
 
 /**

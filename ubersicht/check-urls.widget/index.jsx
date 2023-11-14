@@ -2,9 +2,9 @@ import { css } from "uebersicht";
 
 export const className = `
   left: 10px;
-  top: 180px;
+  top: 185px;
 
-  font-family: "FiraCode Nerd Font";
+  font-family: "JetBrainsMonoNL Nerd Font Mono";
   font-size: 18px;
   color: white;
 `;
