@@ -8,8 +8,12 @@ cask "font-go"
 
 # Nerd Fonts for your IDE
 # https://www.nerdfonts.com/font-downloads
-cask "font-open-dyslexic-nerd-font"
+
+# FiraMono Nerd Font Mono
 cask "font-fira-mono-nerd-font"
-cask "font-fira-code-nerd-font"
-cask "font-mononoki-nerd-font"
+# Cascadia Code
+cask "font-caskaydia-cove-nerd-font"
+# VictorMono Nerd Font Mono
+cask "font-victor-mono-nerd-font"
+# JetBrainsMonoNL Nerd Font Mono
 cask "font-jetbrains-mono-nerd-font"
