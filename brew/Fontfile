@@ -9,6 +9,8 @@ cask "font-go"
 # Nerd Fonts for your IDE
 # https://www.nerdfonts.com/font-downloads
 
+cask "font-bad-script"
+
 # FiraMono Nerd Font Mono
 cask "font-fira-mono-nerd-font"
 # Cascadia Code
