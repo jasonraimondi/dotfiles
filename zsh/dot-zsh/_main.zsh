@@ -2,18 +2,6 @@ start=$(gdate +%s.%N)
 
 export DOTFILES_HOME=$HOME/dotfiles
 
-if test -e /opt/homebrew/bin/brew; then
-  eval "$(/opt/homebrew/bin/brew shellenv)"
-fi
-
-# Load atuin shell history
-eval "$(atuin init zsh --disable-up-arrow)"
-
-# rtx is a drop-in replacement for asdf
-eval "$(rtx activate zsh)"
-# rtx ide integration
-export PATH="$HOME/.local/share/rtx/shims:$PATH"
-
 # Loop over all the *.zsh files in this directory
 for filename in $HOME/.zsh/**/*.zsh; do
   # Do not reload the _main.zsh file
