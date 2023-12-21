@@ -16,9 +16,11 @@ export const className = {
 
 // Render the widget
 export const render = ({ output }) => {
-  const lines = output.split("\n");
+  const lines = output && output.split("\n");
 
-  if (lines.length === 0) return null;
+  const isInvalid = !(Array.isArray(lines) && lines.length > 0)
+
+  if (isInvalid) return null;
 
   return (
     <div>
