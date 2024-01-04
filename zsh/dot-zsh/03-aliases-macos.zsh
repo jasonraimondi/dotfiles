@@ -2,6 +2,8 @@
 alias pbtext="pbpaste | textutil -convert txt -stdin -stdout -encoding 30 | pbcopy"
 alias pbspaces="pbpaste | expand | pbcopy"
 
+alias dnsflush="sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder"
+
 # Homebrew
 alias cask="brew cask"
 
