@@ -4,13 +4,16 @@ s3 =
     signature_version = s3v4
 
 [plugins]
-endpoint = awscli_plugin_endpoint
+endpoint = awscli_plugin_endpoint 
 
 [profile wasabi]
-s3 =
-    endpoint_url = https://s3.wasabisys.com
+endpoint_url = https://s3.wasabisys.com
 region = us-east-1
 
-[profile mini]
-s3 =
-    endpoint_url = http://localhost:9000
+[profile wasabi-west]
+endpoint_url = https://s3.wasabisys.com
+region = us-west-1
+
+[profile mini]  
+endpoint_url = http://localhost:9000
+region = us-east-1
