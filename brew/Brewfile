@@ -20,10 +20,10 @@ brew "grep"
 brew "jq" # to pipe pretty json output from bash
 brew "masscan"
 brew "minikube"
+brew "mise" # rtx was renamed :upside_down_face:
 brew "libpq" # for postgres gem
 brew "restic"
 brew "rsync"
-brew "rtx"
 brew "overmind"
 brew "safe-rm"
 brew "stow"

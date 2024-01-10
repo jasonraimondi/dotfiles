@@ -8,8 +8,8 @@ if which atuin > /dev/null; then
   eval "$(atuin init zsh --disable-up-arrow)"
 fi
 
-# rtx language version manager
-if which rtx > /dev/null; then
-  eval "$(rtx activate zsh)"
-  prepend_path "$HOME/.local/share/rtx/shims"
+# mise language version manager
+if which mise > /dev/null; then
+  eval "$(mise activate zsh)"
+  prepend_path "$HOME/.local/share/mise/shims"
 fi

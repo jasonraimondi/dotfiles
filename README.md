@@ -14,7 +14,7 @@
  dictionary   > extend the macos dictionary
  git          > global git config and aliases
  iterm2       > iterm2 scripts
- rtx          > rtx for maintaining language versions
+ mise         > mise for maintaining language versions
  ssh          > ssh config
  tmux         > tmux config
  ubersicht    > ubersicht widgets

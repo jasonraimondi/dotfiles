@@ -27,7 +27,7 @@ brew cleanup
 
 bash setup-dock.sh
 
-rtx install
-rtx reshim
+mise install
+mise reshim
 
 echo "✅ SUCCESS"

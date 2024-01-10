@@ -1,7 +1,7 @@
 # Reload zsh config
 alias setup!="bash $DOTFILES_HOME/setup.sh"
 alias stow!="cd ~/; bash $DOTFILES_HOME/setup-stow.sh; cd -"
-alias reload!='RELOAD=1 source ~/.zshrc; rtx reshim;'
+alias reload!='RELOAD=1 source ~/.zshrc; mise reshim;'
 alias redock!="bash $DOTFILES_HOME/setup-dock.sh"
 
 # Enable aliases to be sudo’ed
@@ -20,7 +20,12 @@ alias storm="webstorm"
 alias pstorm="phpstorm"
 alias gland="goland"
 function asdf() {
-  echo "WARNING: Use rtx instead of asdf"
+  echo "WARNING: Use mise instead of asdf"
+  mise "$@"
+}
+function rtx() {
+  echo "WARNING: Use mise instead of rtx"
+  mise "$@"
 }
 
 # Default options
