@@ -103,4 +103,4 @@ killall SystemUIServer
 # Update Rectangle.app's default config to spectacle
 # If you wish to change the default shortcuts after first launch, use the following command.
 # True is for the recommended shortcuts, false is for Spectacle's.
-defaults write com.knollsoft.Rectangle alternateDefaultShortcuts -bool true
+# defaults write com.knollsoft.Rectangle alternateDefaultShortcuts -bool true
