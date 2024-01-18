@@ -3,11 +3,11 @@ brew "mas"
 mas "Affinity Designer", id: 824171161
 mas "Affinity Photo", id: 824183456
 mas "DaisyDisk", id: 411643860
-mas "HEIC Converter", id: 1292198261
+mas "HEIC Converter", id: 1294126402
 mas "Gifski", id: 1351639930
 mas "Paletter 4", id: 1494948845
-mas "Tailscale", id: 1475897096
+mas "Tailscale", id: 1475387142
 mas "Things", id: 904280696
 mas "WireGuard", id: 1451685025
 mas "Xcode", id: 497799835
-mas "ZSA Keymapp", id: 2117069301
+mas "Keymapp", id: 6472865291
