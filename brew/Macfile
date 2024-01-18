@@ -1,20 +1,13 @@
 brew "mas"
 
-# mas "Affinity Designer", id: 824171161
+mas "Affinity Designer", id: 824171161
+mas "Affinity Photo", id: 824183456
 mas "DaisyDisk", id: 411643860
-# mas "LanScan", id: 472226235
-# mas "Name Mangler", id: 603637384
-# mas "Paprika Recipe Manager 3", id: 1303222628
-# mas "Textual IRC Client", id: 1262957439
-# mas "WireGuard", id: 1451685025
+mas "HEIC Converter", id: 1292198261
+mas "Gifski", id: 1351639930
+mas "Paletter 4", id: 1494948845
+mas "Tailscale", id: 1475897096
+mas "Things", id: 904280696
+mas "WireGuard", id: 1451685025
 mas "Xcode", id: 497799835
-# mas "Time Sync", id: 404363161
-# mas "Trello", id: 1278508951
-# mas "Twitterrific", id: 1289378661
-# mas "Deliveries", id: 924726344
-# mas "Drawful 2", id: 1121426744
-# mas "Giphy Capture", id: 668208984
-# mas "iA Writer", id: 775737590
-# mas "Keynote", id: 409183694
-# mas "Numbers", id: 409203825
-# mas "Pages", id: 409201541
+mas "ZSA Keymapp", id: 2117069301

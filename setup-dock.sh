@@ -6,10 +6,12 @@ dockutil --no-restart --remove all
 
 # Array of application paths
 applications=(
+    "/Applications/Things.app"
     "/Applications/Obsidian.app"
     "/Applications/Discord.app"
     "/System/Applications/Messages.app"
     "/Applications/Slack.app"
+    "/Applications/Polypane.app"
     "/Applications/Safari Technology Preview.app"
     "/Applications/Microsoft Edge.app"
     "/Applications/Firefox Developer Edition.app"
