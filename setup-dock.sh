@@ -6,7 +6,7 @@ dockutil --no-restart --remove all
 
 # Array of application paths
 applications=(
-    "/Applications/Things.app"
+    "/Applications/Things3.app"
     "/Applications/Obsidian.app"
     "/Applications/Discord.app"
     "/System/Applications/Messages.app"
@@ -15,7 +15,7 @@ applications=(
     "/Applications/Safari Technology Preview.app"
     "/Applications/Microsoft Edge.app"
     "/Applications/Firefox Developer Edition.app"
-    "/System/Applications/Safari.app"
+    #"/Applications/Safari.app"
     "/Applications/Sublime Merge.app"
     "/Applications/Sublime Text.app"
     "$HOME/Applications/WebStorm.app"
