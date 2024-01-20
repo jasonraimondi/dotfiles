@@ -6,11 +6,12 @@ dockutil --no-restart --remove all
 
 # Array of application paths
 applications=(
-    "/Applications/Things3.app"
+    "/System/Applications/Music.app"
     "/Applications/Obsidian.app"
     "/Applications/Discord.app"
     "/System/Applications/Messages.app"
     "/Applications/Slack.app"
+    "/Applications/Things3.app"
     "/Applications/Polypane.app"
     "/Applications/Safari Technology Preview.app"
     "/Applications/Microsoft Edge.app"
@@ -26,9 +27,9 @@ applications=(
     "/Applications/iTerm.app"
     "/Applications/Transmit.app"
     "/Applications/Proxyman.app"
-    "/System/Applications/Music.app"
+    "/Applications/keymapp.app"
+    "/Applications/SelfControl.app"
     "/System/Applications/System Settings.app"
-    "/Applications/Keymapp.app"
 )
 
 # Loop through the array and apply dockutil
