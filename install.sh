@@ -5,17 +5,31 @@ set -euo pipefail
 # Ask for the administrator password
 sudo -v
 
-# run MacOS Software Update 
+# Installs all available software updates for MacOS.
 sudo softwareupdate --install --all --agree-to-license
-sudo softwareupdate --install-rosetta --agree-to-license
+
+# Rosetta is necessary on Apple Silicon Macs to run applications compiled for Intel x86_64 architecture
+# sudo softwareupdate --install-rosetta --agree-to-license
+
+# Install XCode developer tools
+if ! xcode-select -p &>/dev/null; then
+    echo "Command Line Developer Tools not found. Installing..."
+    # Trigger the Command Line Tools installation prompt
+    xcode-select --install
+    
+    # Wait until the Command Line Tools are installed
+    until xcode-select -p &>/dev/null; do
+        echo "Waiting for Command Line Developer Tools to finish installing..."
+        sleep 5
+    done
+    
+    echo "Command Line Developer Tools installed successfully."
+else
+    echo "Command Line Developer Tools are already installed."
+fi
 
 # Accept XCode Stuff
 # sudo xcodebuild -license accept
-
-# Install XCode developer tools
-# if ! command -v xcode-select &> /dev/null; then
-#   sudo xcode-select --install
-# fi
 
 # Install homebrew from https://brew.sh
 if ! command -v brew &> /dev/null; then
