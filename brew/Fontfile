@@ -1,3 +1,5 @@
+tap "homebrew/cask-fonts"
+
 # see https://github.com/Homebrew/homebrew-bundle
 # see https://github.com/kevinpapst/mac-os-setup/blob/master/Brewfile
 cask_args appdir: "/Applications"

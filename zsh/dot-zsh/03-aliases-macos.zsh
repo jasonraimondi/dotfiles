@@ -1,3 +1,6 @@
+# Trash / RM
+alias rm="trash"
+
 # Clipboard
 alias pbtext="pbpaste | textutil -convert txt -stdin -stdout -encoding 30 | pbcopy"
 alias pbspaces="pbpaste | expand | pbcopy"
@@ -10,15 +13,6 @@ alias cask="brew cask"
 # Exclude macOS specific files in ZIP archives
 alias zip="zip -x *.DS_Store -x *__MACOSX* -x *.AppleDouble*"
 
-# Open iOS Simulator
-alias ios="open /Applications/Xcode.app/Contents/Developer/Applications/Simulator.app"
-
-# Start screen saver
-alias afk="open /System/Library/CoreServices/ScreenSaverEngine.app"
-
-# Log off
-alias logoff="/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend"
-
 # Show/hide hidden files in Finder
 alias show="defaults write com.apple.finder AppleShowAllFiles -bool true && killall Finder"
 alias hide="defaults write com.apple.finder AppleShowAllFiles -bool false && killall Finder"
@@ -29,11 +23,6 @@ alias showdesktop="defaults write com.apple.finder CreateDesktop -bool true && k
 
 # Copy pwd to clipboard
 alias cpwd="pwd | tr -d '\n' | pbcopy"
-
-# Open Browsers
-alias chrome="open -a ~/Applications/Google\ Chrome.app"
-alias canary="open -a ~/Applications/Google\ Chrome\ Canary.app"
-alias firefox="open -a ~/Applications/Firefox.app"
 
 # Reload native apps
 alias killfinder="killall Finder"
@@ -57,7 +46,3 @@ command -v md5sum > /dev/null || alias md5sum="md5"
 
 # macOS has no `sha1sum`, so use `shasum` as a fallback
 command -v sha1sum > /dev/null || alias sha1sum="shasum"
-
-# Merge PDF files, preserving hyperlinks
-# Usage: `mergepdf input{1,2,3}.pdf`
-alias mergepdf='gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=_merged.pdf'

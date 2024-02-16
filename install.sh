@@ -28,9 +28,6 @@ else
     echo "Command Line Developer Tools are already installed."
 fi
 
-# Accept XCode Stuff
-# sudo xcodebuild -license accept
-
 # Install homebrew from https://brew.sh
 if ! command -v brew &> /dev/null; then
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -38,6 +35,15 @@ fi
 
 # Make sure homebrew is sourced
 eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# Install mas to get xcode
+brew install mas
+
+# This is xcode, mas search xcode, mas lucky xcode
+mas install 497799835
+
+# Accept XCode Stuff
+sudo xcodebuild -license accept
 
 # Clone this repository
 _DOTFILE_PATH="${DOTFILE_PATH:-dotfiles}"

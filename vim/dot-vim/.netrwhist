@@ -1,0 +1,12 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhistcnt =5
+let g:netrw_dirhist_5='/Users/jasonraimondi/dotfiles'
+let g:netrw_dirhist_4='/Users/jasonraimondi/dotfiles/brew'
+let g:netrw_dirhist_3='/Users/jasonraimondi/dotfiles'
+let g:netrw_dirhist_2='/Users/jasonraimondi/dotfiles/aws'
+let g:netrw_dirhist_1='/Users/jasonraimondi/dotfiles'
+let g:netrw_dirhist_0='/Users/jasonraimondi/dotfiles/brew'
+let g:netrw_dirhist_9='/Users/jasonraimondi/dotfiles'
+let g:netrw_dirhist_8='/Users/jasonraimondi/dotfiles/brew'
+let g:netrw_dirhist_7='/Users/jasonraimondi/dotfiles'
+let g:netrw_dirhist_6='/Users/jasonraimondi/dotfiles/brew'

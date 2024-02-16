@@ -1,30 +1,18 @@
-# tap "homebrew/cask"
-# tap "homebrew/cask-fonts"
-# tap "potatolabs/git-redate"
-
-# A CLI tool upgrading every outdated app installed by Homebrew Cask
-# INFO: brew cu
-# tap 'buo/cask-upgrade'
-
 # Brews
-brew "asciinema"
 brew "atuin"
 brew "bash"
 brew "coreutils" # Those that come with macOS are outdated
 brew "curl"
 brew "docker-compose"
-brew "dive"
 brew "ffmpeg"
 brew "gnu-sed", with_default_names: true
 brew "grep"
 brew "jq" # to pipe pretty json output from bash
-brew "masscan"
+brew "mackup"
 brew "minikube"
 brew "mise" # rtx was renamed :upside_down_face:
 brew "libpq" # for postgres gem
-brew "restic"
 brew "rsync"
-brew "overmind"
 brew "safe-rm"
 brew "stow"
 brew "the_silver_searcher" # https://gist.github.com/indiesquidge/ec010eca3ffa254788c2#brew-install-the_silver_searcher
@@ -34,7 +22,6 @@ brew "tmux"
 brew "vim"
 brew "watch"
 brew "wget"
-brew "yt-dlp"
 brew "zsh"
 
 # git stuff
@@ -49,30 +36,4 @@ brew "potatolabs/git-redate/git-redate"
 brew "git-duet/tap/git-duet"
 
 # Image
-brew "advancecomp"
-brew "apngasm"
-brew "exiftool"
-brew "gifsicle"
-brew "graphicsmagick"
-brew "guetzli"
-brew "icoutils"
 brew "imagemagick"
-brew "imageworsener"
-brew "jhead"
-brew "jpeg"
-brew "jpeg-archive"
-brew "jpegoptim"
-brew "jpegrescan"
-brew "libbpg"
-brew "mozjpeg"
-brew "optipng"
-brew "perceptualdiff"
-brew "pngcheck"
-brew "pngcrush"
-brew "pngnq"
-brew "pngquant"
-brew "webp"
-
-# compression
-brew "pigz"
-brew "zopfli"

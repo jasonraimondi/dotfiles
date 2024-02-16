@@ -1,4 +1,4 @@
-function battery() {
+function batt() {
   pmset -g batt | egrep "([0-9]+\%).*" -o --colour=auto | cut -f1 -d';'
 }
 
@@ -6,7 +6,7 @@ function cpu() {
   iostat -c 2 disk0 | sed '/^\s*$/d' | tail -n 1 | awk -v format="%3.0f%%" '{usage=100-$6} END {printf(format, usage)}'
 }
 
-function memory() {
+function mem() {
   vm_stat | awk 'BEGIN{FS="[:]+"}{if(NR<7&&NR>1)sum+=$2; if(NR==2||NR==4||NR==5)free+=$2} END{printf "%3dGB\n",(sum - free)*0.00001}'
 }
 
@@ -31,17 +31,6 @@ function extract () {
   else
     echo "'$1' is not a valid file"
   fi
-}
-
-
-# Create a new directory and enter it
-function mk() {
-  mkdir -p "$@" && cd "$@"
-}
-
-# Show disk usage of current folder, or list with depth
-function duf() {
-  du --max-depth=${1:-0} -c | sort -r -n | awk '{split("K M G",v); s=1; while($1>1024){$1/=1024; s++} print int($1)v[s]"\t"$2}'
 }
 
 # Get IP from hostname

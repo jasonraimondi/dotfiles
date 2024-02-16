@@ -58,6 +58,7 @@
 
   # Include summaries of merged commits in newly created merge commit messages
   log = true
+  conflictstyle = zdiff3
 
 [push]
 

@@ -5,7 +5,7 @@ function ogh() {
   if [[ $REMOTE_NAME == *"github"* ]]; then
     local URL="https://github.com/${REMOTE_NAME:15:-4}"
     echo "Opening $URL"
-    # open "$URL"
+    open "$URL"
   else
     echo "This doesnt look like a github repository"
   fi
@@ -29,15 +29,6 @@ function versions() {
     echo "cargo: $(cargo --version)"
     echo "ruby: $(ruby --version)"
 }
-
-function nname () {
-  deno run -q --allow-read $HOME/dotfiles/lib/namer/namer.ts
-}
-
-function fname() { 
-  find . -iname "*$@*"; 
-}
-
 
 function lt() { 
   ls -ltrsa "$@" | tail; 
@@ -160,9 +151,4 @@ function targz() {
   );
 
   echo "${tmpFile}.gz ($((zippedSize / 1000)) kB) created successfully.";
-}
-
-# Change working directory to the top-most Finder window location
-function cdf() { # short for `cdfinder`
-  cd "$(osascript -e 'tell app "Finder" to POSIX path of (insertion location as alias)')";
 }
