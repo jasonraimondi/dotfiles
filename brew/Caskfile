@@ -51,6 +51,7 @@ cask "ubersicht"
 cask "visual-studio-code"
 cask "vlc"
 cask "wireshark"
+cask "zed"
 
 # ==== Quick Look Plugins ====
 # @see https://github.com/sindresorhus/quick-look-plugins
