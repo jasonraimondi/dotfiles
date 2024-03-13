@@ -7,6 +7,7 @@ alias redock!="bash $DOTFILES_HOME/setup-dock.sh"
 # Default programs
 function stree() {
   echo "WARNING: use smerge instead"
+  force_learn_command "2024-03-01"
   smerge "$@"
 }
 

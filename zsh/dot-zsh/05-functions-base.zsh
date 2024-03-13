@@ -42,3 +42,21 @@ function hostname2ip() {
 function unshorten() {
   curl -sIL $1 | sed -n 's/Location: *//p'
 }
+
+function force_learn_command() {
+  reference_date=$(date -j -f "%Y-%m-%d" "$1" "+%s")
+  current_date=$(date "+%s")
+  seconds_diff=$((current_date - reference_date))
+  # Convert seconds to days
+  days_diff=$((seconds_diff / 86400))
+  
+  # If the current date is past the reference date
+  if [[ $days_diff -gt 0 ]]; then
+    # Calculate the sleep duration in milliseconds
+    sleep_duration=$((days_diff * 100))
+    
+    # Sleep for the calculated duration
+    echo "Sleeping for $sleep_duration ms"
+    sleep $(awk "BEGIN {print $sleep_duration/1000}")
+  fi
+}
