@@ -1,3 +1,26 @@
+function rcat() {
+  if [ $# -eq 0 ]
+  then
+    echo "src dir required"
+    return 1;
+  fi
+  
+  local directory="$1"
+  
+  if [[ $# -eq 0 ]]; then
+    echo "Please provide the directory path as an argument."
+    return 1
+  fi
+  
+  for item in "$directory"/**/*(.); do
+    if [[ -f "$item" ]]; then
+      echo "=== $item ==="
+      cat "$item"
+      echo
+    fi
+  done
+}
+
 # open github aka ogh
 function ogh() {
   local REMOTE_NAME="$(git remote -v | awk '{print $2}' | head -n 1)"
