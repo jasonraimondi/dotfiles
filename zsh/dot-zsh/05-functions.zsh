@@ -175,3 +175,35 @@ function targz() {
 
   echo "${tmpFile}.gz ($((zippedSize / 1000)) kB) created successfully.";
 }
+
+
+function yt-dlmerge() {
+  # Check if the playlist URL is provided
+  if [ -z "$1" ]; then
+    echo "Please provide the YouTube playlist URL as an argument."
+    return 1
+  fi
+
+  # Set the playlist URL
+  local playlist_url="$1"
+
+  # Set the output file name
+  local output_file="merged_playlist.mp4"
+
+  # Download the playlist using yt-dlp
+  yt-dlp -o "%(playlist_index)s-%(title)s.%(ext)s" --yes-playlist "$playlist_url"
+
+  # Create a temporary file to store the video file paths
+  local temp_file="temp_video_list.txt"
+
+  # Find all the downloaded video files and save their paths to the temporary file
+  find . -maxdepth 1 -type f -name "*-*.mp4" -print0 | sort -z -V | xargs -0 -I {} echo "file '{}'" > "$temp_file"
+
+  # Merge the video files using ffmpeg
+  ffmpeg -f concat -safe 0 -i "$temp_file" -c copy "$output_file"
+
+  # Remove the temporary file
+  rm "$temp_file"
+
+  echo "Playlist merged successfully. Output file: $output_file"
+}
