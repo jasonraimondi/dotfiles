@@ -54,7 +54,7 @@ alias functions="declare -f | grep '^[a-z].* ()' | sed 's/{$//'"
 alias paths='echo -e ${PATH//:/\\n}'
 
 # Network
-alias flushdns="dscacheutil -flushcache && killall -HUP mDNSResponder"
+alias flushdns="sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder"
 function ip() {
     local ip_address
 
