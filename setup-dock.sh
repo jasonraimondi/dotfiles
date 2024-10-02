@@ -23,11 +23,12 @@ applications=(
     "$HOME/Applications/RubyMine.app"
     "$HOME/Applications/PyCharm Professional Edition.app"
     "$HOME/Applications/DataGrip.app"
+    "$HOME/Applications/RustRover.app"
     "/Applications/Visual Studio Code.app"
     "/Applications/Figma.app"
     "/Applications/iTerm.app"
     "/Applications/Transmit.app"
-    "/Applications/Proxyman.app"
+    # "/Applications/Proxyman.app"
     "/Applications/keymapp.app"
     "/System/Applications/System Settings.app"
 )
