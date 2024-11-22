@@ -42,6 +42,9 @@ brew install mas
 # This is xcode, mas search xcode, mas lucky xcode
 mas install 497799835
 
+# Point to full Xcode installation
+sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+
 # Accept XCode Stuff
 sudo xcodebuild -license accept
 
