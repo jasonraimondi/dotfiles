@@ -15,6 +15,7 @@ function stree() {
 alias dot="cd $DOTFILES_HOME"
 alias edot="$GUI_EDITOR $DOTFILES_HOME"
 alias cdot="code $DOTFILES_HOME"
+alias cfunc="subl $DOTFILES_HOME/zsh/dot-zsh/99-custom.zsh"
 alias gdot="smerge $DOTFILES_HOME"
 
 # Default options
