@@ -11,6 +11,9 @@ export HOMEBREW_NO_ANALYTICS=1
 # Hide homebrew hints (see `man brew`).
 export HOMEBREW_NO_ENV_HINTS=1
 
+# fixes issue when running rspec on macos when using spring
+export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+
 # blocks post install messages from some node_modules
 export ADBLOCK=true
 export NEXT_TELEMETRY_DISABLED=1
