@@ -1,18 +1,3 @@
 [submodule "zsh/dot-zprezto"]
 	path = zprezto/dot-zprezto
 	url = https://github.com/sorin-ionescu/prezto.git
-[submodule "tmux/dot-tmux/plugins/tmux"]
-	path = tmux/dot-tmux/plugins/tmux
-	url = https://github.com/dracula/tmux
-[submodule "tmux/dot-tmux/plugins/tmux-resurrect"]
-	path = tmux/dot-tmux/plugins/tmux-resurrect
-	url = https://github.com/tmux-plugins/tmux-resurrect
-[submodule "tmux/dot-tmux/plugins/tmux-sensible"]
-	path = tmux/dot-tmux/plugins/tmux-sensible
-	url = https://github.com/tmux-plugins/tmux-sensible
-[submodule "tmux/dot-tmux/plugins/tpm"]
-	path = tmux/dot-tmux/plugins/tpm
-	url = https://github.com/tmux-plugins/tpm
-[submodule "vim/dot-vim/pack/themes/start/dracula"]
-	path = vim/dot-vim/pack/themes/start/dracula
-	url = https://github.com/dracula/vim.git
