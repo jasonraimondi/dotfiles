@@ -13,7 +13,7 @@ function youtube-gif() {
   local START=$2
   local DURATION=$3
 
-  youtube-dl -o "$STAMP.input" --merge-output-format mkv "$YOUTUBE_LINK"
+  yt-dlp -o "$STAMP.input" --merge-output-format mkv "$YOUTUBE_LINK"
 
   ffmpeg -i "$STAMP.input.mkv" -ss $START -t $DURATION "$STAMP.output.mkv"
   ffmpeg -i "$STAMP.output.mkv" -vf "fps=10,scale=480:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 "$STAMP.output.gif"
