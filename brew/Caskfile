@@ -58,7 +58,6 @@ cask "zed"
 # ==== Quick Look Plugins ====
 # @see https://github.com/sindresorhus/quick-look-plugins
 cask "qlcolorcode"
-cask "qlimagesize"
 cask "qlmarkdown"
 cask "qlprettypatch"
 cask "qlstephen"
