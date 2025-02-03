@@ -1,6 +1,17 @@
+min_version = "2024.9.5"
+
 [env]
-# supports arbitrary env vars so mise can be used like direnv/dotenv
-# NODE_ENV = 'production'
+
+# This will make CLIs installed with npm available without npx
+_.path = ['{{config_root}}/node_modules/.bin']
+
+# Use the project name derived from the current directory
+PROJECT_NAME = "{{ config_root | basename }}"
+
+# Set up the path for node module binaries
+BIN_PATH = "{{ config_root }}/node_modules/.bin"
+
+NODE_ENV = "{{ env.NODE_ENV | default(value='development') }}"
 
 [tools]
 awscli    = "2.13.13"
@@ -8,11 +19,20 @@ bun       = "latest"
 elixir    = "1.15.4-otp-26"
 erlang    = "26.0.2"
 deno      = "2"
-golang    = "1.18"
-node      = ["20", "18"]
-pnpm      = "9"
+golang    = "1"
+node      = ["23", "22", "20"]
 python    = ["3", "3.11.5"]
 ruby      = ["3.3.6", "3.2.6", "3.2.5", "3.1.4"]
 rust      = "1"
 terraform = "1.8"
-zig       = "0.11.0"
+zig       = "latest"
+
+# software verification
+# https://mise.jdx.dev/tips-and-tricks.html#software-verification
+slsa-verifier = "latest"
+cosign        = "latest"
+
+[hooks]
+# Enabling corepack will install the `pnpm` package manager specified in your package.json
+# alternatively, you can also install `pnpm` with mise
+postinstall = 'npx corepack enable'

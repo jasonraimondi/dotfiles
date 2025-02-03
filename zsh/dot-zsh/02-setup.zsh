@@ -10,6 +10,6 @@ fi
 
 # mise language version manager
 if which mise > /dev/null; then
-  eval "$(mise activate zsh)"
-  prepend_path "$HOME/.local/share/mise/shims"
+  eval "$(~/.local/bin/mise activate zsh)"
+  # prepend_path "$HOME/.local/share/mise/shims"
 fi
