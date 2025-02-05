@@ -1,3 +1,13 @@
+function favicon() {
+  if [ $# -eq 0 ]
+  then
+    echo "input required"
+    return 1;
+  fi
+
+  magick convert $1 -define icon:auto-resize=16,24,32,48,64 favicon.ico
+}
+
 function rcat() {
   if [ $# -eq 0 ]
   then
