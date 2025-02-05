@@ -1,17 +1,8 @@
 min_version = "2024.9.5"
 
 [env]
-
-# This will make CLIs installed with npm available without npx
-_.path = ['{{config_root}}/node_modules/.bin']
-
-# Use the project name derived from the current directory
 PROJECT_NAME = "{{ config_root | basename }}"
 
-# Set up the path for node module binaries
-BIN_PATH = "{{ config_root }}/node_modules/.bin"
-
-NODE_ENV = "{{ env.NODE_ENV | default(value='development') }}"
 
 [tools]
 awscli    = "2.13.13"
