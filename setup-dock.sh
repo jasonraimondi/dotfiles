@@ -15,6 +15,7 @@ applications=(
     "/Applications/ResponsivelyApp.app"
     # "/Applications/Safari Technology Preview.app"
     "/Applications/Microsoft Edge.app"
+    "/Applications/Brave Browser.app"
     "/Applications/Firefox Developer Edition.app"
     "/Applications/Safari.app"
     "/Applications/Sublime Merge.app"
