@@ -5,6 +5,28 @@
             "complex_modifications": {
                 "rules": [
                     {
+                        "description": "D+F simultaneously to Tab",
+                        "manipulators": [
+                            {
+                                "from": {
+                                    "simultaneous": [
+                                        { "key_code": "d" },
+                                        { "key_code": "f" }
+                                    ],
+                                    "simultaneous_options": {
+                                        "detect_key_down_uninterruptedly": true,
+                                        "key_down_order": "insensitive",
+                                        "key_up_order": "insensitive",
+                                        "key_up_when": "any"
+                                    }
+                                },
+                                "parameters": { "basic.simultaneous_threshold_milliseconds": 50 },
+                                "to": [{ "key_code": "tab" }],
+                                "type": "basic"
+                            }
+                        ]
+                    },
+                    {
                         "description": "Map Tab to Hyper when held",
                         "manipulators": [
                             {
