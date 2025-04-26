@@ -3,12 +3,11 @@ min_version = "2024.9.5"
 [env]
 PROJECT_NAME = "{{ config_root | basename }}"
 
-
 [tools]
 awscli    = "2.13.13"
 bun       = "latest"
-elixir    = "1.15.4-otp-26"
-erlang    = "26.0.2"
+elixir    = "1.18.3-otp-27"
+erlang    = "27.3.2"
 deno      = "2"
 golang    = "1"
 node      = ["23", "22", "20"]
