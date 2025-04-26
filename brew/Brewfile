@@ -4,10 +4,10 @@ brew "bash"
 brew "coreutils" # Those that come with macOS are outdated
 brew "curl"
 brew "docker-compose"
-brew "ffmpeg"
+brew "ffmpeg", with_openssl: true
 brew "gnu-sed", with_default_names: true
 brew "grep"
-brew "jq" # to pipe pretty json output from bash
+brew "jq"
 brew "mackup"
 brew "minikube"
 brew "mise" # rtx was renamed :upside_down_face:

@@ -4,8 +4,7 @@ cask_args appdir: "/Applications"
 
 # Browsers
 cask "brave-browser"
-cask "firefox-developer-edition"
-cask "firefox"
+cask "firefox@developer-edition"
 cask "google-chrome"
 cask "microsoft-edge"
 cask "tor-browser"

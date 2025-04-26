@@ -11,5 +11,5 @@ brew "zsh"
 # Casks
 cask "1password"
 cask "keepingyouawake"
-cask "firefox-developer-edition"
+cask "brave-browser"
 cask "iterm2"
