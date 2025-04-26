@@ -24,7 +24,7 @@ applications=(
     "/Applications/Cursor.app"
     "$HOME/Applications/WebStorm.app"
     "$HOME/Applications/RubyMine.app"
-    "$HOME/Applications/PyCharm Professional Edition.app"
+    "$HOME/Applications/PyCharm.app"
     "$HOME/Applications/DataGrip.app"
     "$HOME/Applications/RustRover.app"
     # "/Applications/Proxyman.app"
