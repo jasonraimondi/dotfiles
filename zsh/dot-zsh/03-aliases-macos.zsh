@@ -1,5 +1,5 @@
 # Trash / RM
-alias rm="trash"
+# alias rm="trash"
 
 # Clipboard
 alias pbtext="pbpaste | textutil -convert txt -stdin -stdout -encoding 30 | pbcopy"
