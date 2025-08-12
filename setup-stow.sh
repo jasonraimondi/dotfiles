@@ -7,7 +7,8 @@ stow -v -R --dotfiles iterm2
 stow -v -t ~/Library/Spelling dictionary
 stow -v -R --dotfiles mackup
 stow -v --dotfiles mise
-stow -v -R --dotfiles ruby
+stow -v -R --dotfiles mcp 
+stow -v -R --dotfiles ruby 
 mkdir -p ~/.ssh && stow -v -t ~/.ssh ssh
 stow -v -R --dotfiles tmux
 stow -v -R --dotfiles vim
