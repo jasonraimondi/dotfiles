@@ -1,5 +1,7 @@
 mise.local.toml
 
+**/.claude/settings.local.json
+
 # Compiled source #
 ###################
 *.com
