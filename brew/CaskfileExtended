@@ -1,0 +1,31 @@
+# see https://github.com/Homebrew/homebrew-bundle
+# see https://github.com/kevinpapst/mac-os-setup/blob/master/Brewfile
+cask_args appdir: "/Applications"
+
+cask "tor-browser"
+
+cask "beyond-compare"
+cask "betterdiscord-installer"
+cask "discord"
+cask "element"
+cask "figma"
+cask "godot"
+cask "handbrake"
+cask "latest"
+cask "libreoffice"
+cask "malwarebytes"
+cask "notion"
+cask "obs"
+cask "micro-snitch"
+cask "responsively"
+cask "selfcontrol"
+cask "steam"
+cask "transmission"
+cask "tuple"
+cask "ubersicht"
+cask "zed"
+cask "little-snitch"
+cask "keymapp"
+cask "wireshark"
+
+cask "imageoptim"

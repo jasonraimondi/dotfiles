@@ -1,0 +1,16 @@
+# see https://github.com/Homebrew/homebrew-bundle
+# see https://github.com/kevinpapst/mac-os-setup/blob/master/Brewfile
+cask_args appdir: "/Applications"
+
+# ==== Quick Look Plugins ====
+# @see https://github.com/sindresorhus/quick-look-plugins
+cask "qlcolorcode"
+cask "qlmarkdown"
+cask "qlprettypatch"
+cask "qlstephen"
+cask "qlvideo"
+cask "quicklook-csv"
+cask "quicklook-json"
+cask "quicklookase"
+cask "suspicious-package" # http://www.mothersruin.com/software/SuspiciousPackage/
+cask "webpquicklook"

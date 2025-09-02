@@ -19,7 +19,7 @@ brew bundle --file brew/Requirefile
 bash setup-stow.sh
 
 # Install applications using homebrew & casks
-for BREWFILE in Brewfile Fontfile Caskfile Macfile; do
+for BREWFILE in Brewfile Fontfile Caskfile CaskfileQuicklook Macfile; do
   brew bundle --file "brew/$BREWFILE"
 done
 
