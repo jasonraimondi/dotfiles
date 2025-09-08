@@ -8,8 +8,12 @@ if which atuin > /dev/null; then
   eval "$(atuin init zsh --disable-up-arrow)"
 fi
 
-# mise language version manager
-if which mise > /dev/null; then
+# prefer mise by default, only use proto if USE_PROTO is set
+if [[ "$USE_PROTO" == 1 ]]; then
+  echo "using proto";
+  export PROTO_HOME="$HOME/.proto";
+  export PATH="$PROTO_HOME/shims:$PROTO_HOME/bin:$PATH";
+elif command -v mise > /dev/null; then
+  echo "using mise";
   eval "$(mise activate zsh)"
-  # prepend_path "$HOME/.local/share/mise/shims"
 fi
