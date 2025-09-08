@@ -6,10 +6,6 @@ fi
 # Customize to your needs...
 source "${HOME}/.zsh/_main.zsh"
 
-# why?
-# https://github.com/rails/rails/issues/38560#issuecomment-590236052
-export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
-
 if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; 
 then
   . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'

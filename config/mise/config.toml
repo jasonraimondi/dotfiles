@@ -30,6 +30,7 @@ cosign        = "latest"
 # postinstall = 'npx corepack enable'
 
 [settings]
+idiomatic_version_file_enable_tools = []
 # https://mise.jdx.dev/mise-cookbook/python.html#mise-uv
 #python.uv_venv_auto = true
 #python.uv_create_args = ['--seed']
