@@ -1,15 +1,11 @@
 [user]
 
-  name = Jason
-  email = jason@example.com
-#  signingkey = ###
-# 
+	name = Jason
+	email = jason@raimondi.us
+	# signingkey = XXX
+  
 # [commit]
-# 
-#   # https://help.github.com/articles/signing-commits-using-gpg/
+#   
 #   gpgsign = true
-#
-# ## Obsidian is the one that needs this..
-# [gpg]
-#    
-#    program = /usr/local/bin/gpg
+# 
+# https://help.github.com/articles/signing-commits-using-gpg/
