@@ -4,7 +4,7 @@ min_version = "2024.9.5"
 PROJECT_NAME = "{{ config_root | basename }}"
 
 [tools]
-awscli    = "2.27.63"
+awscli    = "2.30.7"
 bun       = "latest"
 pnpm      = ["9", "10", "latest"]
 elixir    = "1.18.4-otp-28"
@@ -15,7 +15,7 @@ node      = ["24", "22", "20"]
 python    = "3"
 ruby      = "3"
 rust      = "1"
-terraform = "1.12"
+terraform = "1.13"
 uv        = "latest"
 zig       = "latest"
 
