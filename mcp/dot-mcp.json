@@ -11,7 +11,9 @@
       "command": "npx",
       "args": [
         "-y",
-        "@upstash/context7-mcp"
+        "@upstash/context7-mcp",
+        "--api-key",
+        "$CONTEXT7_API_KEY"
       ]
     },
     "github": {
@@ -40,6 +42,13 @@
       "args": [
         "@playwright/mcp@latest"
       ]
+    },
+    "shopify-dev-mcp": {
+      "command": "npx",
+      "args": ["-y", "@shopify/dev-mcp@latest"],
+      "env": {
+        "OPT_OUT_INSTRUMENTATION": "true"
+      }
     }
   }
 }
