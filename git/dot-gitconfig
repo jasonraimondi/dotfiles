@@ -104,7 +104,7 @@
 
 # Aliases
 [alias]
-  fp = push --force-with-lease
+  fp = push --force-with-lease --force-if-includes
 
   ane = commit --amend --no-edit
 
