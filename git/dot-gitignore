@@ -1,7 +1,8 @@
 **/.idea/data_source_mapping.xml
-mise.local.toml
 
-**/.claude/settings.local.json
+**/*.local.json
+**/*.local.toml
+
 
 # Compiled source #
 ###################
