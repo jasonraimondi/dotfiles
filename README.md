@@ -1,117 +1,108 @@
 ```md
-  _____   ____ _______ ______ _____ _      ______  _____ 
- |  __ \ / __ \__   __|  ____|_   _| |    |  ____|/ ____|
- | |  | | |  | | | |  | |__    | | | |    | |__  | (___  
- | |  | | |  | | | |  |  __|   | | | |    |  __|  \___ \ 
- | |__| | |__| | | |  | |     _| |_| |____| |____ ____) |
- |_____/ \____/  |_|  |_|    |_____|______|______|_____/ 
+ _____   ____ _______ ______ _____ _      ______  _____ 
+|  __ \ / __ \__   __|  ____|_   _| |    |  ____|/ ____|
+| |  | | |  | | | |  | |__    | | | |    | |__  | (___  
+| |  | | |  | | | |  |  __|   | | | |    |  __|  \___ \ 
+| |__| | |__| | | |  | |     _| |_| |____| |____ ____) |
+|_____/ \____/  |_|  |_|    |_____|______|______|_____/ 
 
+> macOS development environment setup with modular dotfiles
 
- aws          > amazon is taking over the world
- bin          > custom bin scripts
- brew         > homebrew all the things
- config       > for the noble apps using .config
- dictionary   > extend the macos dictionary
- git          > global git config and aliases
- iterm2       > iterm2 scripts
- mise         > mise for maintaining language versions
- ssh          > ssh config
- tmux         > tmux config
- ubersicht    > ubersicht widgets
- vim          > vim configs
- zprezto      > framework for Zsh 
- zsh          > shell configuration 🔥🔥
-
+aws          > amazon is taking over the world
+bin          > custom bin scripts
+brew         > homebrew all the things
+config       > for the noble apps using .config
+dictionary   > extend the macos dictionary
+git          > global git config and aliases
+mackup       > mackup config
+mcp          > manage mcp.json config(s)
+mise         > mise for maintaining language versions
+obs          > various tools for obs
+ssh          > ssh config
+tmux         > tmux config
+vim          > vim configs
+zprezto      > framework for Zsh 
+zsh          > shell configuration 🔥🔥
 ```
 
-## Install
+## Quick Start
 
-See [install.sh](install.sh).
-
-```
+**One-liner remote install:**
+```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/jasonraimondi/dotfiles/HEAD/install.sh)"
 ```
 
-## SSH
+**Then run setup:**
+```bash
+cd dotfiles && bash setup.sh
+```
 
-Setup your SSH key
+**What this does:** Sets up a complete macOS dev environment with shell configs, applications, and tools managed through GNU Stow symlinks.
 
+## Post-Install Setup
+
+**Configure git user (required):**
+```bash
+# Edit the template file with your info
+vim git/dot-git-user
+```
+
+**Generate SSH key:**
 ```bash
 ssh-keygen -t ed25519
-
-# this copies the new public key to your clipboard
-cat ~/.ssh/id_ed25519.pub | pbcopy
+cat ~/.ssh/id_ed25519.pub | pbcopy  # copies to clipboard
 ```
+Add to [GitHub](https://github.com/settings/keys)
 
-Add your SSH key to [GitHub](https://github.com/settings/keys)
-
-@TODO add section re: decrypting gpg files
-
-## Stow
-
-[GNU stow](https://www.gnu.org/software/stow/), or just `stow`, manages symbolic links from your dotfiles directory to the home directory. To get stow on MacOS, use [homebrew](https://brew.sh/).
-
+**Customize shell:**
 ```bash
-brew install stow
+# Private customizations (not tracked)
+vim ~/.zsh/99-custom.zsh
 ```
 
-We are utilizing the `--dotfiles` flag. This allows us to have folders with `dot-example` that will convert to `.example`. The following is from the stow manpage.
+## How It Works
 
-```
- --dotfiles
+### Symlink Management
+[GNU Stow](https://www.gnu.org/software/stow/) creates symlinks from `~/dotfiles/` to your home directory. The `--dotfiles` flag converts `dot-example` files to `.example` dotfiles.
 
-   Enable special handling for "dotfiles" (files or folders whose name
-   begins with a period) in the package directory. If this option is
-   enabled, Stow will add a preprocessing step for each file or folder
-   whose name begins with "dot-", and replace the "dot-" prefix in the
-   name by a period (.). This is useful when Stow is used to manage
-   collections of dotfiles, to avoid having a package directory full of
-   hidden files.
+### Shell Configuration
+ZSH automatically sources all `*.zsh` files from `~/.zsh/` using the [Prezto](https://github.com/sorin-ionescu/prezto) framework for enhanced functionality.
 
-   For example, suppose we have a package containing two files,
-   stow/dot-bashrc and stow/dot-emacs.d/init.el. With this option, Stow
-   will create symlinks from .bashrc to stow/dot-bashrc and from
-   .emacs.d/init.el to stow/dot-emacs.d/init.el. Any other files, whose
-   name does not begin with "dot-", will be processed as usual.
-```
+### Package Management
+Homebrew installs software through categorized Brewfiles: Requirefile (essentials), Brewfile (CLI tools), Caskfile (GUI apps), Fontfile, and Macfile (Mac App Store).
 
-Checkout this article for a more detailed explanation on using stow https://alexpearce.me/2016/02/managing-dotfiles-with-stow/
+### Language Versions
+[mise](https://mise.jdx.dev/) manages programming language versions defined in `.tool-versions` for consistent development environments.
 
-## zsh
+## Manual Operations
 
-The [~/.zshrc](zsh/dot-zshrc) imports our main entrypoint.
-
+**Update packages:**
 ```bash
-source "${HOME}/.zsh/_main.zsh"
+# Install/update individual brew categories
+brew bundle --file brew/Requirefile        # essentials first
+brew bundle --file brew/Brewfile           # CLI tools  
+brew bundle --file brew/Caskfile           # GUI apps
+brew bundle --file brew/CaskfileQuicklook  # quicklook extensions
+brew bundle --file brew/Fontfile           # fonts
+brew bundle --file brew/Macfile            # Mac App Store apps
+
+# Update language versions
+mise install --yes && mise reshim
 ```
 
-The [~/.zsh/_main.zsh](zsh/dot-zsh/_main.zsh) file globs all zsh files in the `zsh/dot-zsh/*.zsh` directory and loads them.
-
-All file ending in `*.zsh` in the [~/.zsh](zsh/dot-zsh) directory will be sourced.
-
-### Prezto — Instantly Awesome Zsh
-
-[Prezto](https://github.com/sorin-ionescu/prezto) is the chosen included zsh framework.
-
+**Re-apply symlinks:**
 ```bash
-cd dotfiles
+bash setup-stow.sh
+```
 
-# The following is included in the setup script
+**Update submodules:**
+```bash
 git submodule update --init --recursive
-stow -v -R --dotfiles zsh
 ```
 
-## Brewfile
+---
 
-The [Brewfile](./Brewfile)
-
-https://thoughtbot.com/blog/brewfile-a-gemfile-but-for-homebrew
-
-```bash
-cd dotfiles
-brew bundle
-```
-
-## Misc
-
-Ascii art generated using https://www.coolgenerator.com/ascii-text-generator with **big** font
+**References:**
+- [Managing dotfiles with GNU Stow](https://alexpearce.me/2016/02/managing-dotfiles-with-stow/)
+- [Brewfile: a Gemfile, but for Homebrew](https://thoughtbot.com/blog/brewfile-a-gemfile-but-for-homebrew)
+- [Ascii Art Generator with **big** font](https://www.coolgenerator.com/ascii-text-generator)
