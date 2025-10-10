@@ -14,6 +14,10 @@
         "@upstash/context7-mcp"
       ]
     },
+     "css": {
+      "command": "npx",
+      "args": ["-y", "css-mcp"]
+    },
     "github": {
       "command": "docker",
       "args": [
