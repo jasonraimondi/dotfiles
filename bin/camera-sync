@@ -1,0 +1,56 @@
+#!/usr/bin/env zsh
+
+if [ "$USER" != "jason" ]; then
+    echo "Jason Specific Script - Exiting"
+    exit 1
+fi
+
+if ! command -v "immich-go" &> /dev/null; then
+    echo "Error: Required command 'immich-go' not found"
+    exit 1
+fi
+
+if [ -z "$IMMICH_SERVER" ]; then
+    echo "IMMICH_SERVER is NOT set or is empty"
+fi
+
+# Search desktop for folders starting with or equal to 100MSDCF
+DESKTOP="$HOME/Desktop"
+LOGROOT="/tmp/camera-sync"
+
+echo "Searching desktop: $DESKTOP"
+echo
+
+
+# Find and process matching folders
+for folder in "$DESKTOP"/100MSDCF*; do
+    # Check if folder exists (in case no matches found)
+    [ -d "$folder" ] || continue
+    
+    echo "Processing: $(basename "$folder")"
+    
+    # Create subdirectories
+    mkdir -p "$folder/raw" "$folder/jpg" "$folder/heic"
+    
+    # Move .arw and .xmp files to raw/
+    find "$folder" -maxdepth 1 -type f \( -iname "*.arw" -o -iname "*.xmp" \) -exec mv {} "$folder/raw/" \;
+    
+    # Move .jpg files to jpg/
+    find "$folder" -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.jpeg" \) -exec mv {} "$folder/jpg/" \;
+    
+    # Move .heic files to heic/
+    find "$folder/jpg" -maxdepth 1 -type f -iname "*.heic" -exec mv {} "$folder/heic/" \;
+    find "$folder" -maxdepth 1 -type f -iname "*.heic" -exec mv {} "$folder/heic/" \;
+    
+    echo "  ✓ Files organized"
+    echo
+
+    mkdir -p "$LOGROOT"
+    immich-go upload from-folder --server "$IMMICH_SERVER" --log-file="$LOGROOT/heic.log"  --api-key "$IMMICH_API_KEY_SHARED" --pause-immich-jobs=FALSE "$folder/heic/"
+    immich-go upload from-folder --server "$IMMICH_SERVER" --log-file="$LOGROOT/raw.log"  --api-key "$IMMICH_API_KEY_SONY" --pause-immich-jobs=FALSE "$folder/raw/"
+
+    echo "  ✓ Upload complete"
+    echo
+done
+
+echo "Done!"
