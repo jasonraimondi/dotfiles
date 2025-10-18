@@ -1,8 +1,27 @@
 #!/usr/bin/env bash
 
 git fetch -p
-git branch -r \
+
+branches_to_delete=$(git branch -r \
     | awk '{print $1}' \
     | egrep -v -f /dev/fd/0 <(git branch -vv | grep origin) \
-    | awk '{print $1}' \
-    | xargs git branch -D
+    | awk '{print $1}')
+
+if [ -z "$branches_to_delete" ]; then
+    echo "No branches found to delete."
+    exit 0
+fi
+
+echo "The following branches will be deleted:"
+echo "$branches_to_delete"
+echo
+read -p "Do you want to delete these branches? (y/N): " -n 1 -r
+echo
+
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo "Deleting branches..."
+    echo "$branches_to_delete" | xargs git branch -D
+    echo "Done!"
+else
+    echo "Operation cancelled."
+fi
