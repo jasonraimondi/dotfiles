@@ -7,6 +7,10 @@
         "https://knowledge-mcp.global.api.aws"
       ]
     },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["chrome-devtools-mcp@latest"]
+    },
     "context7": {
       "command": "npx",
       "args": [
