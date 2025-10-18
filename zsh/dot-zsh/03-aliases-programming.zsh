@@ -1,1 +1,1 @@
-alias claude="claude --mcp-config ~/.mcp.json"
+# alias claude="claude --mcp-config ~/.mcp.json"
