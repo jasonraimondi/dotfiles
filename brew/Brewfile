@@ -13,6 +13,7 @@ brew "mackup"
 # brew "minikube"
 brew "mise" # rtx was renamed :upside_down_face:
 brew "libpq" # for postgres gem
+brew "php" # mise php is a pain in the ass
 brew "rsync"
 brew "safe-rm"
 brew "stow"
