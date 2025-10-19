@@ -1,4 +1,10 @@
+# Claude Code - Session and Runtime Data
+# Ignore all files but allow specific configurations
 dot-claude/*
-!dot-claude/agents/
-!dot-claude/skills/
+
+# Allow shared configuration files (safe to commit)
 !dot-claude/settings.json
+!dot-claude/*.md
+!dot-claude/agents/
+!dot-claude/commands/
+!dot-claude/skills/
