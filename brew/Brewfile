@@ -4,12 +4,13 @@ brew "bash"
 brew "coreutils" # Those that come with macOS are outdated
 brew "curl"
 brew "docker-compose"
+brew "fzf"
 brew "ffmpeg", with_openssl: true
 brew "gnu-sed", with_default_names: true
 brew "grep"
 brew "jq"
 brew "mackup"
-brew "minikube"
+# brew "minikube"
 brew "mise" # rtx was renamed :upside_down_face:
 brew "libpq" # for postgres gem
 brew "rsync"

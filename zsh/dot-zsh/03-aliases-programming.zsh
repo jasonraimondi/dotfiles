@@ -1,1 +1,5 @@
-# alias claude="claude --mcp-config ~/.mcp.json"
+alias superclaude="SuperClaude"
+alias sc="superclaude"
+function sc-setup() {
+    pipx install SuperClaude && pipx upgrade SuperClaude && SuperClaude install	
+}
