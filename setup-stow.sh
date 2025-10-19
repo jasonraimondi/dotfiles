@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 stow -v -R --dotfiles aws
+stow -v -R --dotfiles claude
 mkdir -p ~/.config && stow -v -t ~/.config config
 stow -v -R --dotfiles git
 stow -v -R --dotfiles iterm2

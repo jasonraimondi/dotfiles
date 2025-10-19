@@ -1,0 +1,4 @@
+dot-claude/*
+!dot-claude/agents/
+!dot-claude/skills/
+!dot-claude/settings.json
