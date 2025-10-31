@@ -51,8 +51,8 @@ convert_jpg_to_heic() {
         if [ ! -f "$heic_file" ]; then
             echo "    Converting: $basename → ${name_without_ext}.heic"
             
-            # Convert JPG to HEIC using ImageMagick
-            if magick "$jpg_file" "$heic_file"; then
+            # Convert JPG to HEIC using heif-enc
+            if heif-enc -q 95 -p x265:lossless=true "$jpg_file" -o "$heic_file"; then
                 ((converted++))
             else
                 echo "    ✗ Failed to convert: $basename"
