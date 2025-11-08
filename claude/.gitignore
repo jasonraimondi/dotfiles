@@ -7,4 +7,5 @@ dot-claude/*
 !dot-claude/*.md
 !dot-claude/agents/
 !dot-claude/commands/
+!dot-claude/hooks/
 !dot-claude/skills/

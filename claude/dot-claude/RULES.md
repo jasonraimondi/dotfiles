@@ -4,9 +4,9 @@ Actionable rules for enhanced Claude Code framework operation.
 
 ## Rule Priority System
 
-**🔴 CRITICAL**: Security, data safety, production breaks - Never compromise  
-**🟡 IMPORTANT**: Quality, maintainability, professionalism - Strong preference  
-**🟢 RECOMMENDED**: Optimization, style, best practices - Apply when practical
+**CRITICAL**: Security, data safety, production breaks - Never compromise
+**IMPORTANT**: Quality, maintainability, professionalism - Strong preference
+**RECOMMENDED**: Optimization, style, best practices - Apply when practical
 
 ### Conflict Resolution Hierarchy
 1. **Safety First**: Security/data rules always win
@@ -15,7 +15,7 @@ Actionable rules for enhanced Claude Code framework operation.
 4. **Context Matters**: Prototype vs Production requirements differ
 
 ## Agent Orchestration
-**Priority**: 🔴 **Triggers**: Task execution and post-implementation
+**Priority**: CRITICAL **Triggers**: Task execution and post-implementation
 
 **Task Execution Layer** (Existing Auto-Activation):
 - **Auto-Selection**: Claude Code automatically selects appropriate specialist agents based on context
@@ -44,7 +44,7 @@ Actionable rules for enhanced Claude Code framework operation.
 ❌ **Wrong**: Continue implementing after mistake (no root cause analysis)
 
 ## Workflow Rules
-**Priority**: 🟡 **Triggers**: All development tasks
+**Priority**: IMPORTANT **Triggers**: All development tasks
 
 - **Task Pattern**: Understand → Plan (with parallelization analysis) → TodoWrite(3+ tasks) → Execute → Track → Validate
 - **Batch Operations**: ALWAYS parallel tool calls by default, sequential ONLY for dependencies
@@ -61,7 +61,7 @@ Actionable rules for enhanced Claude Code framework operation.
 ❌ **Wrong**: Jump directly to implementation without planning
 
 ## Planning Efficiency
-**Priority**: 🔴 **Triggers**: All planning phases, TodoWrite operations, multi-step tasks
+**Priority**: CRITICAL **Triggers**: All planning phases, TodoWrite operations, multi-step tasks
 
 - **Parallelization Analysis**: During planning, explicitly identify operations that can run concurrently
 - **Tool Optimization Planning**: Plan for optimal MCP server combinations and batch operations
@@ -73,7 +73,7 @@ Actionable rules for enhanced Claude Code framework operation.
 ❌ **Wrong**: "Plan: Read file1 → Read file2 → Read file3 → analyze → edit file1 → edit file2"
 
 ## Implementation Completeness
-**Priority**: 🟡 **Triggers**: Creating features, writing functions, code generation
+**Priority**: IMPORTANT **Triggers**: Creating features, writing functions, code generation
 
 - **No Partial Features**: If you start implementing, you MUST complete to working state
 - **No TODO Comments**: Never leave TODO for core functionality or implementations
@@ -87,7 +87,7 @@ Actionable rules for enhanced Claude Code framework operation.
 ❌ **Wrong**: `// TODO: implement tax calculation`
 
 ## Scope Discipline
-**Priority**: 🟡 **Triggers**: Vague requirements, feature expansion, architecture decisions
+**Priority**: IMPORTANT **Triggers**: Vague requirements, feature expansion, architecture decisions
 
 - **Build ONLY What's Asked**: No adding features beyond explicit requirements
 - **MVP First**: Start with minimum viable solution, iterate based on feedback
@@ -101,7 +101,7 @@ Actionable rules for enhanced Claude Code framework operation.
 ❌ **Wrong**: "Build login form" → Login + registration + password reset + 2FA
 
 ## Code Organization
-**Priority**: 🟢 **Triggers**: Creating files, structuring projects, naming decisions
+**Priority**: RECOMMENDED **Triggers**: Creating files, structuring projects, naming decisions
 
 - **Naming Convention Consistency**: Follow language/framework standards (camelCase for JS, snake_case for Python)
 - **Descriptive Names**: Files, functions, variables must clearly describe their purpose
@@ -115,7 +115,7 @@ Actionable rules for enhanced Claude Code framework operation.
 ❌ **Wrong**: `get_userData()`, `userdata.py`, `files/everything/`
 
 ## Workspace Hygiene
-**Priority**: 🟡 **Triggers**: After operations, session end, temporary file creation
+**Priority**: IMPORTANT **Triggers**: After operations, session end, temporary file creation
 
 - **Clean After Operations**: Remove temporary files, scripts, and directories when done
 - **No Artifact Pollution**: Delete build artifacts, logs, and debugging outputs
@@ -129,7 +129,7 @@ Actionable rules for enhanced Claude Code framework operation.
 ❌ **Wrong**: Leaving `debug.sh`, `test.log`, `temp/` directories
 
 ## Failure Investigation
-**Priority**: 🔴 **Triggers**: Errors, test failures, unexpected behavior, tool failures
+**Priority**: CRITICAL **Triggers**: Errors, test failures, unexpected behavior, tool failures
 
 - **Root Cause Analysis**: Always investigate WHY failures occur, not just that they failed
 - **Never Skip Tests**: Never disable, comment out, or skip tests to achieve results
@@ -145,7 +145,7 @@ Actionable rules for enhanced Claude Code framework operation.
 **Detection**: `grep -r "skip\|disable\|TODO" tests/`
 
 ## Professional Honesty
-**Priority**: 🟡 **Triggers**: Assessments, reviews, recommendations, technical claims
+**Priority**: IMPORTANT **Triggers**: Assessments, reviews, recommendations, technical claims
 
 - **No Marketing Language**: Never use "blazingly fast", "100% secure", "magnificent", "excellent"
 - **No Fake Metrics**: Never invent time estimates, percentages, or ratings without evidence
@@ -160,7 +160,7 @@ Actionable rules for enhanced Claude Code framework operation.
 ❌ **Wrong**: "This magnificent solution is blazingly fast and 100% secure!"
 
 ## Git Workflow
-**Priority**: 🔴 **Triggers**: Session start, before changes, risky operations
+**Priority**: CRITICAL **Triggers**: Session start, before changes, risky operations
 
 - **Always Check Status First**: Start every session with `git status` and `git branch`
 - **Feature Branches Only**: Create feature branches for ALL work, never work on main/master
@@ -176,7 +176,7 @@ Actionable rules for enhanced Claude Code framework operation.
 **Detection**: `git branch` should show feature branch, not main/master
 
 ## Tool Optimization
-**Priority**: 🟢 **Triggers**: Multi-step operations, performance needs, complex tasks
+**Priority**: RECOMMENDED **Triggers**: Multi-step operations, performance needs, complex tasks
 
 - **Best Tool Selection**: Always use the most powerful tool for each task (MCP > Native > Basic)
 - **Parallel Everything**: Execute independent operations in parallel, never sequentially
@@ -191,7 +191,7 @@ Actionable rules for enhanced Claude Code framework operation.
 ❌ **Wrong**: Sequential Edit calls, bash grep instead of Grep tool
 
 ## File Organization
-**Priority**: 🟡 **Triggers**: File creation, project structuring, documentation
+**Priority**: IMPORTANT **Triggers**: File creation, project structuring, documentation
 
 - **Think Before Write**: Always consider WHERE to place files before creating them
 - **Claude-Specific Documentation**: Put reports, analyses, summaries in `claudedocs/` directory
@@ -207,7 +207,7 @@ Actionable rules for enhanced Claude Code framework operation.
 ❌ **Wrong**: `auth.test.js` next to `auth.js`, `debug.sh` in project root
 
 ## Safety Rules
-**Priority**: 🔴 **Triggers**: File operations, library usage, codebase changes
+**Priority**: CRITICAL **Triggers**: File operations, library usage, codebase changes
 
 - **Framework Respect**: Check package.json/deps before using libraries
 - **Pattern Adherence**: Follow existing project conventions and import styles
@@ -218,7 +218,7 @@ Actionable rules for enhanced Claude Code framework operation.
 ❌ **Wrong**: Ignore existing conventions, make unplanned changes
 
 ## Temporal Awareness
-**Priority**: 🔴 **Triggers**: Date/time references, version checks, deadline calculations, "latest" keywords
+**Priority**: CRITICAL **Triggers**: Date/time references, version checks, deadline calculations, "latest" keywords
 
 - **Always Verify Current Date**: Check <env> context for "Today's date" before ANY temporal assessment
 - **Never Assume From Knowledge Cutoff**: Don't default to January 2025 or knowledge cutoff dates
@@ -235,7 +235,7 @@ Actionable rules for enhanced Claude Code framework operation.
 
 ### Critical Decision Flows
 
-**🔴 Before Any File Operations**
+**CRITICAL: Before Any File Operations**
 ```
 File operation needed?
 ├─ Writing/Editing? → Read existing first → Understand patterns → Edit
@@ -243,7 +243,7 @@ File operation needed?
 └─ Safety check → Absolute paths only → No auto-commit
 ```
 
-**🟡 Starting New Feature**
+**IMPORTANT: Starting New Feature**
 ```
 New feature request?
 ├─ Scope clear? → No → Brainstorm mode first
@@ -253,7 +253,7 @@ New feature request?
 └─ Framework deps? → Check package.json first
 ```
 
-**🟢 Tool Selection Matrix**
+**RECOMMENDED: Tool Selection Matrix**
 ```
 Task type → Best tool:
 ├─ Multi-file edits → MultiEdit > individual Edits
@@ -266,21 +266,21 @@ Task type → Best tool:
 
 ### Priority-Based Quick Actions
 
-#### 🔴 CRITICAL (Never Compromise)
+#### CRITICAL (Never Compromise)
 - `git status && git branch` before starting
 - Read before Write/Edit operations  
 - Feature branches only, never main/master
 - Root cause analysis, never skip validation
 - Absolute paths, no auto-commit
 
-#### 🟡 IMPORTANT (Strong Preference)
+#### IMPORTANT (Strong Preference)
 - TodoWrite for >3 step tasks
 - Complete all started implementations
 - Build only what's asked (MVP first)
 - Professional language (no marketing superlatives)
 - Clean workspace (remove temp files)
 
-#### 🟢 RECOMMENDED (Apply When Practical)  
+#### RECOMMENDED (Apply When Practical)  
 - Parallel operations over sequential
 - Descriptive naming conventions
 - MCP tools over basic alternatives

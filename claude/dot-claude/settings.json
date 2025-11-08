@@ -1,0 +1,19 @@
+{
+  "cleanupPeriodDays": 60,
+  "permissions": {
+    "allow": [
+      "Bash(rg:*)",
+      "Bash(fd:*)",
+      "Skill(creating-a-plan)",
+      "Skill(implementing-a-plan)"
+    ],
+    "ask": [
+      "Bash(rm:*)"
+    ]
+  },
+  "enabledPlugins": {
+    "ig-tools@intelligems": false
+  },
+  "alwaysThinkingEnabled": true,
+  "autoUpdates": true
+}
