@@ -6,12 +6,12 @@ PROJECT_NAME = "{{ config_root | basename }}"
 [tools]
 awscli    = "2.31.8"
 bun       = "latest"
-pnpm      = ["9", "10", "latest"]
+deno      = "2"
 elixir    = "1.18.4-otp-28"
 erlang    = "28.1"
-deno      = "2"
 golang    = "1"
 node      = ["24", "22", "20"]
+pnpm      = ["9", "10", "latest"]
 python    = "3"
 ruby      = "3"
 rust      = "1"

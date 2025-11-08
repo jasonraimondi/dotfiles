@@ -13,8 +13,7 @@ function stree() {
 
 # Dotfiles
 alias dot="cd $DOTFILES_HOME"
-alias edot="$GUI_EDITOR $DOTFILES_HOME"
-alias cdot="code $DOTFILES_HOME"
+alias cdot="zed $DOTFILES_HOME"
 alias cfunc="subl $DOTFILES_HOME/zsh/dot-zsh/99-custom.zsh"
 alias gdot="smerge $DOTFILES_HOME"
 
@@ -28,11 +27,11 @@ alias psgrep="psgrep -i"
 alias df="df -H"
 
 # folder helpers
-alias l="ls -lFh"     
-alias ll="ls -lFh"    
-alias lla="ls -lAFh"   
-alias llr="ls -tRFh"   
-alias llt="ls -ltFh"   
+alias l="ls -lFh"
+alias ll="ls -lFh"
+alias lla="ls -lAFh"
+alias llr="ls -tRFh"
+alias llt="ls -ltFh"
 alias ldot="ls -ld .*"
 
 # Navigation
@@ -57,25 +56,6 @@ alias paths='echo -e ${PATH//:/\\n}'
 # Network
 alias flushdns="sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder"
 alias dnsflush="echo 'use flushdns' && flushdns"
-function ip() {
-    local ip_address
-
-    if [[ $1 == "local" ]]; then
-        echo "local"
-        ip_address=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')
-    else
-        ip_address=$(dig +short myip.opendns.com @resolver1.opendns.com)  
-    fi
-
-    if [ -z "$ip_address" ]; then
-        echo "external using ipinfo.io"
-        ip_address=$(curl -s ipinfo.io | jq -r '.ip')
-    else
-        echo "external using myip.opendns.com"
-    fi
-
-    echo $ip_address
-}
 
 # Git
 alias glog='git log --graph --pretty=format:"%Cred%h%Creset %an: %s - %Creset %C(yellow)%d%Creset %Cgreen(%cr)%Creset" --abbrev-commit --date=relative'
@@ -88,4 +68,4 @@ alias tls="tmux list-sessions"
 alias screenfetch="neofetch"
 alias hdd="sudo hdparm -C /dev/sd[a-l]"
 
-alias speedtest="networkQuality -v -s" 
+alias speedtest="networkQuality -v -s"

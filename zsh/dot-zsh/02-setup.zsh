@@ -17,3 +17,8 @@ elif command -v mise > /dev/null; then
   echo "using mise";
   eval "$(mise activate zsh)"
 fi
+
+if command -v fnox > /dev/null; then
+  echo "using fnox";
+  eval "$(fnox activate bash)"
+fi

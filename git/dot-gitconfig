@@ -1,6 +1,6 @@
 [include]
     path = ~/.git-user
-    
+
 [apply]
 
   # Detect whitespace errors when applying a patch.
@@ -13,7 +13,7 @@
 [core]
 
   excludesfile = ~/.gitignore
-  
+
   # Treat spaces before tabs and all kinds of trailing whitespace as an error.
   # [default] trailing-space: looks for spaces at the end of a line
   # [default] space-before-tab: looks for spaces before tabs at the beginning of a line
@@ -68,7 +68,7 @@
   followTags = true
   # Auto setup remote branches without needing --set-upstream
   autoSetupRemote = true
-  
+
 [color]
 
   # Use colors in Git commands that are capable of colored output when
@@ -87,9 +87,9 @@
   # line info
   frag = magenta bold
   # deletions
-  old = red 
+  old = red
   # additions
-  new = green 
+  new = green
 
 [color "status"]
 
@@ -101,6 +101,11 @@
 
   # Add a custom template with std commit messages
   template = /Users/jason/.gitcommit
+
+[submodule]
+
+  # automatically update submodules when pulling
+  recurse = true
 
 # Aliases
 [alias]

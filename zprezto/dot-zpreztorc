@@ -18,6 +18,7 @@ zstyle ':prezto:*:*' color 'yes'
 # Add additional directories to load prezto modules from
 # zstyle ':prezto:load' pmodule-dirs $HOME/.zprezto-contrib
 
+# custom
 # Allow module overrides when pmodule-dirs causes module name collisions
 zstyle ':prezto:load' pmodule-allow-overrides 'yes'
 
@@ -30,7 +31,6 @@ zstyle ':prezto:load' pmodule-allow-overrides 'yes'
 # Set the Prezto modules to load (browse modules).
 # The order matters.
 zstyle ':prezto:load' pmodule \
-  'autosuggestions' \
   'environment' \
   'terminal' \
   'editor' \
@@ -60,6 +60,9 @@ zstyle ':prezto:module:autosuggestions:color' found ''
 #
 # Editor
 #
+
+# Set the characters that are considered to be part of a word.
+# zstyle ':prezto:module:editor' wordchars '*?_-.[]~&;!#$%^(){}<>'
 
 # Set the key mapping style to 'emacs' or 'vi'.
 zstyle ':prezto:module:editor' key-bindings 'vi'
@@ -109,6 +112,18 @@ zstyle ':prezto:module:editor' key-bindings 'vi'
 
 # Set the search globbing flags.
 # zstyle ':prezto:module:history-substring-search' globbing-flags ''
+
+# Enable search case-sensitivity.
+# zstyle ':prezto:module:history-substring-search' case-sensitive 'yes'
+
+# Enable search for fuzzy matches.
+# zstyle ':prezto:module:history-substring-search' fuzzy 'yes'
+
+# Enable search uniqueness.
+# zstyle ':prezto:module:history-substring-search' unique 'yes'
+
+# Enable prefixed search.
+# zstyle ':prezto:module:history-substring-search' prefixed 'yes'
 
 #
 # macOS
@@ -174,7 +189,7 @@ zstyle ':prezto:module:prompt' theme 'sorin'
 #
 
 # Set the SSH identities to load into the agent.
-zstyle ':prezto:module:ssh:load' identities 'id_edd2519'
+zstyle ':prezto:module:ssh:load' identities 'id_edd2519' 'id_github'
 
 #
 # Syntax Highlighting
