@@ -98,8 +98,8 @@ for folder in "$DESKTOP"/100MSDCF*; do
     echo
 
     mkdir -p "$LOGROOT"
-    immich-go upload from-folder --server "$IMMICH_SERVER" --log-file="$LOGROOT/heic.log"  --api-key "$IMMICH_API_KEY_SHARED" --pause-immich-jobs=FALSE "$folder/heic/"
-    immich-go upload from-folder --server "$IMMICH_SERVER" --log-file="$LOGROOT/raw.log"  --api-key "$IMMICH_API_KEY_SONY" --pause-immich-jobs=FALSE "$folder/raw/"
+    # immich-go upload from-folder --server "$IMMICH_SERVER" --log-file="$LOGROOT/heic.log"  --api-key "$IMMICH_API_KEY_SHARED" --pause-immich-jobs=FALSE "$folder/heic/"
+    # immich-go upload from-folder --server "$IMMICH_SERVER" --log-file="$LOGROOT/raw.log"  --api-key "$IMMICH_API_KEY_SONY" --pause-immich-jobs=FALSE "$folder/raw/"
 
     echo "  ✓ Upload complete"
     echo
