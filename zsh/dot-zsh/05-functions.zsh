@@ -5,7 +5,7 @@ function favicon() {
     return 1;
   fi
 
-  magick convert $1 -define icon:auto-resize=16,24,32,48,64 favicon.ico
+  magick $1 -define icon:auto-resize=16,24,32,48,64 favicon.ico
 }
 
 function rcat() {
@@ -14,14 +14,14 @@ function rcat() {
     echo "src dir required"
     return 1;
   fi
-  
+
   local directory="$1"
-  
+
   if [[ $# -eq 0 ]]; then
     echo "Please provide the directory path as an argument."
     return 1
   fi
-  
+
   for item in "$directory"/**/*(.); do
     if [[ -f "$item" ]]; then
       echo "=== $item ==="
@@ -63,13 +63,13 @@ function versions() {
     echo "ruby: $(ruby --version)"
 }
 
-function lt() { 
-  ls -ltrsa "$@" | tail; 
+function lt() {
+  ls -ltrsa "$@" | tail;
 }
 
 function remove_lines_from() {
   # removes lines from $1 if they appear in $2
-  grep -F -x -v -f $2 $1; 
+  grep -F -x -v -f $2 $1;
 }
 
 

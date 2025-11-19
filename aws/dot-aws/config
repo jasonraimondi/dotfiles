@@ -3,15 +3,15 @@ region = us-east-1
 s3 =
     max_concurrent_requests = 20
     multipart_chunksize = 64MB
-output = json 
+output = json
 
 [plugins]
-endpoint = awscli_plugin_endpoint 
+endpoint = awscli_plugin_endpoint
 
 [profile wasabi]
 endpoint_url = https://s3.wasabisys.com
 region = us-east-1
 
-[profile mini]  
+[profile mini]
 endpoint_url = http://localhost:9000
 region = us-east-1
