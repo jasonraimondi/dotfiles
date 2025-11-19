@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./aws/dot-aws/credentials)",
+      "Edit(./aws/dot-aws/credentials)",
+      "Write(./aws/dot-aws/credentials)",
+      "Read(./ssh/config)",
+      "Edit(./ssh/config)",
+      "Write(./ssh/config)",
+      "Read(./zsh/dot-zsh/00-SECRETS.zsh)",
+      "Edit(./zsh/dot-zsh/00-SECRETS.zsh)",
+      "Write(./zsh/dot-zsh/00-SECRETS.zsh)",
+      "Read(./**/*.gpg)",
+      "Edit(./**/*.gpg)",
+      "Write(./**/*.gpg)"
+    ]
+  }
+}
