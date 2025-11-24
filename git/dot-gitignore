@@ -3,6 +3,7 @@
 **/*.local.json
 **/*.local.toml
 
+**/.env.*
 
 # Compiled source #
 ###################
@@ -165,7 +166,7 @@ pickle-email-*.html
 /test/version_tmp/
 /tmp/
 
-### Mise ### 
+### Mise ###
 mise.local.toml
 
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
