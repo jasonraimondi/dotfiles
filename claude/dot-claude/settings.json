@@ -8,9 +8,13 @@
       "Skill(creating-a-plan)",
       "Skill(implementing-a-plan)"
     ],
-    "ask": ["Bash(rm:*)"]
+    "ask": [
+      "Bash(rm:*)"
+    ]
   },
-  "enabledPlugins": {},
+  "enabledPlugins": {
+    "linear@claude-plugins-official": true
+  },
   "alwaysThinkingEnabled": true,
   "autoUpdates": true
 }

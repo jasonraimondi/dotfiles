@@ -13,8 +13,7 @@
 ## Critical Rules
 
 ### Git Workflow (CRITICAL)
-1. NEVER automatically commit to git
-2. Suggest a conventional commit messages
+1. Finishing up work on a piece of code, always suggest a concise conventional commit message
 
 ### Safety (CRITICAL)
 - Read before Write/Edit operations

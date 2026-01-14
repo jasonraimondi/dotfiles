@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+usage() {
+    echo "Usage: ralph [OPTIONS] [once]"
+    echo
+    echo "Options:"
+    echo "  once                        Run single iteration"
+    echo "  -n, --max-iterations <N>    Run up to N iterations (default: 20)"
+    echo "  help, -h, --help                  Show this help message"
+    echo
+    echo "Examples:"
+    echo "  ralph                       Run with default 20 iterations"
+    echo "  ralph once                  Run a single iteration"
+    echo "  ralph -n 5                  Run up to 5 iterations"
+    echo "  ralph --max-iterations=10   Run up to 10 iterations"
+}
+
+PROMPT_PATH="$(pwd)/PROMPT.md"
+
+MAX_ITERATIONS=20
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        help|-h|--help)
+            usage
+            exit 0
+            ;;
+        -n|--max-iterations)
+            MAX_ITERATIONS="$2"
+            shift 2
+            ;;
+        --max-iterations=*)
+            MAX_ITERATIONS="${1#*=}"
+            shift
+            ;;
+        once)
+            _rloop
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1" >&2
+            usage >&2
+            exit 1
+            ;;
+    esac
+done
+
+DEFAULT_PROMPT="@plans/prd.yaml @plans/progress.txt (follow symlinks)
+1. Find the highest-priority feature to work on and work only on that feature.
+   This should be the one YOU decide has the highest priority - not necessarily the first in the list.
+2. Check that the types check via pnpm typecheck and that the tests pass via pnpm test.
+3. Update the PRD with the work that was done.
+4. Append your progress to the progress.txt file.
+   Use this to leave a note for the next person working in the codebase.
+5. <important>Make a git commit of that feature using a conventional commit message</important>
+<important>ONLY WORK ON A SINGLE FEATURE.</important>
+If, while implementing the feature, you notice the PRD is complete, output <promise>COMPLETE</promise> and stop."
+
+if [[ -f "$PROMPT_PATH" ]]; then
+    PROMPT="$(cat "$PROMPT_PATH")"
+else
+    echo "$PROMPT_PATH not found" >&2
+
+    read -r -p "Do you want to create a default prompt? (y/n): " response
+
+    if [[ $response == "y" ]]; then
+        echo "$DEFAULT_PROMPT" > PROMPT.md
+        echo "Default prompt created."
+        PROMPT="$DEFAULT_PROMPT"
+    else
+        echo "Exiting."
+        exit 1
+    fi
+fi
+
+function _rloop() {
+    if ! result=$(claude --permission-mode acceptEdits -p "$PROMPT"); then
+        echo "Claude CLI failed" >&2
+        exit 1
+    fi
+
+    echo "$result"
+
+    if [[ "$result" == *"<promise>COMPLETE</promise>"* ]]; then
+        echo "PRD complete, exiting."
+        exit 0
+    fi
+}
+
+for i in $(seq 1 "$MAX_ITERATIONS"); do
+    echo "=== Iteration $i/$MAX_ITERATIONS ==="
+    _rloop
+done
+echo "Max iterations reached."
