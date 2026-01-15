@@ -8,9 +8,8 @@
       "Skill(creating-a-plan)",
       "Skill(implementing-a-plan)"
     ],
-    "ask": [
-      "Bash(rm:*)"
-    ]
+    "ask": ["Bash(rm:*)"],
+    "deny": ["Bash(git push*)", "Bash(git push --force*)"]
   },
   "enabledPlugins": {
     "linear@claude-plugins-official": true

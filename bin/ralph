@@ -2,95 +2,121 @@
 
 set -euo pipefail
 
-usage() {
-    echo "Usage: ralph [OPTIONS] [once]"
-    echo
-    echo "Options:"
-    echo "  once                        Run single iteration"
-    echo "  -n, --max-iterations <N>    Run up to N iterations (default: 20)"
-    echo "  help, -h, --help                  Show this help message"
-    echo
-    echo "Examples:"
-    echo "  ralph                       Run with default 20 iterations"
-    echo "  ralph once                  Run a single iteration"
-    echo "  ralph -n 5                  Run up to 5 iterations"
-    echo "  ralph --max-iterations=10   Run up to 10 iterations"
-}
-
-PROMPT_PATH="$(pwd)/PROMPT.md"
-
-MAX_ITERATIONS=20
-
-while [[ $# -gt 0 ]]; do
-    case "$1" in
-        help|-h|--help)
-            usage
-            exit 0
-            ;;
-        -n|--max-iterations)
-            MAX_ITERATIONS="$2"
-            shift 2
-            ;;
-        --max-iterations=*)
-            MAX_ITERATIONS="${1#*=}"
-            shift
-            ;;
-        once)
-            _rloop
-            exit 0
-            ;;
-        *)
-            echo "Unknown option: $1" >&2
-            usage >&2
-            exit 1
-            ;;
-    esac
+for arg in "$@"; do
+    [[ "$arg" == "--debug" || "$arg" == "-d" ]] && set -x && break
 done
 
-DEFAULT_PROMPT="@plans/prd.yaml @plans/progress.txt (follow symlinks)
-1. Find the highest-priority feature to work on and work only on that feature.
-   This should be the one YOU decide has the highest priority - not necessarily the first in the list.
-2. Check that the types check via pnpm typecheck and that the tests pass via pnpm test.
-3. Update the PRD with the work that was done.
-4. Append your progress to the progress.txt file.
-   Use this to leave a note for the next person working in the codebase.
-5. <important>Make a git commit of that feature using a conventional commit message</important>
-<important>ONLY WORK ON A SINGLE FEATURE.</important>
-If, while implementing the feature, you notice the PRD is complete, output <promise>COMPLETE</promise> and stop."
+readonly SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+readonly DEFAULT_PROMPT="$(sed '1{/^---$/!q;};1,/^---$/d' "$SCRIPT_DIR/../claude/dot-claude/commands/ralph.md")"
 
-if [[ -f "$PROMPT_PATH" ]]; then
-    PROMPT="$(cat "$PROMPT_PATH")"
-else
-    echo "$PROMPT_PATH not found" >&2
+usage() {
+    cat <<EOF
+Usage: ralph [OPTIONS] [COMMAND]
 
-    read -r -p "Do you want to create a default prompt? (y/n): " response
+Commands:
+  once    Run single iteration
+  init    Create PROMPT.md with default prompt
 
-    if [[ $response == "y" ]]; then
-        echo "$DEFAULT_PROMPT" > PROMPT.md
-        echo "Default prompt created."
-        PROMPT="$DEFAULT_PROMPT"
+Options:
+  -d, --debug                 Enable shell tracing (set -x)
+  -n, --max-iterations <N>    Run up to N iterations (default: 20)
+  -h, --help                  Show this help message
+
+Examples:
+  ralph                       Run with default 20 iterations
+  ralph once                  Run a single iteration
+  ralph -n 5                  Run up to 5 iterations
+  ralph --max-iterations=10   Run up to 10 iterations
+
+Required Claude Permissions:
+  The following permissions must be allowed in Claude settings:
+    Bash(git add:*)
+    Bash(git commit:*)
+EOF
+}
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+load_prompt() {
+    local prompt_path="$PWD/PROMPT.md"
+    if [[ -f "$prompt_path" ]]; then
+        PROMPT="$(<"$prompt_path")"
     else
-        echo "Exiting."
-        exit 1
+        printf '%s not found, using default prompt\n' "$prompt_path" >&2
+        PROMPT="$DEFAULT_PROMPT"
     fi
-fi
+}
 
-function _rloop() {
-    if ! result=$(claude --permission-mode acceptEdits -p "$PROMPT"); then
-        echo "Claude CLI failed" >&2
-        exit 1
-    fi
+run_iteration() {
+    RESULT=$(claude --permission-mode acceptEdits -p "$PROMPT")
+    # RESULT=$(opencode run "$PROMPT");
 
-    echo "$result"
+    echo "$RESULT"
 
-    if [[ "$result" == *"<promise>COMPLETE</promise>"* ]]; then
-        echo "PRD complete, exiting."
+    if [[ "$RESULT" == *"<promise>COMPLETE</promise>"* ]]; then
+        echo "PRD complete after $i iterations."
         exit 0
     fi
 }
 
-for i in $(seq 1 "$MAX_ITERATIONS"); do
-    echo "=== Iteration $i/$MAX_ITERATIONS ==="
-    _rloop
-done
-echo "Max iterations reached."
+main() {
+    local max_iterations=20
+    local cmd=""
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -d|--debug)
+                shift  # Already handled early, just consume
+                ;;
+            -h|--help|help)
+                usage
+                exit 0
+                ;;
+            -n|--max-iterations)
+                [[ -n "${2:-}" ]] || die "Missing argument for $1"
+                max_iterations="$2"
+                shift 2
+                ;;
+            --max-iterations=*)
+                max_iterations="${1#*=}"
+                shift
+                ;;
+            init|once)
+                cmd="$1"
+                shift
+                ;;
+            *)
+                die "Unknown option: $1"
+                ;;
+        esac
+    done
+
+    # Validate max_iterations is a positive integer
+    [[ "$max_iterations" =~ ^[1-9][0-9]*$ ]] || die "Invalid max-iterations: $max_iterations"
+
+    case "$cmd" in
+        init)
+            echo "Creating PROMPT.md"
+            printf '%s\n' "$DEFAULT_PROMPT" > PROMPT.md
+            exit 0
+            ;;
+        once)
+            load_prompt
+            run_iteration
+            exit 0
+            ;;
+    esac
+
+    # Default: run loop
+    load_prompt
+    for ((i=1; i<=max_iterations; i++)); do
+        printf '=== Iteration %d/%d ===\n' "$i" "$max_iterations"
+        run_iteration
+    done
+    echo "Max iterations reached."
+}
+
+main "$@"

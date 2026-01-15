@@ -13,7 +13,7 @@
 ## Critical Rules
 
 ### Git Workflow (CRITICAL)
-1. Finishing up work on a piece of code, always suggest a concise conventional commit message
+1. When finishing up work on a piece of code, always suggest a concise conventional commit message
 
 ### Safety (CRITICAL)
 - Read before Write/Edit operations
