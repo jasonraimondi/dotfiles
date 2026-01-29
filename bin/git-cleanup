@@ -9,10 +9,62 @@ echo
 branches_to_delete=$(git branch -r \
     | awk '{print $1}' \
     | egrep -v -f /dev/fd/0 <(git branch -vv | grep origin) \
+    | sed 's/^[+*] //' \
     | awk '{print $1}')
 
 if [ -z "$branches_to_delete" ]; then
     echo "No branches found to delete."
+    exit 0
+fi
+
+# Build associative array of worktree branches -> worktree paths
+declare -A worktree_branches
+while IFS= read -r line; do
+    # Format: /path/to/worktree  hash [branch-name]
+    worktree_path=$(echo "$line" | awk '{print $1}')
+    branch=$(echo "$line" | sed -n 's/.*\[\(.*\)\]/\1/p')
+    if [ -n "$branch" ]; then
+        worktree_branches["$branch"]="$worktree_path"
+    fi
+done < <(git worktree list)
+
+# Check for stale branches in worktrees
+worktree_conflicts=()
+for branch in $branches_to_delete; do
+    if [[ -v worktree_branches["$branch"] ]]; then
+        worktree_conflicts+=("$branch")
+    fi
+done
+
+# Handle worktree conflicts first
+if [ ${#worktree_conflicts[@]} -gt 0 ]; then
+    echo "The following stale branches are checked out in worktrees:"
+    echo
+    for branch in "${worktree_conflicts[@]}"; do
+        echo "  - $branch"
+        echo "    Worktree: ${worktree_branches[$branch]}"
+    done
+    echo
+
+    for branch in "${worktree_conflicts[@]}"; do
+        worktree_path="${worktree_branches[$branch]}"
+        read -p "Delete worktree '$worktree_path'? (y/N): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            git worktree remove "$worktree_path"
+            echo "  Removed worktree: $worktree_path"
+        else
+            # Remove from branches_to_delete if worktree not removed
+            branches_to_delete=$(echo "$branches_to_delete" | grep -v "^${branch}$" || true)
+            echo "  Skipping branch: $branch"
+        fi
+    done
+    echo
+fi
+
+# Check if any branches left to delete
+if [ -z "$branches_to_delete" ]; then
+    echo "No branches left to delete."
     exit 0
 fi
 
