@@ -8,11 +8,19 @@
       "Skill(creating-a-plan)",
       "Skill(implementing-a-plan)"
     ],
-    "ask": ["Bash(rm:*)"],
-    "deny": ["Bash(git push*)", "Bash(git push --force*)"]
+    "deny": [
+      "Bash(git push*)",
+      "Bash(git push --force*)"
+    ],
+    "ask": [
+      "Bash(rm:*)"
+    ]
   },
   "enabledPlugins": {
-    "linear@claude-plugins-official": true
+    "linear@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "pr-review-toolkit@claude-plugins-official": true
   },
   "alwaysThinkingEnabled": true,
   "autoUpdates": true
