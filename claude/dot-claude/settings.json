@@ -20,7 +20,9 @@
     "linear@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
-    "pr-review-toolkit@claude-plugins-official": true
+    "pr-review-toolkit@claude-plugins-official": true,
+    "figma@claude-plugins-official": true,
+    "playwright@claude-plugins-official": true
   },
   "alwaysThinkingEnabled": true,
   "autoUpdates": true
