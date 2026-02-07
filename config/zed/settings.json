@@ -8,16 +8,17 @@
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
   "autosave": "on_window_change",
-  "multi_cursor_modifier": "cmd_or_ctrl",
-  "buffer_line_height": "comfortable",
-  "buffer_font_weight": 400.0,
   "buffer_font_family": ".ZedMono",
+  "buffer_font_size": 13.0,
+  "buffer_font_weight": 400.0,
+  "buffer_line_height": "comfortable",
   "icon_theme": "Catppuccin Macchiato",
   "ui_font_size": 16,
-  "buffer_font_size": 13.0,
+  "restore_on_startup": "last_workspace",
   "theme": {
     "mode": "system",
     "light": "Dracula Pro",
-    "dark": "Dracula Pro"
-  }
+    "dark": "Dracula Pro",
+  },
+  "multi_cursor_modifier": "cmd_or_ctrl",
 }
