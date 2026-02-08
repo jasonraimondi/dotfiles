@@ -1,3 +1,7 @@
 {
-  "mcpServers": {}
+  "mcpServers": {},
+  "preferences": {
+    "sidebarMode": "chat",
+    "coworkScheduledTasksEnabled": false
+  }
 }
