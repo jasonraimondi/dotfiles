@@ -5,8 +5,7 @@
     "allow": [
       "Bash(rg:*)",
       "Bash(fd:*)",
-      "Skill(creating-a-plan)",
-      "Skill(implementing-a-plan)"
+      "Bash(agent-browser:*)"
     ],
     "deny": [
       "Bash(git push*)",

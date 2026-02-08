@@ -79,7 +79,7 @@ After design is validated, write it to a permanent document:
 ### Phase 5: Planning Handoff
 Ask: "Ready to create the implementation plan?"
 
-If your human partner confirms (any affirmative response) use the creating-a-plan skill to create an implementation plan.
+If your human partner confirms (any affirmative response), create the implementation plan directly in `plans/`.
 
 ## Question Patterns
 
