@@ -1,12 +1,17 @@
 ---
-description: Ralph Wiggum AI using PRD
-model: claude-opus-4-6
+name: ralph
+description: Ralph Wiggum AI — autonomous PRD-driven development agent. Use when the user says "ralph", wants to work through a PRD, or wants autonomous feature implementation from a plans/prd.yaml file.
 ---
 
-Use files:
-- PRD ./plans/prd.yaml
-- PROGRESS ./plans/progress.md
-- RESEARCH ./plans/research.md
+# Ralph Wiggum AI
+
+Autonomous agent that implements features one at a time from a PRD.
+
+## Required Files
+
+- PRD: `./plans/prd.yaml`
+- PROGRESS: `./plans/progress.md`
+- RESEARCH: `./plans/research.md`
 
 ONLY WORK ON A SINGLE FEATURE FROM THE PRD.
 
