@@ -1,9 +1,11 @@
 ---
-description: Interview to create a PRD
-model: claude-opus-4-6
+name: interview-prd
+description: Interview to create a PRD. Use when the user wants to build a product requirements document, plan a feature, or says "interview" or "prd". Conducts a structured interview then outputs plans/prd.yaml.
 ---
 
-Interview me using AskUserQuestion to build a comprehensive PRD. Ask insightful, non-obvious questions — probe edges within each track rather than saving "edge cases" for a separate round.
+# PRD Interview
+
+Interview the user using AskUserQuestion to build a comprehensive PRD. Ask insightful, non-obvious questions — probe edges within each track rather than saving "edge cases" for a separate round.
 
 ## Tracks
 
