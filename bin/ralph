@@ -6,8 +6,21 @@ for arg in "$@"; do
     [[ "$arg" == "--debug" || "$arg" == "-d" ]] && set -x && break
 done
 
-readonly SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-readonly DEFAULT_PROMPT="$(sed '1{/^---$/!q;};1,/^---$/d' "$SCRIPT_DIR/../claude/dot-claude/commands/ralph.md")"
+SCRIPT_SOURCE="${BASH_SOURCE[0]}"
+while [[ -L "$SCRIPT_SOURCE" ]]; do
+    SCRIPT_DIR="$(cd -P "$(dirname "$SCRIPT_SOURCE")" && pwd)"
+    SCRIPT_SOURCE="$(readlink "$SCRIPT_SOURCE")"
+    [[ "$SCRIPT_SOURCE" != /* ]] && SCRIPT_SOURCE="$SCRIPT_DIR/$SCRIPT_SOURCE"
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$SCRIPT_SOURCE")" && pwd)"
+readonly SCRIPT_DIR
+DOTFILES_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+readonly DOTFILES_ROOT
+
+DEFAULT_PROMPT=""
+DEFAULT_PROMPT_SOURCE=""
+PROMPT=""
+ACTIVE_RUNNER=""
 
 usage() {
     cat <<EOF
@@ -20,18 +33,25 @@ Commands:
 Options:
   -d, --debug                 Enable shell tracing (set -x)
   -n, --max-iterations <N>    Run up to N iterations (default: 20)
+  -r, --runner <RUNNER>       Runner to use: auto|claude|pi (default: auto)
   -h, --help                  Show this help message
 
 Examples:
-  ralph                       Run with default 20 iterations
-  ralph once                  Run a single iteration
+  ralph                       Run with default 20 iterations (auto runner)
+  ralph --runner pi           Force pi runner
+  ralph --runner claude once  Force claude runner, single iteration
   ralph -n 5                  Run up to 5 iterations
   ralph --max-iterations=10   Run up to 10 iterations
 
-Required Claude Permissions:
-  The following permissions must be allowed in Claude settings:
-    Bash(git add:*)
-    Bash(git commit:*)
+Default Prompt Search Order:
+  1. $DOTFILES_ROOT/config/skillshare/skills/ralph/SKILL.md
+  2. $DOTFILES_ROOT/claude/dot-claude/commands/ralph.md (legacy)
+  3. ~/.config/skillshare/skills/ralph/SKILL.md
+  4. ~/.claude/commands/ralph.md
+
+Runner Notes:
+  - claude: requires Claude Code CLI and permissions for git add/commit
+  - pi: requires pi CLI with bash/edit/write tools enabled
 EOF
 }
 
@@ -40,24 +60,115 @@ die() {
     exit 1
 }
 
+strip_frontmatter() {
+    local path="$1"
+    awk '
+        NR == 1 && $0 == "---" { in_frontmatter = 1; next }
+        in_frontmatter && $0 == "---" { in_frontmatter = 0; next }
+        !in_frontmatter { print }
+    ' "$path"
+}
+
+resolve_default_prompt_source() {
+    local candidates=(
+        "$DOTFILES_ROOT/config/skillshare/skills/ralph/SKILL.md"
+        "$DOTFILES_ROOT/claude/dot-claude/commands/ralph.md"
+        "$HOME/.config/skillshare/skills/ralph/SKILL.md"
+        "$HOME/.claude/commands/ralph.md"
+    )
+    local candidate
+
+    for candidate in "${candidates[@]}"; do
+        if [[ -f "$candidate" ]]; then
+            printf '%s\n' "$candidate"
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+load_default_prompt() {
+    local source
+    source="$(resolve_default_prompt_source)" || die "Could not find a default Ralph prompt source"
+
+    DEFAULT_PROMPT_SOURCE="$source"
+    DEFAULT_PROMPT="$(strip_frontmatter "$DEFAULT_PROMPT_SOURCE")"
+
+    [[ -n "$DEFAULT_PROMPT" ]] || die "Default prompt is empty: $DEFAULT_PROMPT_SOURCE"
+}
+
 load_prompt() {
     local prompt_path="$PWD/PROMPT.md"
     if [[ -f "$prompt_path" ]]; then
         PROMPT="$(<"$prompt_path")"
     else
-        printf '%s not found, using default prompt\n' "$prompt_path" >&2
+        printf '%s not found, using default prompt from %s\n' "$prompt_path" "$DEFAULT_PROMPT_SOURCE" >&2
         PROMPT="$DEFAULT_PROMPT"
     fi
 }
 
+validate_runner_value() {
+    case "$1" in
+        auto|claude|pi) ;;
+        *) die "Invalid runner: $1 (expected: auto, claude, pi)" ;;
+    esac
+}
+
+resolve_runner() {
+    local requested_runner="$1"
+
+    validate_runner_value "$requested_runner"
+
+    case "$requested_runner" in
+        auto)
+            if command -v claude >/dev/null 2>&1; then
+                ACTIVE_RUNNER="claude"
+            elif command -v pi >/dev/null 2>&1; then
+                ACTIVE_RUNNER="pi"
+            else
+                die "Neither claude nor pi CLI found in PATH"
+            fi
+            ;;
+        claude)
+            command -v claude >/dev/null 2>&1 || die "claude CLI not found in PATH"
+            ACTIVE_RUNNER="claude"
+            ;;
+        pi)
+            command -v pi >/dev/null 2>&1 || die "pi CLI not found in PATH"
+            ACTIVE_RUNNER="pi"
+            ;;
+    esac
+}
+
+run_prompt() {
+    case "$ACTIVE_RUNNER" in
+        claude)
+            claude --permission-mode acceptEdits -p "$PROMPT"
+            ;;
+        pi)
+            pi -p "$PROMPT"
+            ;;
+        *)
+            die "Runner not resolved"
+            ;;
+    esac
+}
+
 run_iteration() {
-    RESULT=$(claude --permission-mode acceptEdits -p "$PROMPT")
-    # RESULT=$(opencode run "$PROMPT");
+    local iteration="${1:-}"
+    local result
 
-    echo "$RESULT"
+    result="$(run_prompt)"
 
-    if [[ "$RESULT" == *"<promise>COMPLETE</promise>"* ]]; then
-        echo "PRD complete after $i iterations."
+    echo "$result"
+
+    if [[ "$result" == *"<promise>COMPLETE</promise>"* ]]; then
+        if [[ -n "$iteration" ]]; then
+            echo "PRD complete after $iteration iterations."
+        else
+            echo "PRD complete."
+        fi
         exit 0
     fi
 }
@@ -65,6 +176,7 @@ run_iteration() {
 main() {
     local max_iterations=20
     local cmd=""
+    local runner="auto"
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -84,6 +196,15 @@ main() {
                 max_iterations="${1#*=}"
                 shift
                 ;;
+            -r|--runner)
+                [[ -n "${2:-}" ]] || die "Missing argument for $1"
+                runner="$2"
+                shift 2
+                ;;
+            --runner=*)
+                runner="${1#*=}"
+                shift
+                ;;
             init|once)
                 cmd="$1"
                 shift
@@ -96,16 +217,29 @@ main() {
 
     # Validate max_iterations is a positive integer
     [[ "$max_iterations" =~ ^[1-9][0-9]*$ ]] || die "Invalid max-iterations: $max_iterations"
+    validate_runner_value "$runner"
+
+    load_default_prompt
 
     case "$cmd" in
         init)
-            echo "Creating PROMPT.md"
+            if [[ -f "$PWD/PROMPT.md" ]]; then
+                die "PROMPT.md already exists in $PWD"
+            fi
+
+            echo "Creating PROMPT.md from $DEFAULT_PROMPT_SOURCE"
             printf '%s\n' "$DEFAULT_PROMPT" > PROMPT.md
             exit 0
             ;;
+    esac
+
+    resolve_runner "$runner"
+    printf 'Using runner: %s\n' "$ACTIVE_RUNNER" >&2
+
+    case "$cmd" in
         once)
             load_prompt
-            run_iteration
+            run_iteration "1"
             exit 0
             ;;
     esac
@@ -114,7 +248,7 @@ main() {
     load_prompt
     for ((i=1; i<=max_iterations; i++)); do
         printf '=== Iteration %d/%d ===\n' "$i" "$max_iterations"
-        run_iteration
+        run_iteration "$i"
     done
     echo "Max iterations reached."
 }
