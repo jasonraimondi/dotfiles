@@ -29,11 +29,17 @@ mkdir -p ~/.ssh \
 
 mkdir -p ~/.claude \
   && ln -sf ai/AGENT.md ~/.claude/CLAUDE.md
+
 mkdir -p ~/.cursor/rules \
   && ln -sf ai/AGENT.md ~/.cursor/rules/agent.md
+
 mkdir -p ~/.codeium/windsurf/memories \
   && ln -sf ai/AGENT.md ~/.codeium/windsurf/memories/global_rules.md
+
 mkdir -p ~/.junie \
   && ln -sf ai/AGENT.md ~/.junie/guidelines.md
+
 mkdir -p ~/.pi/agent \
   && ln -sf ai/AGENT.md ~/.pi/agent/AGENT.md
+
+ln -sf ai/pi/extensions ~/.pi/agent/extensions
