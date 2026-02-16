@@ -108,6 +108,39 @@ load_prompt() {
     fi
 }
 
+require_plan_files() {
+    local required_file="./plans/prd.yaml"
+    local optional_files=(
+        "./plans/progress.md"
+        "./plans/research.md"
+    )
+    local missing_optional_files=()
+    local file
+
+    if [[ ! -f "$required_file" ]]; then
+        {
+            printf 'Missing required Ralph plan file in %s:\n' "$PWD"
+            printf '  - %s\n' "$required_file"
+            printf 'Create the missing file before running Ralph.\n'
+        } >&2
+        exit 1
+    fi
+
+    for file in "${optional_files[@]}"; do
+        [[ -f "$file" ]] || missing_optional_files+=("$file")
+    done
+
+    if (( ${#missing_optional_files[@]} > 0 )); then
+        {
+            printf 'Warning: optional Ralph context files are missing:\n'
+            for file in "${missing_optional_files[@]}"; do
+                printf '  - %s\n' "$file"
+            done
+            printf 'Continuing without them.\n'
+        } >&2
+    fi
+}
+
 validate_runner_value() {
     case "$1" in
         auto|claude|pi) ;;
@@ -232,6 +265,8 @@ main() {
             exit 0
             ;;
     esac
+
+    require_plan_files
 
     resolve_runner "$runner"
     printf 'Using runner: %s\n' "$ACTIVE_RUNNER" >&2
