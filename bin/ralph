@@ -190,11 +190,22 @@ run_prompt() {
 
 run_iteration() {
     local iteration="${1:-}"
-    local result
+    local result=""
+    local output_file
+    local run_status=0
 
-    result="$(run_prompt)"
+    output_file="$(mktemp)"
 
-    echo "$result"
+    if ! run_prompt 2>&1 | tee "$output_file"; then
+        local -a pipe_status=("${PIPESTATUS[@]}")
+        run_status="${pipe_status[0]}"
+        (( run_status != 0 )) || run_status="${pipe_status[1]}"
+        rm -f "$output_file"
+        return "$run_status"
+    fi
+
+    result="$(<"$output_file")"
+    rm -f "$output_file"
 
     if [[ "$result" == *"<promise>COMPLETE</promise>"* ]]; then
         if [[ -n "$iteration" ]]; then
