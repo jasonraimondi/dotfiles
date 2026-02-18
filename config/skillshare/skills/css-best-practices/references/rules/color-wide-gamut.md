@@ -3,6 +3,7 @@ title: Wide Gamut Colors (Display-P3)
 impact: MEDIUM
 browser: 90%
 bcd_id: css.types.color.color.colorSpace_parameter_accepts_display-p3-linear_value
+mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Values/color_value/color
 tags: color, display-p3, wide-gamut, hdr
 ---
 

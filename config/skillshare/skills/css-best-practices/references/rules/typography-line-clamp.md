@@ -3,6 +3,7 @@ title: Multiline Text Truncation
 impact: MEDIUM
 browser: 95%
 bcd_id: css.properties.line-clamp
+mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/line-clamp
 tags: typography, line-clamp, truncation, ellipsis
 ---
 

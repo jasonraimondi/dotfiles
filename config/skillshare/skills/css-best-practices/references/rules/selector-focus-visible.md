@@ -3,6 +3,7 @@ title: :focus-visible for Keyboard-Only Focus
 impact: HIGH
 browser: 96%
 bcd_id: css.selectors.focus-visible
+mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Selectors/:focus-visible
 tags: selector, focus, accessibility, keyboard
 ---
 

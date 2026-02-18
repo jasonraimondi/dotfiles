@@ -1,6 +1,6 @@
 ---
 name: css-best-practices
-description: Modern CSS best practices and performance patterns. Use when writing, reviewing, or refactoring CSS/Tailwind/Svelte styles. Triggers on tasks involving CSS, styling, layout, animations, typography, color, theming, or responsive design. Replaces outdated CSS patterns, JavaScript workarounds, and preprocessor dependencies with native modern CSS.
+description: Browser-aware modern CSS patterns with progressive-enhancement fallbacks. Activate only for concrete styling work in CSS/Tailwind/Svelte (layout, spacing, typography, color/theming, animation, responsive/container queries, selectors/specificity, or replacing legacy CSS/JS style hacks). Do not activate for non-styling app logic or design critique without code changes.
 ---
 
 # CSS Best Practices
@@ -28,7 +28,12 @@ When recommending modern CSS features, verify docs + support first:
 3. Apply support tiers below before replacing existing production patterns
 4. Add progressive-enhancement fallback snippets for Tier B/C features
 
-Each rule file in `references/rules/` includes a `bcd_id` frontmatter field. Use it as the canonical compatibility lookup key.
+Each rule file in `references/rules/` includes:
+- `bcd_id` — canonical compatibility lookup key
+- `mdn_url` — direct MDN documentation link for fast verification
+- `browser` — support snapshot estimate (not a live source of truth)
+
+⚠️ `browser` percentages are point-in-time estimates and can drift. Always verify current support via `bcd_id` lookup and/or the `mdn_url` page before making production recommendations.
 
 If MCP tools are unavailable, verify using MDN docs and MDN browser compatibility tables manually.
 

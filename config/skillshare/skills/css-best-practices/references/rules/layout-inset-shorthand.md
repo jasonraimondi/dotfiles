@@ -3,6 +3,7 @@ title: Inset Shorthand
 impact: HIGH
 browser: 96%
 bcd_id: css.properties.inset
+mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/inset
 tags: layout, positioning, inset, shorthand
 ---
 

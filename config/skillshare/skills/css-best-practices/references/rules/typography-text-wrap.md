@@ -3,6 +3,7 @@ title: Balanced Text Wrap
 impact: HIGH
 browser: 87%
 bcd_id: css.properties.text-wrap.balance
+mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-wrap
 tags: typography, text-wrap, balance, headlines
 ---
 
@@ -26,5 +27,24 @@ h1, h2, h3 {
 
 p {
   text-wrap: pretty; /* prevents orphans */
+}
+```
+
+**Fallback (progressive enhancement):**
+
+```css
+/* Baseline readability controls */
+h1, h2, h3 {
+  max-inline-size: 20ch;
+}
+
+p {
+  hyphens: auto;
+}
+
+/* Upgrade when balanced wrapping is supported */
+@supports (text-wrap: balance) {
+  h1, h2, h3 { text-wrap: balance; }
+  p { text-wrap: pretty; }
 }
 ```

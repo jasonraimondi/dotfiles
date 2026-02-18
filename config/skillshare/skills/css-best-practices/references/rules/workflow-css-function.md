@@ -3,6 +3,7 @@ title: Native CSS @function
 impact: MEDIUM
 browser: 50%
 bcd_id: css.at-rules.function
+mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/At-rules/@function
 tags: workflow, function, sass-mixin, preprocessor, experimental
 ---
 

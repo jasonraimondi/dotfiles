@@ -3,6 +3,7 @@ title: :has() Parent Selector
 impact: CRITICAL
 browser: 94%
 bcd_id: css.selectors.has
+mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Selectors/:has
 tags: selector, has, parent, conditional
 ---
 

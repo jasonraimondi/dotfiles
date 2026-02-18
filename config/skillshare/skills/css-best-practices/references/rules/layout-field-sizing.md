@@ -3,6 +3,7 @@ title: Auto-Growing Textarea Without JavaScript
 impact: HIGH
 browser: 73%
 bcd_id: css.properties.field-sizing.content
+mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/field-sizing
 tags: layout, textarea, field-sizing, forms
 ---
 

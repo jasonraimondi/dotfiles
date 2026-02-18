@@ -3,6 +3,7 @@ title: Popover for Dropdowns
 impact: HIGH
 browser: 86%
 bcd_id: html.global_attributes.popover
+mdn_url: https://developer.mozilla.org/docs/Web/HTML/Reference/Global_attributes/popover
 tags: interactive, popover, dropdown, menu
 ---
 
@@ -30,3 +31,20 @@ Use the `popover` attribute instead of JS display toggles with click-outside lis
 ```
 
 Built-in: click-outside dismiss, ESC to close, focus management, top-layer rendering.
+
+**Fallback (progressive enhancement):**
+
+```html
+<!-- Baseline fallback: details/summary works without popover support -->
+<details class="menu-fallback">
+  <summary>Menu</summary>
+  <a href="/settings">Settings</a>
+  <a href="/logout">Logout</a>
+</details>
+```
+
+```html
+<!-- Enhancement: native popover behavior -->
+<button popovertarget="menu">Menu</button>
+<div id="menu" popover>...</div>
+```

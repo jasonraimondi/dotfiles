@@ -3,6 +3,7 @@ title: Accent Color for Form Controls
 impact: MEDIUM
 browser: 95%
 bcd_id: css.properties.accent-color
+mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/accent-color
 tags: color, forms, accent-color, checkbox, radio
 ---
 

@@ -3,6 +3,7 @@ title: Sticky Headers Without JS Scroll Listeners
 impact: HIGH
 browser: 97%
 bcd_id: css.properties.position.sticky
+mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/position
 tags: layout, sticky, positioning, scroll
 ---
 

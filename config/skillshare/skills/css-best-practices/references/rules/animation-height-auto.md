@@ -3,6 +3,7 @@ title: Smooth Height Auto Animations
 impact: HIGH
 browser: 69%
 bcd_id: css.properties.interpolate-size.allow-keywords
+mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/interpolate-size
 tags: animation, transition, height-auto, accordion
 ---
 

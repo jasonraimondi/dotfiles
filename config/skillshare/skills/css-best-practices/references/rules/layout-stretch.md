@@ -3,6 +3,7 @@ title: Stretch Width Without Calc Workarounds
 impact: MEDIUM
 browser: 70%
 bcd_id: css.properties.width.stretch
+mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/width
 tags: layout, width, stretch, sizing
 ---
 

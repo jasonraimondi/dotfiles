@@ -3,6 +3,7 @@ title: :where() for Zero-Specificity Resets
 impact: MEDIUM
 browser: 96%
 bcd_id: css.selectors.where
+mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Selectors/:where
 tags: selector, where, specificity, resets
 ---
 

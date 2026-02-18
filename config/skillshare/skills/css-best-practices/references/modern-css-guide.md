@@ -2,6 +2,8 @@
 
 > Source: [modern-css.com](https://modern-css.com/) — 62 snippets demonstrating modern CSS replacements for outdated patterns.
 
+> ⚠️ Browser support percentages in rule frontmatter are point-in-time estimates/snapshots and may drift. Verify current support via each rule’s `bcd_id` and `mdn_url` before production recommendations.
+
 ## 1. Layout & Spacing
 
 ### Gap Instead of Margin Hacks

@@ -3,6 +3,7 @@ title: Color Scheme for Automatic Dark Mode
 impact: MEDIUM
 browser: 93%
 bcd_id: css.properties.color-scheme
+mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/color-scheme
 tags: color, dark-mode, color-scheme, form-controls
 ---
 

@@ -3,6 +3,7 @@ title: Corner Shapes Beyond Border Radius
 impact: LOW
 browser: 50%
 bcd_id: css.properties.corner-shape
+mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/corner-shape
 tags: layout, corner-shape, squircle, border-radius
 ---
 

@@ -3,6 +3,7 @@ title: Custom Select with appearance: base-select
 impact: HIGH
 browser: 65%
 bcd_id: css.properties.appearance.base-select
+mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/appearance
 tags: interactive, select, dropdown, forms, customization
 ---
 

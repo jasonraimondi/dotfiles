@@ -3,6 +3,7 @@ title: Inline CSS Conditionals
 impact: MEDIUM
 browser: 45%
 bcd_id: css.types.if
+mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Values/if
 tags: workflow, if, conditionals, style-queries, experimental
 ---
 
