@@ -9,14 +9,12 @@ for arg in "$@"; do
 done
 
 stow $FLAGS aws
-stow $FLAGS claude
 mkdir -p ~/.config && stow $FLAGS -t ~/.config config
 stow $FLAGS git
 stow $FLAGS iterm2
 stow $FLAGS -t ~/Library/Spelling dictionary
 stow $FLAGS mackup
 stow $FLAGS mise
-stow $FLAGS mcp
 stow $FLAGS ruby
 mkdir -p ~/.ssh && stow $FLAGS -t ~/.ssh ssh
 stow $FLAGS tmux

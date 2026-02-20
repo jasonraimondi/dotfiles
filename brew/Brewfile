@@ -18,6 +18,7 @@ brew "rsync"
 brew "safe-rm"
 brew "stow"
 brew "the_silver_searcher" # https://gist.github.com/indiesquidge/ec010eca3ffa254788c2#brew-install-the_silver_searcher
+brew "runkids/tap/skillshare"
 brew "trash"
 brew "tree"
 brew "tmux"

@@ -1,7 +1,2 @@
-prettier
 tsx
 typescript
-#wasm-pack
-#wrangler
-#@anthropic-ai/claude-code
-#cdktf-cli

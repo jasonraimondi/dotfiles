@@ -4,18 +4,18 @@ min_version = "2024.9.5"
 PROJECT_NAME = "{{ config_root | basename }}"
 
 [tools]
-awscli    = "2.31.32"
+awscli    = "2.33.17"
 bun       = "latest"
 deno      = "2"
-elixir    = "1.19.2-otp-28"
-erlang    = "28.1"
+elixir    = "1.19.5-otp-28"
+erlang    = "28.3"
 golang    = "1"
-node      = ["24", "22", "20"]
+node      = "lts"
 pnpm      = ["9", "10", "latest"]
 python    = "3"
-ruby      = "3"
+ruby      = "4"
 rust      = "1"
-terraform = "1.13"
+terraform = "1.14"
 uv        = "latest"
 zig       = "latest"
 
