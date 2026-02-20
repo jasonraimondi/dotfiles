@@ -2,6 +2,7 @@
 title: Named Grid Areas
 impact: MEDIUM
 browser: 97%
+tier: A
 bcd_id: css.properties.grid-template-areas
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/grid-template-areas
 tags: layout, grid, grid-template-areas, semantic

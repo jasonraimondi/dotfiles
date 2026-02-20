@@ -2,6 +2,7 @@
 title: Logical Properties for Direction-Aware Layouts
 impact: HIGH
 browser: 95%
+tier: A
 bcd_id: css.properties.margin-inline-start
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/margin-inline-start
 tags: layout, logical-properties, rtl, i18n, margin, padding

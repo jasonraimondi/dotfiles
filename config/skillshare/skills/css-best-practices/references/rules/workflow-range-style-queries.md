@@ -2,6 +2,7 @@
 title: Range Style Queries
 impact: LOW
 browser: 35%
+tier: C
 bcd_id: css.at-rules.container.style_queries_for_custom_properties.range_syntax
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/At-rules/@container
 tags: workflow, style-queries, range, container-queries, experimental

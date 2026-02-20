@@ -2,6 +2,7 @@
 title: Backdrop Filter (Frosted Glass)
 impact: MEDIUM
 browser: 95%
+tier: A
 bcd_id: css.properties.backdrop-filter
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/backdrop-filter
 tags: color, backdrop-filter, blur, frosted-glass

@@ -2,6 +2,7 @@
 title: Scroll Buttons & Markers for Carousel Navigation
 impact: MEDIUM
 browser: 60%
+tier: C
 bcd_id: css.selectors.scroll-button
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Selectors/::scroll-button
 tags: interactive, carousel, scroll-button, scroll-marker

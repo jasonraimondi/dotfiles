@@ -2,6 +2,7 @@
 title: Scroll-Linked Animations
 impact: HIGH
 browser: 82%
+tier: B
 bcd_id: css.properties.animation-timeline.view
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/animation-timeline/view
 tags: animation, scroll, scroll-timeline, parallax

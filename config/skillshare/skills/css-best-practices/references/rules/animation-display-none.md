@@ -2,6 +2,7 @@
 title: Animating Display None
 impact: HIGH
 browser: 85%
+tier: B
 bcd_id: css.properties.transition-behavior.transitionable_display
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/transition-behavior
 tags: animation, transition, display, allow-discrete

@@ -1,163 +1,127 @@
 ---
 name: css-best-practices
-description: Browser-aware modern CSS patterns with progressive-enhancement fallbacks. Activate only for concrete styling work in CSS/Tailwind/Svelte (layout, spacing, typography, color/theming, animation, responsive/container queries, selectors/specificity, or replacing legacy CSS/JS style hacks). Do not activate for non-styling app logic or design critique without code changes.
+description: Produce idiomatic, browser-aware modern CSS with progressive-enhancement fallbacks for CSS, Tailwind, and Svelte styling tasks. Use for layout, spacing, typography, color/theming, animation, responsive/container-query work, selector/specificity cleanup, and interactive UI styling. Do not use for non-styling business logic or design critique without code edits.
 ---
 
 # CSS Best Practices
 
-## Overview
+Use this skill to replace outdated styling patterns with idiomatic CSS that is maintainable, accessible, and performance-aware.
 
-Comprehensive modern CSS guide with 62 rules across 7 categories, sourced from modern-css.com. Each rule shows the outdated approach and its modern CSS replacement. Rules are prioritized by browser support and impact.
+## Defaults (Important)
 
-## When to Apply
+- **Default output:** vanilla CSS (only output Tailwind/Svelte when user asks).
+- **Default compatibility mode:** **Baseline** (Tier A features by default).
+- **Default recommendation count:** one primary solution, not multiple competing options.
+- **Use rule metadata deterministically:** select features by each rule’s `tier` field first, then verify with `mdn_url` + `bcd_id`.
 
-Reference these guidelines when:
-- Writing new CSS, Tailwind, or Svelte component styles
-- Reviewing CSS for outdated patterns or JS workarounds
-- Replacing preprocessor features (Sass/Less) with native CSS
-- Implementing layouts, animations, or responsive design
-- Optimizing rendering performance
-- Implementing dark mode, theming, or color systems
+## Compatibility Modes
 
-## MDN Verification Workflow (Inspired by css-mcp)
+Choose mode before proposing implementation:
 
-When recommending modern CSS features, verify docs + support first:
+| Mode | Allowed tiers | When to use |
+|---|---|---|
+| **Baseline** (default) | A only (`>=90%`) | Production-safe default, unknown browser matrix |
+| **Progressive** | A + B (`80–89%`) | User accepts fallbacks and progressive enhancement |
+| **Experimental** | A + B + C (`<80%`) | User explicitly asks for cutting-edge CSS |
 
-1. Fetch docs for each feature before recommending (`grid`, `:has`, `@container`, `popover`, etc.)
-2. Verify Browser Compat Data (BCD) for features that may need fallbacks
-3. Apply support tiers below before replacing existing production patterns
-4. Add progressive-enhancement fallback snippets for Tier B/C features
+For B/C features, keep a robust baseline and layer enhancements with `@supports`.
 
-Each rule file in `references/rules/` includes:
-- `bcd_id` — canonical compatibility lookup key
-- `mdn_url` — direct MDN documentation link for fast verification
-- `browser` — support snapshot estimate (not a live source of truth)
+Rule frontmatter includes explicit `tier: A|B|C` values. Treat `browser:` as informational snapshot only.
 
-⚠️ `browser` percentages are point-in-time estimates and can drift. Always verify current support via `bcd_id` lookup and/or the `mdn_url` page before making production recommendations.
+## Idiomatic CSS Contract (Must Follow)
 
-If MCP tools are unavailable, verify using MDN docs and MDN browser compatibility tables manually.
+1. **Design the cascade intentionally**
+   - Use `@layer` ordering where applicable.
+   - Prefer low-specificity selectors (`:where()`, class-based selectors).
+   - Avoid `!important` unless constraint is explicit.
 
-## Support Tiers & Recommendation Policy
+2. **Use tokenized styles**
+   - Centralize design tokens with custom properties.
+   - Avoid hardcoded repeated magic values for spacing/color/typography.
 
-| Tier | Browser Support | Recommendation |
-|------|-----------------|----------------|
-| A | >= 90% | Safe default in most production code |
-| B | 80-89% | Use with fallback (`@supports`, graceful degradation) |
-| C | < 80% | Progressive enhancement only; keep baseline fallback |
+3. **Prefer logical and flow-relative properties**
+   - Use `margin-inline`, `padding-block`, `inset-inline`, etc., over physical left/right when possible.
 
-## CSS Audit Workflow (Summary-First)
+4. **Prefer native layout primitives**
+   - `gap`, `aspect-ratio`, Grid/Flex, container queries, `subgrid` (when supported), `inset` shorthand.
 
-When auditing CSS quality/performance, use a lightweight-first approach:
+5. **Animation and performance rules**
+   - Prefer transform/opacity-based motion where possible.
+   - Respect `prefers-reduced-motion`.
+   - Avoid JS-driven style hacks when native CSS can replace them.
 
-1. Start with high-level metrics (SLOC, total rules, selector complexity, unique colors/font sizes)
-2. Flag hotspots (max specificity, deeply nested selectors, duplicated patterns)
-3. Deep-dive only into flagged areas to avoid noisy reviews
+6. **Accessibility is non-negotiable**
+   - Preserve visible focus (`:focus-visible`).
+   - Preserve keyboard interaction semantics.
+   - Do not trade a11y for visual polish.
 
-This mirrors css-mcp's summary-first analysis pattern to keep guidance fast and focused.
+7. **Keep CSS readable and composable**
+   - Limit deep selector chains.
+   - Avoid unnecessary nesting.
+   - Keep component styles local and predictable.
 
-## Priority-Ordered Guidelines
+## Workflow (Use This Order)
 
-| Priority | Category | Impact |
-|----------|----------|--------|
-| 1 | Layout & Spacing | CRITICAL — most common patterns |
-| 2 | Animation & Transitions | HIGH — eliminates JS dependencies |
-| 3 | Color & Theming | HIGH — removes preprocessor needs |
-| 4 | Typography | MEDIUM — improves text rendering |
-| 5 | Selectors & Specificity | MEDIUM — cleaner selector patterns |
-| 6 | Workflow & Architecture | MEDIUM — native CSS features |
-| 7 | Interactive UI | HIGH — replaces JS-heavy components |
+1. **Identify styling objective + constraints**
+   - Clarify desired change (layout/motion/theme/selectors/etc.)
+   - Clarify constraints (browser support, accessibility, framework)
 
-## Quick Reference
+2. **Select compatibility mode**
+   - Baseline by default unless user requests more aggressive modernization
 
-### Critical Layout Patterns (Apply First)
+3. **Load only required references**
+   - Read `references/index.md`
+   - Read one profile file in `references/profiles/` matching mode
+   - Read only relevant rule files from `references/rules/`
 
-- Use `gap` instead of margin hacks for spacing
-- Use `aspect-ratio` instead of padding-top trick
-- Use `inset: 0` instead of top/right/bottom/left
-- Use `object-fit: cover` instead of background-image hacks
-- Use logical properties (`margin-inline-start`) instead of left/right
-- Use `position: sticky` instead of JS scroll listeners
-- Use container queries (`@container`) instead of media queries
-- Use `grid-template-areas` for semantic grid layouts
-- Use `subgrid` instead of duplicating parent track definitions
-- Use `scrollbar-gutter: stable` to prevent layout shift
-- Use `field-sizing: content` for auto-growing textareas
-- Use `content-visibility: auto` for lazy rendering
+4. **Verify support and caveats**
+   - Confirm selected rule `tier` matches chosen mode
+   - Use each rule’s `mdn_url` and `bcd_id`
+   - Treat frontmatter `browser` values as snapshots only
 
-### Animation Patterns (Eliminate JS)
+5. **Implement one primary recommendation**
+   - Provide patch-level CSS/Tailwind/Svelte change
+   - Include fallback for B/C features
 
-- Use `interpolate-size: allow-keywords` for height:auto transitions
-- Use `transition-behavior: allow-discrete` for display:none animations
-- Use `@starting-style` for entry animations
-- Use `animation-timeline: view()` for scroll-linked animations
-- Use separate `translate`/`rotate`/`scale` properties
-- Use `view-transition-name` for page transitions
+6. **Run final quality checks**
+   - No a11y regression
+   - No unnecessary specificity escalation
+   - No avoidable JS workaround retained
+   - Motion honors reduced-motion preferences
 
-### Color & Theming
+## Output Format (Use Exactly)
 
-- Use `oklch()` for perceptually uniform colors
-- Use `color-mix()` instead of Sass mix()
-- Use `light-dark()` for dark mode without duplication
-- Use `accent-color` instead of rebuilding form controls
-- Use relative color syntax for color variants
-- Use `color-scheme: light dark` for automatic dark defaults
+1. **Recommendation** — one concise modern replacement
+2. **Why** — maintainability/perf/a11y in 1–2 lines
+3. **Compatibility** — mode + tier + verification note
+4. **Fallback** — required for B/C (optional for A)
+5. **Code patch** — final implementation (copy-paste ready)
 
-### Typography
+## Rule Loading Aids
 
-- Use `text-wrap: balance` for balanced headlines
-- Use `clamp()` for fluid typography
-- Use `line-clamp` for multiline truncation
-- Use `font-display: swap` to avoid invisible text
-- Use variable fonts instead of multiple font files
+Use targeted lookup before reading files broadly:
 
-### Selectors & Specificity
-
-- Use `:has()` instead of JS parent selection
-- Use `:focus-visible` instead of `:focus`
-- Use `:where()` for zero-specificity resets
-- Use `:is()` to group selectors
-- Use `:user-invalid` for form validation styles
-- Use `@layer` instead of `!important` wars
-
-### Workflow & Architecture
-
-- Use native CSS nesting instead of Sass
-- Use `@scope` instead of BEM naming
-- Use CSS custom properties instead of Sass variables
-- Use `@property` for typed custom properties
-- Use native `@function` instead of Sass functions
-- Use typed `attr(... type())` for attribute-driven styles (experimental)
-- Use range style queries for threshold-based styling (experimental)
-
-### Interactive UI (Replace JS Libraries)
-
-- Use `<dialog>` instead of modal libraries
-- Use `popover` attribute instead of JS dropdowns
-- Use CSS anchor positioning instead of Popper.js
-- Use `scroll-snap-type` instead of carousel libraries
-- Use `::scroll-button()` / `::scroll-marker` for carousel nav
-- Use `appearance: base-select` for custom selects
-- Use `commandfor` / `command` for dialog triggers
+```bash
+rg -l "container|@container|subgrid|gap|aspect-ratio" references/rules
+rg -l "focus-visible|:has|:where|:is|@layer" references/rules
+rg -l "oklch|color-mix|light-dark|color-scheme" references/rules
+rg -l "@starting-style|timeline|transition-behavior|interpolate-size" references/rules
+```
 
 ## References
 
-Full documentation with code examples:
+- `references/index.md` — fast entrypoint + rule map
+- `references/profiles/stable.md` — Tier A starter set
+- `references/profiles/progressive.md` — Tier B features requiring fallbacks
+- `references/profiles/experimental.md` — Tier C progressive-only features
+- `references/css-techniques-guide.md` — full catalog and examples
+- `references/rules/` — per-technique rule files with metadata and caveats
 
-- `references/modern-css-guide.md` — Complete guide with all patterns
-- `references/rules/` — Individual rule files by category
+## Anti-Patterns to Avoid
 
-To look up a specific pattern:
-```
-rg -l "container" references/rules
-rg -l "oklch" references/rules
-```
-
-## Rule Categories in `references/rules/`
-
-- `layout-*` — Layout and spacing patterns
-- `animation-*` — Animation and transition patterns
-- `color-*` — Color and theming
-- `typography-*` — Typography and text
-- `selector-*` — Selectors and specificity
-- `workflow-*` — CSS architecture and preprocessing
-- `interactive-*` — Interactive UI components
+- Recommending B/C features without a baseline fallback
+- Shipping recommendations using snapshot `%` support values alone
+- Offering multiple default solutions when one clear path is enough
+- Introducing `!important` or deep specificity chains without necessity
+- Returning style advice without concrete patch-level code
+- Outputting framework-specific syntax when user asked for plain CSS

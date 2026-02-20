@@ -2,6 +2,7 @@
 title: Aspect Ratio Without Padding Hack
 impact: CRITICAL
 browser: 96%
+tier: A
 bcd_id: css.properties.aspect-ratio
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/aspect-ratio
 tags: layout, aspect-ratio, responsive, images, video

@@ -2,6 +2,7 @@
 title: Native Color Mixing
 impact: MEDIUM
 browser: 89%
+tier: B
 bcd_id: css.types.color.color-mix
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Values/color_value/color-mix
 tags: color, color-mix, blend, preprocessor

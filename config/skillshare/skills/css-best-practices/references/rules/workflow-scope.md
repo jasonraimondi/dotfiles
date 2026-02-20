@@ -2,6 +2,7 @@
 title: @scope for Scoped Styles
 impact: MEDIUM
 browser: 84%
+tier: B
 bcd_id: css.at-rules.scope
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/At-rules/@scope
 tags: workflow, scope, bem, css-modules, encapsulation

@@ -2,6 +2,7 @@
 title: :user-invalid Form Validation
 impact: HIGH
 browser: 85%
+tier: B
 bcd_id: css.selectors.user-invalid
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Selectors/:user-invalid
 tags: selector, forms, validation, user-invalid

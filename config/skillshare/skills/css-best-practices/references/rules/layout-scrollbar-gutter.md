@@ -2,6 +2,7 @@
 title: Scrollbar Gutter to Prevent Layout Shift
 impact: MEDIUM
 browser: 90%
+tier: A
 bcd_id: css.properties.scrollbar-gutter.stable
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scrollbar-gutter
 tags: layout, scrollbar, layout-shift, cls

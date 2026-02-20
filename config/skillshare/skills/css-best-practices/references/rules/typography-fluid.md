@@ -2,6 +2,7 @@
 title: Fluid Typography with clamp()
 impact: HIGH
 browser: 96%
+tier: A
 bcd_id: css.types.clamp
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Values/clamp
 tags: typography, fluid, clamp, responsive

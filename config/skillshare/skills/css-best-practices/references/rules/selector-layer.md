@@ -2,6 +2,7 @@
 title: @layer for Cascade Control
 impact: HIGH
 browser: 95%
+tier: A
 bcd_id: css.at-rules.layer
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/At-rules/@layer
 tags: selector, layer, cascade, specificity, important

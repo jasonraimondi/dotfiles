@@ -2,6 +2,7 @@
 title: Responsive Clip Paths with shape()
 impact: LOW
 browser: 55%
+tier: C
 bcd_id: css.types.basic-shape.shape
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Values/basic-shape/shape
 tags: animation, clip-path, shape, responsive

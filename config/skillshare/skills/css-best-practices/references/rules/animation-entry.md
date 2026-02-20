@@ -2,6 +2,7 @@
 title: Entry Animations with @starting-style
 impact: HIGH
 browser: 85%
+tier: B
 bcd_id: css.at-rules.starting-style
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/At-rules/@starting-style
 tags: animation, transition, entry, starting-style

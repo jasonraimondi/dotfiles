@@ -2,6 +2,7 @@
 title: Balanced Text Wrap
 impact: HIGH
 browser: 87%
+tier: B
 bcd_id: css.properties.text-wrap.balance
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-wrap
 tags: typography, text-wrap, balance, headlines

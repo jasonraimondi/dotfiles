@@ -2,6 +2,7 @@
 title: Native Dialog Element
 impact: HIGH
 browser: 96%
+tier: A
 bcd_id: html.elements.dialog
 mdn_url: https://developer.mozilla.org/docs/Web/HTML/Reference/Elements/dialog
 tags: interactive, dialog, modal, accessibility

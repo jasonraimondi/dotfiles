@@ -2,6 +2,7 @@
 title: Popover Hints for Tooltips
 impact: MEDIUM
 browser: 70%
+tier: C
 bcd_id: html.global_attributes.popover.hint
 mdn_url: https://developer.mozilla.org/docs/Web/HTML/Reference/Global_attributes/popover
 tags: interactive, tooltip, popover-hint, hover

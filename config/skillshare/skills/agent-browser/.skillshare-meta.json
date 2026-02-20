@@ -1,8 +1,0 @@
-{
-  "source": "https://github.com/code-yeongyu/oh-my-opencode/tree/dev/src/features/builtin-skills/agent-browser",
-  "type": "github-subdir",
-  "installed_at": "2026-02-11T23:06:04.71994-05:00",
-  "repo_url": "https://github.com/code-yeongyu/oh-my-opencode.git",
-  "subdir": "src/features/builtin-skills/agent-browser",
-  "version": "d358e6e"
-}

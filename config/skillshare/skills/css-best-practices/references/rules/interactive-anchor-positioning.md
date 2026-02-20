@@ -2,6 +2,7 @@
 title: CSS Anchor Positioning
 impact: HIGH
 browser: 75%
+tier: C
 bcd_id: css.properties.position-anchor
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/position-anchor
 tags: interactive, anchor, positioning, tooltip, popover

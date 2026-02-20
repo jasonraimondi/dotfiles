@@ -2,6 +2,7 @@
 title: Subgrid for Nested Grid Alignment
 impact: HIGH
 browser: 88%
+tier: B
 bcd_id: css.properties.grid-template-columns.subgrid
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Guides/Grid_layout/Subgrid
 tags: layout, grid, subgrid, alignment

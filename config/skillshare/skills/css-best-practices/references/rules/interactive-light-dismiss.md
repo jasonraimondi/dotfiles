@@ -2,6 +2,7 @@
 title: Light Dismiss for Dialogs
 impact: MEDIUM
 browser: 80%
+tier: B
 bcd_id: html.elements.dialog.closedby
 mdn_url: https://developer.mozilla.org/docs/Web/HTML/Reference/Elements/dialog
 tags: interactive, dialog, light-dismiss, click-outside

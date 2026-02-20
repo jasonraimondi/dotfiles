@@ -2,6 +2,7 @@
 title: Text Box Trim for Optical Centering
 impact: MEDIUM
 browser: 65%
+tier: C
 bcd_id: css.properties.text-box.trim-both
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/text-box
 tags: layout, typography, vertical-centering, text-box

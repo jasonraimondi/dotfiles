@@ -2,6 +2,7 @@
 title: Custom Properties Instead of Sass Variables
 impact: HIGH
 browser: 97%
+tier: A
 bcd_id: css.properties.custom-property
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/--*
 tags: workflow, custom-properties, variables, theming

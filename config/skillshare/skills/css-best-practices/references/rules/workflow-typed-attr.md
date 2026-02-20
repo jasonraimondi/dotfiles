@@ -2,6 +2,7 @@
 title: Typed Attribute Values with attr()
 impact: LOW
 browser: 40%
+tier: C
 bcd_id: css.types.attr
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Values/attr
 tags: workflow, attr, typed-attributes, data-attributes, experimental

@@ -2,6 +2,7 @@
 title: Gap Instead of Margin Hacks
 impact: CRITICAL
 browser: 96%
+tier: A
 bcd_id: css.properties.gap
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/gap
 tags: layout, spacing, flexbox, grid, gap

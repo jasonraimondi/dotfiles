@@ -2,6 +2,7 @@
 title: Independent Transform Properties
 impact: MEDIUM
 browser: 93%
+tier: A
 bcd_id: css.properties.translate
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/translate
 tags: animation, transform, translate, rotate, scale

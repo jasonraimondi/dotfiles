@@ -2,6 +2,7 @@
 title: light-dark() for Dark Mode
 impact: HIGH
 browser: 83%
+tier: B
 bcd_id: css.types.color.light-dark
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Values/color_value/light-dark
 tags: color, dark-mode, light-dark, theming

@@ -2,6 +2,7 @@
 title: :is() for Selector Grouping
 impact: MEDIUM
 browser: 96%
+tier: A
 bcd_id: css.selectors.is
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Selectors/:is
 tags: selector, is, grouping, shorthand

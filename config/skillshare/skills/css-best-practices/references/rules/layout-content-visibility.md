@@ -2,6 +2,7 @@
 title: Content Visibility for Lazy Rendering
 impact: HIGH
 browser: 93%
+tier: A
 bcd_id: css.properties.content-visibility.auto
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/content-visibility
 tags: layout, performance, content-visibility, lazy-rendering

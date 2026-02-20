@@ -2,6 +2,7 @@
 title: :target-current Scroll Spy
 impact: MEDIUM
 browser: 60%
+tier: C
 bcd_id: css.selectors.target-current
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Selectors/:target-current
 tags: selector, scroll-spy, navigation, target

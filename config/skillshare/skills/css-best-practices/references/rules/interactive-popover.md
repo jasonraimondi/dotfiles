@@ -2,6 +2,7 @@
 title: Popover for Dropdowns
 impact: HIGH
 browser: 86%
+tier: B
 bcd_id: html.global_attributes.popover
 mdn_url: https://developer.mozilla.org/docs/Web/HTML/Reference/Global_attributes/popover
 tags: interactive, popover, dropdown, menu

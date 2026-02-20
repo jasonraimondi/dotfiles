@@ -2,6 +2,7 @@
 title: Grid Centering Without Transform Hack
 impact: CRITICAL
 browser: 97%
+tier: A
 bcd_id: css.properties.place-items.grid_context
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/place-items
 tags: layout, centering, grid, place-items

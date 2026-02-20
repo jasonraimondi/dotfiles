@@ -2,6 +2,7 @@
 title: Container Queries Instead of Media Queries
 impact: CRITICAL
 browser: 92%
+tier: A
 bcd_id: css.at-rules.container
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/At-rules/@container
 tags: layout, container-queries, responsive, components

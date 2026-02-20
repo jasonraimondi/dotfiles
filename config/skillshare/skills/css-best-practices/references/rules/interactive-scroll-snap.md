@@ -2,6 +2,7 @@
 title: Scroll Snap for Carousels
 impact: HIGH
 browser: 95%
+tier: A
 bcd_id: css.properties.scroll-snap-type
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/scroll-snap-type
 tags: interactive, scroll-snap, carousel, slider

@@ -2,6 +2,7 @@
 title: Native CSS Nesting
 impact: HIGH
 browser: 91%
+tier: A
 bcd_id: css.selectors.nesting
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Selectors/Nesting_selector
 tags: workflow, nesting, sass, preprocessor

@@ -2,6 +2,7 @@
 title: OKLCH for Perceptually Uniform Colors
 impact: HIGH
 browser: 90%
+tier: A
 bcd_id: css.types.color.oklch
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Values/color_value/oklch
 tags: color, oklch, color-space, palette

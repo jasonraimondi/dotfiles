@@ -2,6 +2,7 @@
 title: Object-Fit for Responsive Images
 impact: HIGH
 browser: 97%
+tier: A
 bcd_id: css.properties.object-fit.cover
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/object-fit
 tags: layout, images, object-fit, responsive

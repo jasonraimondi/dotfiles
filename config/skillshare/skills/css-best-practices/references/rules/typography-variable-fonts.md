@@ -2,6 +2,7 @@
 title: Variable Fonts
 impact: MEDIUM
 browser: 96%
+tier: A
 bcd_id: css.properties.font-variation-settings
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/font-variation-settings
 tags: typography, variable-fonts, font-weight, performance

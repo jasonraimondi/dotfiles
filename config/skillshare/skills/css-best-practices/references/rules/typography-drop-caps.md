@@ -2,6 +2,7 @@
 title: Drop Caps Without Float Hacks
 impact: LOW
 browser: 91%
+tier: A
 bcd_id: css.properties.initial-letter
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/initial-letter
 tags: typography, initial-letter, drop-cap

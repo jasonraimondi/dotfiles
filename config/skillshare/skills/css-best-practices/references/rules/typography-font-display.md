@@ -2,6 +2,7 @@
 title: Font Display Swap
 impact: MEDIUM
 browser: 97%
+tier: A
 bcd_id: css.at-rules.font-face.font-display
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/At-rules/@font-face/font-display
 tags: typography, font-display, foit, performance

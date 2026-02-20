@@ -2,6 +2,7 @@
 title: Staggered Animations with sibling-index()
 impact: MEDIUM
 browser: 60%
+tier: C
 bcd_id: css.types.sibling-index
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Values/sibling-index
 tags: animation, stagger, sibling-index, nth-child

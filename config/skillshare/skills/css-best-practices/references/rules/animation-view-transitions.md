@@ -2,6 +2,7 @@
 title: Page Transitions Without a Framework
 impact: HIGH
 browser: 89%
+tier: B
 bcd_id: css.properties.view-transition-name
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/view-transition-name
 tags: animation, view-transitions, page-transition, spa

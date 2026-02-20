@@ -2,6 +2,7 @@
 title: @property for Typed Custom Properties
 impact: HIGH
 browser: 92%
+tier: A
 bcd_id: css.at-rules.property
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/At-rules/@property
 tags: workflow, property, typed, animation, custom-properties

@@ -2,6 +2,7 @@
 title: Scroll State Styling
 impact: MEDIUM
 browser: 65%
+tier: C
 bcd_id: css.at-rules.container.scroll-state_queries.stuck
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/At-rules/@container
 tags: animation, scroll-state, sticky, snapped

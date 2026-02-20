@@ -2,6 +2,7 @@
 title: Relative Color Syntax for Variants
 impact: HIGH
 browser: 87%
+tier: B
 bcd_id: css.types.color.color.relative_syntax
 mdn_url: https://developer.mozilla.org/docs/Web/CSS/Reference/Values/color_value/color
 tags: color, relative-color, variants, lighten, darken
