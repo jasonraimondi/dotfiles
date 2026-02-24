@@ -1,5 +1,40 @@
 # Project-local pi extensions
 
+## ask-user-question.ts
+
+Claude-style AskUserQuestion equivalent.
+
+### Tool
+- `AskUserQuestion`
+
+### Input shape
+```json
+{
+  "questions": [
+    {
+      "question": "...",
+      "header": "...",
+      "options": [{ "label": "...", "description": "..." }],
+      "multiSelect": false
+    }
+  ]
+}
+```
+
+### Implemented feature set
+- Multiple questions per call (`questions[]`)
+- Per-question `header`
+- Per-option `label` + `description`
+- Per-question `multiSelect`
+- Built-in custom typed answers (even when options are provided)
+- Claude-style tool result summary text
+- Structured `details` payload with `questions`, `answers`, `cancelled`
+
+### Load
+```bash
+pi -e ai/pi/extensions/ask-user-question.ts
+```
+
 ## clean-plan-mode.ts
 
 Strict plan mode with hard read-only enforcement.
