@@ -9,8 +9,6 @@ targets:
     path: ~/.junie/skills
   pi:
     path: ~/.pi/agent/skills
-  windsurf:
-    path: ~/.codeium/windsurf/skills
 ignore:
   - "**/.DS_Store"
   - "**/.git/**"

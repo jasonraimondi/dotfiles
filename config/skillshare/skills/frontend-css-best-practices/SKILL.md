@@ -5,123 +5,63 @@ description: Produce idiomatic, browser-aware modern CSS with progressive-enhanc
 
 # CSS Best Practices
 
-Use this skill to replace outdated styling patterns with idiomatic CSS that is maintainable, accessible, and performance-aware.
+Replace outdated styling patterns with idiomatic, accessible, performance-aware CSS.
 
-## Defaults (Important)
+## Defaults
 
-- **Default output:** vanilla CSS (only output Tailwind/Svelte when user asks).
-- **Default compatibility mode:** **Baseline** (Tier A features by default).
-- **Default recommendation count:** one primary solution, not multiple competing options.
-- **Use rule metadata deterministically:** select features by each rule’s `tier` field first, then verify with `mdn_url` + `bcd_id`.
+- **Output format:** vanilla CSS. Only output Tailwind/Svelte when user asks.
+- **Compatibility mode:** Baseline (Tier A only).
+- **Recommendations:** one primary solution, not competing options.
+
+## Workflow
+
+1. **Identify objective** — layout, motion, theme, selectors, etc. + constraints (browser support, a11y, framework).
+2. **Select compatibility mode** — Baseline unless user requests Progressive or Experimental.
+3. **Load references** — read `references/index.md`, then the matching profile and only relevant rule files from `references/rules/`.
+4. **Verify support** — confirm rule `tier` matches mode. Use `mdn_url` and `bcd_id` from rule frontmatter; treat `browser` % as snapshot only.
+5. **Implement** — provide a patch-level code change with `@supports` fallback for B/C features.
+6. **Quality check** — no a11y regression, no unnecessary specificity escalation, no avoidable JS workaround, motion honors `prefers-reduced-motion`.
 
 ## Compatibility Modes
 
-Choose mode before proposing implementation:
-
-| Mode | Allowed tiers | When to use |
+| Mode | Tiers | When |
 |---|---|---|
-| **Baseline** (default) | A only (`>=90%`) | Production-safe default, unknown browser matrix |
-| **Progressive** | A + B (`80–89%`) | User accepts fallbacks and progressive enhancement |
-| **Experimental** | A + B + C (`<80%`) | User explicitly asks for cutting-edge CSS |
+| **Baseline** (default) | A (`>=90%`) | Production-safe, unknown browser matrix |
+| **Progressive** | A + B (`80–89%`) | User accepts fallbacks |
+| **Experimental** | A + B + C (`<80%`) | User explicitly asks for cutting-edge |
 
 For B/C features, keep a robust baseline and layer enhancements with `@supports`.
 
-Rule frontmatter includes explicit `tier: A|B|C` values. Treat `browser:` as informational snapshot only.
+## Idiomatic CSS Rules
 
-## Idiomatic CSS Contract (Must Follow)
+1. **Cascade** — use `@layer` ordering, prefer `:where()`/class selectors, avoid `!important`.
+2. **Tokens** — centralize design tokens with custom properties; no hardcoded magic values.
+3. **Logical properties** — prefer `margin-inline`, `padding-block`, `inset-inline` over physical left/right.
+4. **Layout primitives** — `gap`, `aspect-ratio`, Grid/Flex, container queries, `subgrid`, `inset` shorthand.
+5. **Animation** — transform/opacity-based motion, respect `prefers-reduced-motion`, no JS-driven style hacks when native CSS works.
+6. **Accessibility** — preserve `:focus-visible`, keyboard semantics; never trade a11y for visual polish.
+7. **Readability** — limit deep selector chains, avoid unnecessary nesting, keep component styles local.
 
-1. **Design the cascade intentionally**
-   - Use `@layer` ordering where applicable.
-   - Prefer low-specificity selectors (`:where()`, class-based selectors).
-   - Avoid `!important` unless constraint is explicit.
-
-2. **Use tokenized styles**
-   - Centralize design tokens with custom properties.
-   - Avoid hardcoded repeated magic values for spacing/color/typography.
-
-3. **Prefer logical and flow-relative properties**
-   - Use `margin-inline`, `padding-block`, `inset-inline`, etc., over physical left/right when possible.
-
-4. **Prefer native layout primitives**
-   - `gap`, `aspect-ratio`, Grid/Flex, container queries, `subgrid` (when supported), `inset` shorthand.
-
-5. **Animation and performance rules**
-   - Prefer transform/opacity-based motion where possible.
-   - Respect `prefers-reduced-motion`.
-   - Avoid JS-driven style hacks when native CSS can replace them.
-
-6. **Accessibility is non-negotiable**
-   - Preserve visible focus (`:focus-visible`).
-   - Preserve keyboard interaction semantics.
-   - Do not trade a11y for visual polish.
-
-7. **Keep CSS readable and composable**
-   - Limit deep selector chains.
-   - Avoid unnecessary nesting.
-   - Keep component styles local and predictable.
-
-## Workflow (Use This Order)
-
-1. **Identify styling objective + constraints**
-   - Clarify desired change (layout/motion/theme/selectors/etc.)
-   - Clarify constraints (browser support, accessibility, framework)
-
-2. **Select compatibility mode**
-   - Baseline by default unless user requests more aggressive modernization
-
-3. **Load only required references**
-   - Read `references/index.md`
-   - Read one profile file in `references/profiles/` matching mode
-   - Read only relevant rule files from `references/rules/`
-
-4. **Verify support and caveats**
-   - Confirm selected rule `tier` matches chosen mode
-   - Use each rule’s `mdn_url` and `bcd_id`
-   - Treat frontmatter `browser` values as snapshots only
-
-5. **Implement one primary recommendation**
-   - Provide patch-level CSS/Tailwind/Svelte change
-   - Include fallback for B/C features
-
-6. **Run final quality checks**
-   - No a11y regression
-   - No unnecessary specificity escalation
-   - No avoidable JS workaround retained
-   - Motion honors reduced-motion preferences
-
-## Output Format (Use Exactly)
+## Output Format
 
 1. **Recommendation** — one concise modern replacement
 2. **Why** — maintainability/perf/a11y in 1–2 lines
 3. **Compatibility** — mode + tier + verification note
-4. **Fallback** — required for B/C (optional for A)
-5. **Code patch** — final implementation (copy-paste ready)
-
-## Rule Loading Aids
-
-Use targeted lookup before reading files broadly:
-
-```bash
-rg -l "container|@container|subgrid|gap|aspect-ratio" references/rules
-rg -l "focus-visible|:has|:where|:is|@layer" references/rules
-rg -l "oklch|color-mix|light-dark|color-scheme" references/rules
-rg -l "@starting-style|timeline|transition-behavior|interpolate-size" references/rules
-```
+4. **Fallback** — required for B/C, optional for A
+5. **Code patch** — copy-paste ready
 
 ## References
 
-- `references/index.md` — fast entrypoint + rule map
-- `references/profiles/stable.md` — Tier A starter set
-- `references/profiles/progressive.md` — Tier B features requiring fallbacks
-- `references/profiles/experimental.md` — Tier C progressive-only features
+- `references/index.md` — entrypoint, rule map, and quick search commands
+- `references/profiles/` — `stable.md` (A), `progressive.md` (B), `experimental.md` (C)
 - `references/css-techniques-guide.md` — full catalog and examples
-- `references/rules/` — per-technique rule files with metadata and caveats
+- `references/rules/` — per-technique rule files with tier, `bcd_id`, `mdn_url`, and caveats
 
-## Anti-Patterns to Avoid
+## Anti-Patterns
 
 - Recommending B/C features without a baseline fallback
-- Shipping recommendations using snapshot `%` support values alone
-- Offering multiple default solutions when one clear path is enough
+- Using snapshot `%` support values as sole evidence
+- Offering multiple competing solutions when one clear path suffices
 - Introducing `!important` or deep specificity chains without necessity
 - Returning style advice without concrete patch-level code
 - Outputting framework-specific syntax when user asked for plain CSS
