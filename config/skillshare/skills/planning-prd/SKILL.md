@@ -1,6 +1,6 @@
 ---
 name: planning-prd
-description: Create or update PRD plans for features/projects. Use when users ask to plan work, write/refine a PRD, run a planning interview, or update files in plans/. Conduct a deep structured interview, then output AI-executable tasks across intent/experience/data/rules/resilience tracks.
+description: Create or update PRD plans. Use when users ask to plan work, write a PRD, run a planning interview, or update plans/. Deep structured interview, then AI-executable tasks.
 ---
 
 # PRD Planning
@@ -9,7 +9,7 @@ Plan features and projects with AI-executable tasks. Works for greenfield projec
 
 ## Execution checklist
 
-1. **Read context** — scan existing planning files, codebase (routes, schema, config, dependencies), and any user-provided prompt before asking anything. Form hypotheses about architecture, constraints, and unknowns.
+1. **Read context** — scan existing planning files, codebase (routes, schema, config, deps), and any user-provided prompt before asking anything. Form hypotheses about architecture, constraints, and unknowns.
 2. **Interview** with `AskUserQuestion` — conduct deep, multi-round interviews across product and engineering layers. Do not generate the plan until you can write unambiguous steps for every relevant track.
 3. **Research synthesis** — compile interview findings into research documents organized by domain (see output contracts).
 4. **Confirm** scope, plan size, and phase sequencing with the user.
@@ -23,66 +23,47 @@ Use `AskUserQuestion` for every round. If unavailable, ask equivalent numbered q
 
 ### Rules
 
-1. **Ask 2-4 focused questions per round** across two layers:
-   - **Product layer** (what): intent, experience, data
-   - **Engineering layer** (how): rules, resilience
-2. **Continue round after round** until every relevant track has enough detail to write unambiguous, AI-executable tasks. Do not rush to generate. Expect 5-10+ rounds for full project plans.
-3. Probe edge behavior inside relevant track questions — do not postpone all edge cases to a final round.
-4. After each round, report **covered vs uncovered tracks** and what gaps remain.
-5. Include a **"Generate plan now"** option from **round 3 onward only**, with uncovered tracks listed in the description so the user knows what they're skipping.
-6. Stop interviewing immediately if user chooses generate now.
-7. **Build on prior answers** — reference specific decisions from earlier rounds to dig deeper. "You said X — does that mean Y in this scenario?"
-8. **Offer concrete options** — when a decision has 2-3 obvious approaches, present them with tradeoffs rather than open-ended questions. Force a choice.
+1. **2-4 focused questions per round** across two layers:
+   - **Product** (what): intent, experience, data
+   - **Engineering** (how): rules, resilience
+2. **Continue until every relevant track has enough detail** to write unambiguous, AI-executable tasks. Expect 5-10+ rounds for full project plans. Do not rush.
+3. **Probe edge behavior inline** — do not postpone edge cases to a final round.
+4. After each round, report **covered vs uncovered tracks** and remaining gaps.
+5. Offer **"Generate plan now"** from **round 3 onward only**, listing uncovered tracks in the description.
+6. Stop interviewing immediately if user chooses to generate now.
+7. **Build on prior answers** — reference specific earlier decisions. "You said X — does that mean Y in this scenario?"
+8. **Offer concrete options with tradeoffs** rather than open-ended questions. Force choices.
+9. **Never ask** what's inferrable from the codebase, questions with obvious answers ("Do you want tests?"), or questions about code structure (that's your job).
 
-### Interview depth by layer
+### Interview depth
 
 #### Product layer — dig until you have flows, not ideas
 
-- **Intent**: Don't stop at "what does it do." Push to: who benefits most, what gets cut if time runs out, what success looks like in numbers, what explicitly won't be built.
-- **Experience**: Walk through every screen transition. What does the user see on first load? After the action? On empty state? On error? On slow network? After they leave and come back? What's the notification model?
-- **Data**: Map every entity, every relationship, every lifecycle. What creates it, what reads it, what updates it, what deletes it? What's the cascade behavior? What needs an audit trail?
+- **Intent**: Push beyond "what does it do" to: who benefits most, what gets cut first, what success looks like in numbers, what's explicitly out of scope.
+- **Experience**: Walk every screen transition — first load, action complete, empty state, error, slow network, return visit, notification model.
+- **Data**: Map every entity, relationship, and lifecycle (CRUD + cascade + audit trail).
 
 #### Engineering layer — dig until you have constraints, not vibes
 
-- **Rules**: Enumerate every permission boundary. What can each role do? What happens at the boundary (unauthorized attempt)? What validation runs where (client vs server)? What business rules feel "obvious" but nobody wrote down?
-- **Resilience**: What happens when each external dependency fails? What's idempotent? What's the retry story? What data can be stale? What must be consistent? What's the monitoring/alerting story?
+- **Rules**: Enumerate permission boundaries, validation locations (client vs server), and unwritten business rules.
+- **Resilience**: Dependency failure modes, idempotency, retry strategy, staleness tolerance, consistency requirements, monitoring.
 
 #### Cross-cutting probes (weave into relevant rounds)
 
-- **Testing**: What's the confidence threshold? Which flows need integration tests vs unit tests? What's the fixture/seed data story?
-- **Performance**: What are the expected cardinalities? What needs pagination? What needs caching? What's the latency budget for key flows?
-- **Security**: What's the threat model? Where does user input enter? What needs rate limiting? What needs audit logging?
-- **Migration**: Is there existing data to migrate? What's the rollback plan if this ships and breaks? Can this be feature-flagged?
+- **Testing**: Confidence threshold, integration vs unit, fixture/seed data.
+- **Performance**: Cardinalities, pagination, caching, latency budgets.
+- **Security**: Threat model, input boundaries, rate limiting, audit logging.
+- **Migration**: Existing data, rollback plan, feature-flag feasibility.
 
-### Question quality bar
+### Question quality
 
-Every question must extract information you cannot infer from the codebase or prior answers. Ask questions that expose hidden assumptions and force decisions.
+Every question must extract information you cannot infer from the codebase or prior answers. Prioritize questions that expose hidden assumptions and force decisions:
 
-| Track | Insightful questions (not the obvious ones) |
-|-------|------------------|
-| **Intent** | If you could only ship one part of this, which part unlocks the most value? What's the cost of getting this wrong vs shipping it late? Who's the second-most-important user — do their needs conflict with the primary user? What adjacent features are people going to assume exist? |
-| **Experience** | What does the user do right *before* they reach this feature — and right *after*? If the action takes 30 seconds instead of 1, what should they see? What does "undo" look like here? What state carries over between sessions? How does this behave when the user has 3 items vs 3,000? |
-| **Data** | What's the lifecycle of this entity — from birth to archive/delete? If you query this table in 6 months, what questions will you wish you'd stored data to answer? What's the write:read ratio? Is there a natural partition key? What needs to survive account deletion? |
-| **Rules** | What's the most confusing thing a user could legally do that you'd want to prevent anyway? Which constraints apply differently in a self-serve vs enterprise context? What happens in a multi-user race condition on this resource? What clock does "expires in 24 hours" reference — server, user, or UTC? |
-| **Resilience** | If you deployed this at 5pm Friday, what's the 3am page you're most worried about? What's the blast radius if the database is 200ms slower than normal? Which operations must be exactly-once vs at-least-once? What's the "sorry, try again" vs "we'll fix it and email you" boundary? |
-
-**Never ask:**
-- "What tech stack are you using?" (read the repo)
-- "Do you want tests?" / "Should we handle errors?" (always yes)
-- "What's the project about?" (user already told you)
-- Generic questions that don't force a specific decision
-- Questions answerable by reading the codebase or dependencies
-- "How should we structure the code?" (that's your job)
-
-## Coverage tracks
-
-- `intent` — scope, goals, boundaries, success criteria, priorities
-- `experience` — UX/UI flows, pages, interactions, empty/loading/error states
-- `data` — entities, schema/contracts, persistence, relationships
-- `rules` — validation, permissions, auth, business logic, constraints
-- `resilience` — failures, retries, degraded behavior, health checks, ops concerns
-
-Skip tracks only when genuinely irrelevant (e.g., `resilience` for a static content change). When in doubt, ask — do not silently skip.
+- **Intent**: What part ships first to unlock the most value? What's the cost of wrong vs late? Do secondary users' needs conflict with primary?
+- **Experience**: What happens right before/after this feature? What does "undo" look like? How does it behave at 3 items vs 3,000?
+- **Data**: What's the entity lifecycle from birth to deletion? What queries will you wish you'd stored data for in 6 months? What survives account deletion?
+- **Rules**: What's the most confusing thing a user could legally do that you'd still want to prevent? What differs between self-serve and enterprise? What about multi-user race conditions?
+- **Resilience**: If deployed Friday at 5pm, what's the 3am page? What's the blast radius of 200ms DB slowdown? What's "try again" vs "we'll email you"?
 
 ## Context detection
 
@@ -90,7 +71,7 @@ Before writing, read the repo's current planning files.
 
 | Scenario | Action |
 |----------|--------|
-| **Existing phased PRD** (`plans/prd.yaml` + `plans/prd/phase-xx.yaml`) | Preserve structure/history. Patch only relevant phases/tasks. Keep completed tasks intact unless user asks to refactor. |
+| **Existing phased PRD** (`plans/prd.yaml` + phase files) | Preserve structure/history. Patch only relevant phases/tasks. Keep completed tasks intact. |
 | **Existing non-phased plans** | Follow local conventions. Keep interview depth and step quality high. Migrate only if user requests. |
 | **No planning files** (existing project) | Ask: minimal feature plan or full project plan? Default to minimal. |
 | **Greenfield** | Create full structure: `plans/prd.yaml`, `plans/prd/shared.yaml`, `plans/prd/phase-xx.yaml`, `plans/progress.md`, `plans/research.md`. |
@@ -104,31 +85,20 @@ Choose the smallest useful plan:
 | Feature | 1 phase, 2-5 tasks | 2 phases, 3-7 tasks | 3+ phases |
 | Project | 1-2 phases | 3-6 phases | 7+ phases |
 
-If uncertain, ask one sizing question and default to the leaner option.
-
-## Phase sequencing (greenfield)
-
-1. Foundation / scaffolding / tooling
-2. Core data / domain / rules
-3. User-facing experience and flows
-4. Hardening / resilience / operations
-
-Adapt to project-specific priorities.
+Default to the leaner option when uncertain.
 
 ## AI-executable task quality bar (required)
 
 Every task must be structured so an implementation agent can pick it up with minimal interpretation.
 
 - **One clear outcome** per task (no mixed goals).
-- Correct `track` classification.
+- Correct `track` classification: `intent | experience | data | rules | resilience`. Skip tracks only when genuinely irrelevant — when in doubt, ask.
 - `description` starts with a strong verb: `Build`, `Implement`, `Configure`, `Create`, `Define`, `Write`, `Handle`, `Set up`.
 - Steps are concrete, observable, and ordered.
 - Steps encode **target + behavior + edge condition** when relevant.
 
 Step pattern: `Target — required behavior`
 Example: `Route /auth/login — show generic "Invalid email or password" on credential failure (no enumeration)`
-
-Include explicit edge behavior: invalid/expired tokens, duplicate conflicts, auth failures, degraded dependencies.
 
 ## Output contracts
 
@@ -154,12 +124,10 @@ tasks:
     - Concrete, testable step
 ```
 
-**`plans/prd/shared.yaml`** — global constraints, tech decisions, and interview-derived overrides as YAML comments. This is the single source of truth for cross-cutting concerns.
+**`plans/prd/shared.yaml`** — single source of truth for cross-cutting concerns.
 ```yaml
 base_url: "http://localhost:3000"   # optional
-dev_command: "npm run dev"           # optional
-# Global constraints as comments — applied to ALL tasks
-# Interview decisions that override source docs listed here
+dev_command: "npm run dev"          # optional
 global_constraints: []
 decisions: []
 assumptions: []
@@ -168,23 +136,19 @@ open_questions: []
 
 **`plans/progress.md`** — dated milestone entries with status (`done | blocked`) and notes.
 
-**`plans/research.md`** — index table linking to all research docs, prd.yaml, shared.yaml, phase files, and override notes from interview decisions.
+**`plans/research.md`** — index linking to all research docs, prd.yaml, shared.yaml, and phase files.
 
-### Research documents (for medium/large plans)
+### Research documents (medium/large plans, 3+ phases)
 
-**`plans/research/`** — one markdown file per domain, synthesized from interview answers. Each doc captures the **decisions made**, not just requirements.
-
-Create research docs when the plan has 3+ phases or spans multiple domains. Organize by topic:
+**`plans/research/`** — one markdown file per domain capturing **decisions made**, not just requirements.
 
 | Document | Contents |
 |----------|----------|
 | `overview.md` | Product overview, design principles, tech stack, workspace layout |
-| `<domain>.md` | Per-domain deep dive: flows, entities, rules, edge cases (e.g., `auth.md`, `organizations.md`, `payments.md`) |
-| `decisions.md` | Numbered product + technical decision log with rationale |
-| `conventions.md` | Formatting, naming, module patterns, error handling conventions |
+| `<domain>.md` | Per-domain deep dive: flows, entities, rules, edge cases |
+| `decisions.md` | Numbered decision log with rationale |
+| `conventions.md` | Naming, module patterns, error handling conventions |
 | `testing.md` | Strategy, fixtures, test cases, coverage expectations |
-
-Research docs serve as reference material for implementation agents and human reviewers. They're the "why" behind the tasks.
 
 ### Flat format (simple single-phase plans)
 
@@ -202,8 +166,7 @@ tasks:
 ### Conventions
 
 - Task key order: `track`, `description`, `status`, optional `headed`, `steps`
-- `headed: true` — task requires browser-visible verification (execution agents launch a headed browser). Mostly for `experience` tasks.
-- Allowed tracks: `intent | experience | data | rules | resilience`
+- `headed: true` — task requires browser-visible verification. Mostly for `experience` tasks.
 - Task status: `pending | in_progress | blocked | done`
 - TOC checkbox: `[ ] | [x]`
 
@@ -243,5 +206,3 @@ tasks:
 - Missing failure-path behavior on sensitive flows
 - Rewriting full plan history for a small feature change
 - Over-splitting into too many phases for a small MVP
-
-For additional step-writing patterns, read `references/plan-format.md`.
