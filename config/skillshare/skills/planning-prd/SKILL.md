@@ -9,12 +9,13 @@ Plan features and projects with AI-executable tasks. Works for greenfield projec
 
 ## Execution checklist
 
-1. **Read context** — scan existing planning files and relevant codebase (routes, schema, config) before asking anything.
-2. **Interview** with `AskUserQuestion` — continue across multiple rounds until all relevant tracks have concrete, decision-level detail. Do not generate the plan until you can write unambiguous steps.
-3. **Confirm** scope and plan size with the user.
-4. **Draft tasks** using the AI-executable quality bar.
-5. **Write/update** only required files.
-6. **Summarize** assumptions and unresolved questions in `shared.yaml` or inline.
+1. **Read context** — scan existing planning files, codebase (routes, schema, config, dependencies), and any user-provided prompt before asking anything. Form hypotheses about architecture, constraints, and unknowns.
+2. **Interview** with `AskUserQuestion` — conduct deep, multi-round interviews across product and engineering layers. Do not generate the plan until you can write unambiguous steps for every relevant track.
+3. **Research synthesis** — compile interview findings into research documents organized by domain (see output contracts).
+4. **Confirm** scope, plan size, and phase sequencing with the user.
+5. **Draft tasks** using the AI-executable quality bar.
+6. **Write/update** all required files (research docs, shared.yaml, phase files, prd.yaml, progress.md).
+7. **Summarize** assumptions, decisions, and unresolved questions in `shared.yaml`.
 
 ## Interview workflow (required)
 
@@ -25,29 +26,53 @@ Use `AskUserQuestion` for every round. If unavailable, ask equivalent numbered q
 1. **Ask 2-4 focused questions per round** across two layers:
    - **Product layer** (what): intent, experience, data
    - **Engineering layer** (how): rules, resilience
-2. **Continue round after round** until every relevant track has enough detail to write unambiguous, AI-executable tasks. Do not rush to generate.
+2. **Continue round after round** until every relevant track has enough detail to write unambiguous, AI-executable tasks. Do not rush to generate. Expect 5-10+ rounds for full project plans.
 3. Probe edge behavior inside relevant track questions — do not postpone all edge cases to a final round.
 4. After each round, report **covered vs uncovered tracks** and what gaps remain.
 5. Include a **"Generate plan now"** option from **round 3 onward only**, with uncovered tracks listed in the description so the user knows what they're skipping.
 6. Stop interviewing immediately if user chooses generate now.
+7. **Build on prior answers** — reference specific decisions from earlier rounds to dig deeper. "You said X — does that mean Y in this scenario?"
+8. **Offer concrete options** — when a decision has 2-3 obvious approaches, present them with tradeoffs rather than open-ended questions. Force a choice.
+
+### Interview depth by layer
+
+#### Product layer — dig until you have flows, not ideas
+
+- **Intent**: Don't stop at "what does it do." Push to: who benefits most, what gets cut if time runs out, what success looks like in numbers, what explicitly won't be built.
+- **Experience**: Walk through every screen transition. What does the user see on first load? After the action? On empty state? On error? On slow network? After they leave and come back? What's the notification model?
+- **Data**: Map every entity, every relationship, every lifecycle. What creates it, what reads it, what updates it, what deletes it? What's the cascade behavior? What needs an audit trail?
+
+#### Engineering layer — dig until you have constraints, not vibes
+
+- **Rules**: Enumerate every permission boundary. What can each role do? What happens at the boundary (unauthorized attempt)? What validation runs where (client vs server)? What business rules feel "obvious" but nobody wrote down?
+- **Resilience**: What happens when each external dependency fails? What's idempotent? What's the retry story? What data can be stale? What must be consistent? What's the monitoring/alerting story?
+
+#### Cross-cutting probes (weave into relevant rounds)
+
+- **Testing**: What's the confidence threshold? Which flows need integration tests vs unit tests? What's the fixture/seed data story?
+- **Performance**: What are the expected cardinalities? What needs pagination? What needs caching? What's the latency budget for key flows?
+- **Security**: What's the threat model? Where does user input enter? What needs rate limiting? What needs audit logging?
+- **Migration**: Is there existing data to migrate? What's the rollback plan if this ships and breaks? Can this be feature-flagged?
 
 ### Question quality bar
 
 Every question must extract information you cannot infer from the codebase or prior answers. Ask questions that expose hidden assumptions and force decisions.
 
-| Track | Example questions |
+| Track | Insightful questions (not the obvious ones) |
 |-------|------------------|
-| **Intent** | What does success look like in 2 weeks vs 2 months? What's explicitly out of scope? Which user segment matters most for v1? What existing behavior must not break? |
-| **Experience** | Walk me through the exact flow — what does the user see at each step? What happens when the list is empty / the request is slow / the action fails? Where does the user land after completing the action? Are there intermediate states (loading, partial, optimistic)? |
-| **Data** | What's the source of truth? What happens to this data when [related entity] is deleted? Are there uniqueness constraints? What needs to be queryable vs just stored? What's the expected cardinality? |
-| **Rules** | Who can do this and who can't? What happens when someone unauthorized tries? Are there rate limits, size limits, or time-window constraints? What business rules feel "obvious" but aren't written down? |
-| **Resilience** | What happens if [dependency] is down? Is this idempotent? What if the user double-submits? What's the rollback story? Does this need to degrade gracefully? |
+| **Intent** | If you could only ship one part of this, which part unlocks the most value? What's the cost of getting this wrong vs shipping it late? Who's the second-most-important user — do their needs conflict with the primary user? What adjacent features are people going to assume exist? |
+| **Experience** | What does the user do right *before* they reach this feature — and right *after*? If the action takes 30 seconds instead of 1, what should they see? What does "undo" look like here? What state carries over between sessions? How does this behave when the user has 3 items vs 3,000? |
+| **Data** | What's the lifecycle of this entity — from birth to archive/delete? If you query this table in 6 months, what questions will you wish you'd stored data to answer? What's the write:read ratio? Is there a natural partition key? What needs to survive account deletion? |
+| **Rules** | What's the most confusing thing a user could legally do that you'd want to prevent anyway? Which constraints apply differently in a self-serve vs enterprise context? What happens in a multi-user race condition on this resource? What clock does "expires in 24 hours" reference — server, user, or UTC? |
+| **Resilience** | If you deployed this at 5pm Friday, what's the 3am page you're most worried about? What's the blast radius if the database is 200ms slower than normal? Which operations must be exactly-once vs at-least-once? What's the "sorry, try again" vs "we'll fix it and email you" boundary? |
 
 **Never ask:**
 - "What tech stack are you using?" (read the repo)
 - "Do you want tests?" / "Should we handle errors?" (always yes)
 - "What's the project about?" (user already told you)
 - Generic questions that don't force a specific decision
+- Questions answerable by reading the codebase or dependencies
+- "How should we structure the code?" (that's your job)
 
 ## Coverage tracks
 
@@ -129,8 +154,12 @@ tasks:
     - Concrete, testable step
 ```
 
-**`plans/prd/shared.yaml`**
+**`plans/prd/shared.yaml`** — global constraints, tech decisions, and interview-derived overrides as YAML comments. This is the single source of truth for cross-cutting concerns.
 ```yaml
+base_url: "http://localhost:3000"   # optional
+dev_command: "npm run dev"           # optional
+# Global constraints as comments — applied to ALL tasks
+# Interview decisions that override source docs listed here
 global_constraints: []
 decisions: []
 assumptions: []
@@ -139,7 +168,23 @@ open_questions: []
 
 **`plans/progress.md`** — dated milestone entries with status (`done | blocked`) and notes.
 
-**`plans/research.md`** — index linking to `prd.yaml`, `shared.yaml`, and phase files.
+**`plans/research.md`** — index table linking to all research docs, prd.yaml, shared.yaml, phase files, and override notes from interview decisions.
+
+### Research documents (for medium/large plans)
+
+**`plans/research/`** — one markdown file per domain, synthesized from interview answers. Each doc captures the **decisions made**, not just requirements.
+
+Create research docs when the plan has 3+ phases or spans multiple domains. Organize by topic:
+
+| Document | Contents |
+|----------|----------|
+| `overview.md` | Product overview, design principles, tech stack, workspace layout |
+| `<domain>.md` | Per-domain deep dive: flows, entities, rules, edge cases (e.g., `auth.md`, `organizations.md`, `payments.md`) |
+| `decisions.md` | Numbered product + technical decision log with rationale |
+| `conventions.md` | Formatting, naming, module patterns, error handling conventions |
+| `testing.md` | Strategy, fixtures, test cases, coverage expectations |
+
+Research docs serve as reference material for implementation agents and human reviewers. They're the "why" behind the tasks.
 
 ### Flat format (simple single-phase plans)
 
