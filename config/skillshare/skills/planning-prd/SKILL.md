@@ -11,9 +11,9 @@ Plan features and projects with AI-executable tasks. Works for greenfield projec
 
 1. **Read context** — scan existing planning files, codebase (routes, schema, config, deps), and any user-provided prompt before asking anything. Form hypotheses about architecture, constraints, and unknowns.
 2. **Interview** with `AskUserQuestion` — conduct deep, multi-round interviews across product and engineering layers. Do not generate the plan until you can write unambiguous steps for every relevant track.
-3. **Research synthesis** — compile interview findings into research documents organized by domain (see output contracts).
+3. **Research synthesis** (medium/large plans only) — compile interview findings into research documents organized by domain.
 4. **Confirm** scope, plan size, and phase sequencing with the user.
-5. **Draft tasks** using the AI-executable quality bar.
+5. **Draft tasks** using the AI-executable quality bar. Mark tasks `tdd: true` or `headed: true` as appropriate.
 6. **Write/update** all required files (research docs, shared.yaml, phase files, prd.yaml, progress.md).
 7. **Summarize** assumptions, decisions, and unresolved questions in `shared.yaml`.
 
@@ -37,33 +37,25 @@ Use `AskUserQuestion` for every round. If unavailable, ask equivalent numbered q
 
 ### Interview depth
 
-#### Product layer — dig until you have flows, not ideas
+Dig until you have flows and constraints, not ideas and vibes. Every question must extract information you cannot infer from the codebase or prior answers.
 
-- **Intent**: Push beyond "what does it do" to: who benefits most, what gets cut first, what success looks like in numbers, what's explicitly out of scope.
-- **Experience**: Walk every screen transition — first load, action complete, empty state, error, slow network, return visit, notification model.
-- **Data**: Map every entity, relationship, and lifecycle (CRUD + cascade + audit trail).
+#### Product layer
 
-#### Engineering layer — dig until you have constraints, not vibes
+- **Intent**: Who benefits most? What gets cut first? What's explicitly out of scope? What part ships first to unlock the most value? What's the cost of wrong vs late?
+- **Experience**: Walk every screen transition — first load, action complete, empty state, error, slow network, return visit. What happens right before/after this feature? What does "undo" look like? How does it behave at 3 items vs 3,000?
+- **Data**: Map every entity, relationship, and lifecycle (CRUD + cascade + audit trail). What queries will you wish you'd stored data for in 6 months? What survives account deletion?
 
-- **Rules**: Enumerate permission boundaries, validation locations (client vs server), and unwritten business rules.
-- **Resilience**: Dependency failure modes, idempotency, retry strategy, staleness tolerance, consistency requirements, monitoring.
+#### Engineering layer
+
+- **Rules**: Enumerate permission boundaries, validation locations (client vs server), and unwritten business rules. What's the most confusing thing a user could legally do? What differs between self-serve and enterprise? Multi-user race conditions?
+- **Resilience**: Dependency failure modes, idempotency, retry strategy, staleness tolerance, consistency requirements. If deployed Friday at 5pm, what's the 3am page? What's the blast radius of 200ms DB slowdown?
 
 #### Cross-cutting probes (weave into relevant rounds)
 
-- **Testing**: Confidence threshold, integration vs unit, fixture/seed data.
+- **Testing**: Confidence threshold, integration vs unit, fixture/seed data — informs `tdd: true` decisions.
 - **Performance**: Cardinalities, pagination, caching, latency budgets.
 - **Security**: Threat model, input boundaries, rate limiting, audit logging.
 - **Migration**: Existing data, rollback plan, feature-flag feasibility.
-
-### Question quality
-
-Every question must extract information you cannot infer from the codebase or prior answers. Prioritize questions that expose hidden assumptions and force decisions:
-
-- **Intent**: What part ships first to unlock the most value? What's the cost of wrong vs late? Do secondary users' needs conflict with primary?
-- **Experience**: What happens right before/after this feature? What does "undo" look like? How does it behave at 3 items vs 3,000?
-- **Data**: What's the entity lifecycle from birth to deletion? What queries will you wish you'd stored data for in 6 months? What survives account deletion?
-- **Rules**: What's the most confusing thing a user could legally do that you'd still want to prevent? What differs between self-serve and enterprise? What about multi-user race conditions?
-- **Resilience**: If deployed Friday at 5pm, what's the 3am page? What's the blast radius of 200ms DB slowdown? What's "try again" vs "we'll email you"?
 
 ## Context detection
 
@@ -78,14 +70,12 @@ Before writing, read the repo's current planning files.
 
 ## Plan sizing
 
-Choose the smallest useful plan:
+Choose the smallest useful plan. Default to the leaner option when uncertain.
 
 | Context | Small | Medium | Large |
 |---------|-------|--------|-------|
 | Feature | 1 phase, 2-5 tasks | 2 phases, 3-7 tasks | 3+ phases |
 | Project | 1-2 phases | 3-6 phases | 7+ phases |
-
-Default to the leaner option when uncertain.
 
 ## AI-executable task quality bar (required)
 
@@ -100,7 +90,49 @@ Every task must be structured so an implementation agent can pick it up with min
 Step pattern: `Target — required behavior`
 Example: `Route /auth/login — show generic "Invalid email or password" on credential failure (no enumeration)`
 
+### TDD steps (`tdd: true`)
+
+Tasks with testable behavior should use TDD. Add `tdd: true` to the task. The implementation agent invokes the `testing-tdd` skill.
+
+Structure steps as vertical RED→GREEN slices — each behavior gets its own test-then-implement pair. Never batch all tests first (horizontal slicing).
+
+```
+- "RED: <test description> — assert <expected behavior>"
+- "GREEN: <implementation> — make test pass"
+```
+
+Apply `tdd: true` to:
+- `rules` tasks — authorization, validation, business logic
+- `data` tasks — CRUD operations, entity lifecycle, cascade behavior
+- `intent` tasks with API/service behavior
+- `resilience` tasks — error handling, retry logic, failure modes
+
+Skip TDD for pure UI/styling, configuration-only, or one-liner wiring steps.
+
+### Browser verification (`headed: true`)
+
+Tasks requiring browser-visible verification get `headed: true`. The implementation agent invokes the `tooling-agent-browser` skill (agent-browser CLI).
+
+Include what to verify visually in each step:
+```
+- "Route /dashboard — verify search input renders and filters list on keystrokes"
+- "Submit form with invalid email — verify inline error message appears below field"
+```
+
+Apply `headed: true` to:
+- `experience` tasks — UI flows, visual feedback, transitions
+- Tasks requiring form interaction, navigation, or visual state verification
+- Any task where correctness cannot be confirmed by tests alone
+
 ## Output contracts
+
+### Task key conventions
+
+- Key order: `track`, `description`, `status`, optional `tdd`, optional `headed`, `steps`
+- `tdd: true` — RED→GREEN vertical slices
+- `headed: true` — browser-visible verification required
+- Task status: `pending | in_progress | blocked | done`
+- TOC checkbox: `[ ] | [x]`
 
 ### Phased format (default for multi-phase)
 
@@ -138,6 +170,10 @@ open_questions: []
 
 **`plans/research.md`** — index linking to all research docs, prd.yaml, shared.yaml, and phase files.
 
+### Flat format (single-phase plans)
+
+Same task structure, no phase wrapper. Add `base_url`/`dev_command` at root level.
+
 ### Research documents (medium/large plans, 3+ phases)
 
 **`plans/research/`** — one markdown file per domain capturing **decisions made**, not just requirements.
@@ -149,26 +185,6 @@ open_questions: []
 | `decisions.md` | Numbered decision log with rationale |
 | `conventions.md` | Naming, module patterns, error handling conventions |
 | `testing.md` | Strategy, fixtures, test cases, coverage expectations |
-
-### Flat format (simple single-phase plans)
-
-```yaml
-base_url: "http://localhost:3000"  # optional
-dev_command: "npm run dev"          # optional
-tasks:
-  - track: intent
-    description: Clear description of what this task accomplishes
-    status: pending
-    steps:
-      - Step 1 description
-```
-
-### Conventions
-
-- Task key order: `track`, `description`, `status`, optional `headed`, `steps`
-- `headed: true` — task requires browser-visible verification. Mostly for `experience` tasks.
-- Task status: `pending | in_progress | blocked | done`
-- TOC checkbox: `[ ] | [x]`
 
 ## Example
 
@@ -184,18 +200,20 @@ tasks:
     - Route /[orgSlug]/settings/members — add client-side search input filtering by name or email
     - Member rows — show role badge and "You" badge for current user
     - Role dropdown — visible for admin+ only, hidden for members
-    - On role update success — show toast "Member role updated" and persist updated badge state
-    - On role update failure — show inline/table-level error and keep previous role visible
+    - On role update success — verify toast "Member role updated" appears and badge state updates
+    - On role update failure — verify inline error renders and previous role remains visible
 
 - track: rules
   description: Implement role-change authorization boundaries
   status: pending
+  tdd: true
   steps:
-    - Admin can change roles only between member and admin
-    - Owner required for promotions to owner
-    - Sole owner cannot demote self
-    - Unauthorized attempts return FORBIDDEN with consistent message "Insufficient permissions."
-    - Add test coverage for admin->owner rejection and sole-owner self-demotion rejection
+    - "RED: changeRole(admin, member, 'owner') — assert FORBIDDEN 'Insufficient permissions.'"
+    - "GREEN: Role change handler — reject admin->owner promotion"
+    - "RED: changeRole(soleOwner, soleOwner, 'admin') — assert rejection with 'Cannot demote sole owner'"
+    - "GREEN: Owner demotion guard — prevent sole owner self-demotion"
+    - "RED: changeRole(admin, member, 'admin') — assert success"
+    - "GREEN: Allow admin to promote member to admin"
 ```
 
 ## Anti-patterns
@@ -206,3 +224,7 @@ tasks:
 - Missing failure-path behavior on sensitive flows
 - Rewriting full plan history for a small feature change
 - Over-splitting into too many phases for a small MVP
+- Horizontal slicing — writing all tests first, then all implementation
+- Omitting `tdd: true` on rules/data tasks with testable behavior
+- Omitting `headed: true` on experience tasks that need visual verification
+- `headed` steps without specifying what to verify visually

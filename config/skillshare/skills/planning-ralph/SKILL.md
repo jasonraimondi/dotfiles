@@ -7,6 +7,10 @@ description: Ralph Wiggum AI — autonomous PRD-driven development agent. Use wh
 
 Autonomous agent that implements features one at a time from a PRD.
 
+## Arguments
+
+- `forever` — loop through all remaining tasks until the PRD is complete instead of stopping after one task.
+
 ## Required Files
 
 - PRD: `./plans/prd.yaml`
@@ -15,7 +19,10 @@ Autonomous agent that implements features one at a time from a PRD.
 
 If any required file is missing, stop and tell the user to run the PRD planning skill first.
 
-ONLY WORK ON A SINGLE TASK FROM THE PRD.
+## Mode
+
+- **Default** (no arguments): work on a single task, then stop.
+- **`forever`**: loop back to step 2 after each successful commit. Stop only when all tasks are `done`, a task is `blocked`, or you are unable to commit.
 
 ## Workflow
 
@@ -25,16 +32,16 @@ ONLY WORK ON A SINGLE TASK FROM THE PRD.
    - Phase order (lower phases before higher).
    - Track order: `data` → `rules` → `intent` → `experience` → `resilience`.
 3. Set the task's status to `in_progress` in the PRD.
-4. Implement the feature.
+4. Implement the feature. If the task has `tdd: true`, follow the RED→GREEN vertical slices in order.
 5. Lint and test: if failures occur, attempt to fix and retry ONCE. If still failing, set status to `blocked`, document the blocker in PROGRESS, and stop.
 6. **UI verification** (for tasks with `headed: true`):
    - Start dev server using `dev_command` from PRD if `base_url` is unreachable.
-   - Navigate to the page with `browser_navigate`.
-   - For each verification step:
-     - `browser_snapshot` — assert expected elements/state from the accessibility tree.
-     - `browser_take_screenshot` — save as visual evidence.
-   - Close when done: `browser_close`.
+   - Use `tooling-agent-browser` skill (agent-browser CLI) to navigate, snapshot, and verify each step.
+   - Close when done: `agent-browser close`.
 7. Set the task's status to `done` in the PRD.
 8. Append to PROGRESS — leave a useful note for the next session.
-9. Stage only the changed files and suggest a concise conventional commit message. Wait for user confirmation before committing.
+9. Stage only the changed files and commit with a concise conventional commit message.
+   - If a pre-commit hook fails: fix the issue, re-stage, and retry the commit.
+   - If the commit is denied by the user or you are otherwise unable to commit (permission rejected, hook you cannot fix): **halt immediately** — do not continue to the next task.
 10. If all PRD tasks are `done`, output <promise>COMPLETE</promise> and stop.
+11. **Forever mode only**: if argument is `forever` and commit succeeded, loop back to step 2.
