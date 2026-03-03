@@ -21,14 +21,17 @@ DEFAULT_PROMPT=""
 DEFAULT_PROMPT_SOURCE=""
 PROMPT=""
 ACTIVE_RUNNER=""
+SCOPE=""
 
 usage() {
     cat <<EOF
 Usage: ralph [OPTIONS] [COMMAND]
 
 Commands:
-  once    Run single iteration
-  init    Create PROMPT.md with default prompt
+  once                Run single iteration
+  init                Create PROMPT.md with default prompt
+  task [description]  Run next pending task, or one matching description
+  phase <N>           Run all tasks in phase N
 
 Options:
   -d, --debug                 Enable shell tracing (set -x)
@@ -42,6 +45,10 @@ Examples:
   ralph --runner claude once  Force claude runner, single iteration
   ralph -n 5                  Run up to 5 iterations
   ralph --max-iterations=10   Run up to 10 iterations
+  ralph task                   Run the next pending task
+  ralph task "add login"      Run only the task matching "add login"
+  ralph phase 1               Run all tasks in phase 1
+  ralph phase 2 --runner pi   Run phase 2 tasks with pi runner
 
 Default Prompt Search Order:
   1. $DOTFILES_ROOT/config/skillshare/skills/ralph/SKILL.md
@@ -67,6 +74,47 @@ strip_frontmatter() {
         in_frontmatter && $0 == "---" { in_frontmatter = 0; next }
         !in_frontmatter { print }
     ' "$path"
+}
+
+build_scope() {
+    local scope_type="$1"
+    local scope_value="${2:-}"
+
+    case "$scope_type" in
+        task)
+            if [[ -n "$scope_value" ]]; then
+                SCOPE="$(cat <<SCOPE_EOF
+
+## Scope Constraint — Single Task
+
+You MUST only work on the task whose description contains: "$scope_value"
+
+Search through all phase files in plans/prd/ to find the matching task. If the matching task is already done, blocked, or not found, output <promise>COMPLETE</promise> and stop.
+SCOPE_EOF
+)"
+            else
+                SCOPE="$(cat <<'SCOPE_EOF'
+
+## Scope Constraint — Next Task
+
+You MUST only work on the single next pending task. Find the first task across all phase files in plans/prd/ (in phase order, then task order) that is not done and not blocked. Work on that one task only. When it is done, output <promise>COMPLETE</promise> and stop.
+SCOPE_EOF
+)"
+            fi
+            ;;
+        phase)
+            local phase_file
+            phase_file="$(printf './plans/prd/phase-%02d.yaml' "$scope_value")"
+            [[ -f "$phase_file" ]] || die "Phase file not found: $phase_file"
+            SCOPE="$(cat <<SCOPE_EOF
+
+## Scope Constraint — Phase $scope_value
+
+You MUST only work on tasks from $phase_file. Use forever-mode behavior: loop through all tasks in this phase file. Ignore tasks from other phases. When all tasks in this phase are done, output <promise>COMPLETE</promise> and stop.
+SCOPE_EOF
+)"
+            ;;
+    esac
 }
 
 resolve_default_prompt_source() {
@@ -245,6 +293,23 @@ main() {
                 runner="${1#*=}"
                 shift
                 ;;
+            task)
+                cmd="task"
+                if [[ -n "${2:-}" && "${2:0:1}" != "-" ]]; then
+                    build_scope "task" "$2"
+                    shift 2
+                else
+                    build_scope "task"
+                    shift
+                fi
+                ;;
+            phase)
+                [[ -n "${2:-}" ]] || die "Missing phase number for $1"
+                [[ "$2" =~ ^[1-9][0-9]*$ ]] || die "Invalid phase number: $2"
+                cmd="phase"
+                build_scope "phase" "$2"
+                shift 2
+                ;;
             init|once)
                 cmd="$1"
                 shift
@@ -273,7 +338,11 @@ main() {
     printf 'Using runner: %s\n' "$ACTIVE_RUNNER" >&2
     load_prompt
 
-    if [[ "$cmd" == "once" ]]; then
+    if [[ -n "$SCOPE" ]]; then
+        PROMPT+="$SCOPE"
+    fi
+
+    if [[ "$cmd" == "once" || "$cmd" == "task" ]]; then
         local rc=0
         run_iteration "1" || rc=$?
         (( rc == 100 )) && exit 0
