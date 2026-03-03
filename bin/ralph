@@ -101,7 +101,7 @@ load_default_prompt() {
 load_prompt() {
     local prompt_path="$PWD/PROMPT.md"
     if [[ -f "$prompt_path" ]]; then
-        PROMPT="$(<"$prompt_path")"
+        PROMPT="$(strip_frontmatter "$prompt_path")"
     else
         printf '%s not found, using default prompt from %s\n' "$prompt_path" "$DEFAULT_PROMPT_SOURCE" >&2
         PROMPT="$DEFAULT_PROMPT"
@@ -190,22 +190,16 @@ run_prompt() {
 
 run_iteration() {
     local iteration="${1:-}"
-    local result=""
-    local output_file
-    local run_status=0
+    local rc=0
+    local result
 
-    output_file="$(mktemp)"
+    result="$(run_prompt 2>&1)" || rc=$?
 
-    if ! run_prompt 2>&1 | tee "$output_file"; then
-        local -a pipe_status=("${PIPESTATUS[@]}")
-        run_status="${pipe_status[0]}"
-        (( run_status != 0 )) || run_status="${pipe_status[1]}"
-        rm -f "$output_file"
-        return "$run_status"
+    printf '%s\n' "$result"
+
+    if (( rc != 0 )); then
+        return "$rc"
     fi
-
-    result="$(<"$output_file")"
-    rm -f "$output_file"
 
     if [[ "$result" == *"<promise>COMPLETE</promise>"* ]]; then
         if [[ -n "$iteration" ]]; then
@@ -213,8 +207,10 @@ run_iteration() {
         else
             echo "PRD complete."
         fi
-        exit 0
+        return 100
     fi
+
+    return 0
 }
 
 main() {
@@ -265,36 +261,31 @@ main() {
 
     load_default_prompt
 
-    case "$cmd" in
-        init)
-            if [[ -f "$PWD/PROMPT.md" ]]; then
-                die "PROMPT.md already exists in $PWD"
-            fi
-
-            echo "Creating PROMPT.md from $DEFAULT_PROMPT_SOURCE"
-            printf '%s\n' "$DEFAULT_PROMPT" > PROMPT.md
-            exit 0
-            ;;
-    esac
+    if [[ "$cmd" == "init" ]]; then
+        [[ -f "$PWD/PROMPT.md" ]] && die "PROMPT.md already exists in $PWD"
+        echo "Creating PROMPT.md from $DEFAULT_PROMPT_SOURCE"
+        printf '%s\n' "$DEFAULT_PROMPT" > PROMPT.md
+        exit 0
+    fi
 
     require_plan_files
-
     resolve_runner "$runner"
     printf 'Using runner: %s\n' "$ACTIVE_RUNNER" >&2
-
-    case "$cmd" in
-        once)
-            load_prompt
-            run_iteration "1"
-            exit 0
-            ;;
-    esac
-
-    # Default: run loop
     load_prompt
+
+    if [[ "$cmd" == "once" ]]; then
+        local rc=0
+        run_iteration "1" || rc=$?
+        (( rc == 100 )) && exit 0
+        exit "$rc"
+    fi
+
     for ((i=1; i<=max_iterations; i++)); do
         printf '=== Iteration %d/%d ===\n' "$i" "$max_iterations"
-        run_iteration "$i"
+        local rc=0
+        run_iteration "$i" || rc=$?
+        (( rc == 100 )) && exit 0
+        (( rc != 0 )) && exit "$rc"
     done
     echo "Max iterations reached."
 }
