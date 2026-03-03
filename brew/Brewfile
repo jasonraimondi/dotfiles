@@ -25,6 +25,7 @@ brew "tmux"
 brew "vim"
 brew "watch"
 brew "wget"
+brew "yq"
 brew "zsh"
 
 # git stuff

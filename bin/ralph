@@ -22,6 +22,7 @@ DEFAULT_PROMPT_SOURCE=""
 PROMPT=""
 ACTIVE_RUNNER=""
 SCOPE=""
+PHASE_NUMBER=""
 
 usage() {
     cat <<EOF
@@ -31,7 +32,7 @@ Commands:
   once                Run single iteration
   init                Create PROMPT.md with default prompt
   task [description]  Run next pending task, or one matching description
-  phase <N>           Run all tasks in phase N
+  phase <N>           Run pending phase N tasks in parallel (one agent per task, git worktrees)
 
 Options:
   -d, --debug                 Enable shell tracing (set -x)
@@ -47,8 +48,8 @@ Examples:
   ralph --max-iterations=10   Run up to 10 iterations
   ralph task                   Run the next pending task
   ralph task "add login"      Run only the task matching "add login"
-  ralph phase 1               Run all tasks in phase 1
-  ralph phase 2 --runner pi   Run phase 2 tasks with pi runner
+  ralph phase 1               Spawn parallel agents for phase 1 pending tasks
+  ralph phase 2 --runner pi   Run phase 2 sequentially (pi fallback)
 
 Default Prompt Search Order:
   1. $DOTFILES_ROOT/config/skillshare/skills/ralph/SKILL.md
@@ -59,6 +60,7 @@ Default Prompt Search Order:
 Runner Notes:
   - claude: requires Claude Code CLI and permissions for git add/commit
   - pi: requires pi CLI with bash/edit/write tools enabled
+  - phase parallel mode requires claude runner, yq, and jq
 EOF
 }
 
@@ -261,6 +263,154 @@ run_iteration() {
     return 0
 }
 
+require_yq() {
+    if ! command -v yq >/dev/null 2>&1; then
+        die "yq is required for parallel phase execution. Install with: brew install yq"
+    fi
+    if ! command -v jq >/dev/null 2>&1; then
+        die "jq is required for parallel phase execution. Install with: brew install jq"
+    fi
+}
+
+extract_pending_tasks() {
+    local phase_file="$1"
+    yq -o=json '.tasks' "$phase_file" | jq -r '.[] | select(.status == "pending") | .description'
+}
+
+create_task_worktree() {
+    local phase_num="$1"
+    local task_index="$2"
+    local current_branch
+    current_branch="$(git rev-parse --abbrev-ref HEAD)"
+    local branch_name="ralph/phase-${phase_num}/task-${task_index}"
+    local worktree_dir=".ralph-work/task-${task_index}"
+
+    git branch "$branch_name" "$current_branch" 2>/dev/null || true
+    git worktree add "$worktree_dir" "$branch_name" --quiet
+    printf '%s\n' "$worktree_dir"
+}
+
+spawn_task_agent() {
+    local worktree_dir="$1"
+    local task_description="$2"
+    local task_index="$3"
+    local log_file=".ralph-work/task-${task_index}.log"
+    local full_prompt
+
+    full_prompt="${PROMPT}
+
+## Scope Constraint — Single Task
+
+You MUST only work on the task whose description is: \"${task_description}\"
+Search through all phase files in plans/prd/ to find this task. Work on it, commit, then output <promise>COMPLETE</promise>."
+
+    (
+        cd "$worktree_dir"
+        env -u CLAUDECODE claude \
+            --print \
+            --session-id "$(uuidgen)" \
+            --no-session-persistence \
+            --permission-mode acceptEdits \
+            -p "$full_prompt"
+    ) > "$log_file" 2>&1 &
+    printf '%d\n' $!
+}
+
+merge_task_results() {
+    local phase_num="$1"
+    local task_count="$2"
+    local succeeded=0
+    local failed=0
+    local conflicts=0
+
+    for ((t=1; t<=task_count; t++)); do
+        local branch_name="ralph/phase-${phase_num}/task-${t}"
+        local log_file=".ralph-work/task-${t}.log"
+
+        if [[ -f "$log_file" ]] && grep -q '<promise>COMPLETE</promise>' "$log_file"; then
+            if git merge --no-edit "$branch_name" 2>/dev/null; then
+                printf 'Task %d: merged successfully\n' "$t"
+                ((succeeded++))
+            else
+                printf 'Task %d: merge conflict — resolve manually (branch: %s)\n' "$t" "$branch_name" >&2
+                git merge --abort 2>/dev/null || true
+                ((conflicts++))
+            fi
+        else
+            printf 'Task %d: agent did not signal completion\n' "$t" >&2
+            ((failed++))
+        fi
+    done
+
+    printf '\n=== Phase %d Results ===\n' "$phase_num"
+    printf 'Succeeded: %d | Failed: %d | Conflicts: %d\n' "$succeeded" "$failed" "$conflicts"
+}
+
+cleanup_worktrees() {
+    local phase_num="$1"
+    local task_count="$2"
+
+    for ((t=1; t<=task_count; t++)); do
+        local worktree_dir=".ralph-work/task-${t}"
+        local branch_name="ralph/phase-${phase_num}/task-${t}"
+        git worktree remove "$worktree_dir" 2>/dev/null || true
+        git branch -D "$branch_name" 2>/dev/null || true
+    done
+
+    rmdir .ralph-work 2>/dev/null || true
+}
+
+run_phase_parallel() {
+    local phase_num="$1"
+    local phase_file
+    phase_file="$(printf './plans/prd/phase-%02d.yaml' "$phase_num")"
+
+    [[ -f "$phase_file" ]] || die "Phase file not found: $phase_file"
+    require_yq
+
+    local tasks=()
+    while IFS= read -r line; do
+        [[ -n "$line" ]] && tasks+=("$line")
+    done < <(extract_pending_tasks "$phase_file")
+
+    local task_count=${#tasks[@]}
+
+    if (( task_count == 0 )); then
+        printf 'All tasks in phase %d are done.\n' "$phase_num"
+        return 0
+    fi
+
+    printf 'Phase %d: spawning %d parallel agent(s)\n' "$phase_num" "$task_count"
+    mkdir -p .ralph-work
+
+    # Trap for cleanup on exit/error/interrupt
+    trap "cleanup_worktrees '$phase_num' '$task_count'" EXIT INT TERM
+
+    local pids=()
+    for ((t=1; t<=task_count; t++)); do
+        local description="${tasks[$((t-1))]}"
+        printf 'Task %d: %s\n' "$t" "$description"
+
+        local worktree_dir
+        worktree_dir="$(create_task_worktree "$phase_num" "$t")"
+
+        local pid
+        pid="$(spawn_task_agent "$worktree_dir" "$description" "$t")"
+        pids+=("$pid")
+        printf 'Task %d: agent PID %d in %s\n' "$t" "$pid" "$worktree_dir"
+    done
+
+    printf '\nWaiting for %d agent(s) to complete...\n' "$task_count"
+    local wait_failed=0
+    for pid in "${pids[@]}"; do
+        wait "$pid" 2>/dev/null || ((wait_failed++))
+    done
+
+    printf '\nAll agents finished. Merging results...\n'
+    merge_task_results "$phase_num" "$task_count"
+    # Cleanup happens via trap
+}
+
 main() {
     local max_iterations=20
     local cmd=""
@@ -307,7 +457,7 @@ main() {
                 [[ -n "${2:-}" ]] || die "Missing phase number for $1"
                 [[ "$2" =~ ^[1-9][0-9]*$ ]] || die "Invalid phase number: $2"
                 cmd="phase"
-                build_scope "phase" "$2"
+                PHASE_NUMBER="$2"
                 shift 2
                 ;;
             init|once)
@@ -337,6 +487,26 @@ main() {
     resolve_runner "$runner"
     printf 'Using runner: %s\n' "$ACTIVE_RUNNER" >&2
     load_prompt
+
+    # Phase command takes a separate parallel path
+    if [[ "$cmd" == "phase" ]]; then
+        if [[ "$ACTIVE_RUNNER" != "claude" ]]; then
+            printf 'Warning: parallel phase execution requires claude runner. Falling back to sequential.\n' >&2
+            build_scope "phase" "$PHASE_NUMBER"
+            PROMPT+="$SCOPE"
+            for ((i=1; i<=max_iterations; i++)); do
+                printf '=== Iteration %d/%d ===\n' "$i" "$max_iterations"
+                local rc=0
+                run_iteration "$i" || rc=$?
+                (( rc == 100 )) && exit 0
+                (( rc != 0 )) && exit "$rc"
+            done
+            echo "Max iterations reached."
+            exit 0
+        fi
+        run_phase_parallel "$PHASE_NUMBER"
+        exit 0
+    fi
 
     if [[ -n "$SCOPE" ]]; then
         PROMPT+="$SCOPE"
