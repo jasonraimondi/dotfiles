@@ -334,6 +334,7 @@ merge_task_results() {
             else
                 printf 'Task %d: merge conflict — resolve manually (branch: %s)\n' "$t" "$branch_name" >&2
                 git merge --abort 2>/dev/null || true
+                printf '%d\n' "$t" >> .ralph-work/conflict-tasks
                 ((conflicts++))
             fi
         else
@@ -350,11 +351,18 @@ cleanup_worktrees() {
     local phase_num="$1"
     local task_count="$2"
 
+    local conflict_tasks=""
+    [[ -f .ralph-work/conflict-tasks ]] && conflict_tasks="$(cat .ralph-work/conflict-tasks)"
+
     for ((t=1; t<=task_count; t++)); do
         local worktree_dir=".ralph-work/task-${t}"
         local branch_name="ralph/phase-${phase_num}/task-${t}"
         git worktree remove "$worktree_dir" 2>/dev/null || true
-        git branch -D "$branch_name" 2>/dev/null || true
+        if printf '%s\n' "$conflict_tasks" | grep -qx "$t"; then
+            printf 'Keeping branch %s (has unmerged changes)\n' "$branch_name" >&2
+        else
+            git branch -D "$branch_name" 2>/dev/null || true
+        fi
     done
 
     rmdir .ralph-work 2>/dev/null || true
