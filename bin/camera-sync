@@ -10,12 +10,6 @@ if ! command -v "immich-go" &> /dev/null; then
     exit 1
 fi
 
-if ! command -v "magick" &> /dev/null; then
-    echo "Error: Required command 'magick' (ImageMagick) not found"
-    echo "Install with: brew install imagemagick"
-    exit 1
-fi
-
 if [ -z "$IMMICH_SERVER" ]; then
     echo "IMMICH_SERVER is NOT set or is empty"
     exit 1
@@ -24,48 +18,6 @@ fi
 # Search desktop for folders starting with or equal to 100MSDCF
 DESKTOP="$HOME/Desktop"
 LOGROOT="/tmp/camera-sync"
-
-# Function to convert JPG files to HEIC if they don't already exist
-convert_jpg_to_heic() {
-    local jpg_dir="$1"
-    local heic_dir="$2"
-
-    if [ ! -d "$jpg_dir" ]; then
-        return 0
-    fi
-
-    local converted=0
-    # Set NULL_GLOB to handle missing file patterns gracefully
-    setopt NULL_GLOB
-    for jpg_file in "$jpg_dir"/*.jpg "$jpg_dir"/*.jpeg "$jpg_dir"/*.JPG "$jpg_dir"/*.JPEG; do
-        # Skip if no matching files found
-        [ -f "$jpg_file" ] || continue
-
-        # Get base filename without extension
-        local basename=$(basename "$jpg_file")
-        local name_without_ext="${basename%.*}"
-
-        # Check if corresponding HEIC file already exists
-        local heic_file="$heic_dir/${name_without_ext}.heic"
-
-        if [ ! -f "$heic_file" ]; then
-            echo "    Converting: $basename → ${name_without_ext}.heic"
-
-            # Convert JPG to HEIC using heif-enc
-            if heif-enc -q 95 -p x265:lossless=true "$jpg_file" -o "$heic_file"; then
-                ((converted++))
-            else
-                echo "    ✗ Failed to convert: $basename"
-            fi
-        fi
-    done
-
-    if [ $converted -gt 0 ]; then
-        echo "    ✓ Converted $converted JPG files to HEIC"
-    fi
-    # Reset NULL_GLOB to default behavior
-    unsetopt NULL_GLOB
-}
 
 echo "Searching desktop: $DESKTOP"
 echo
@@ -79,7 +31,7 @@ for folder in "$DESKTOP"/100MSDCF*; do
     echo "Processing: $(basename "$folder")"
 
     # Create subdirectories
-    mkdir -p "$folder/raw" "$folder/jpg" "$folder/heic"
+    mkdir -p "$folder/raw" "$folder/jpg"
 
     # Move .arw and .xmp files to raw/
     find "$folder" -maxdepth 1 -type f \( -iname "*.arw" -o -iname "*.xmp" \) -exec mv {} "$folder/raw/" \;
@@ -87,22 +39,35 @@ for folder in "$DESKTOP"/100MSDCF*; do
     # Move .jpg files to jpg/
     find "$folder" -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.jpeg" \) -exec mv {} "$folder/jpg/" \;
 
-    # Move .heic files to heic/
-    find "$folder/jpg" -maxdepth 1 -type f -iname "*.heic" -exec mv {} "$folder/heic/" \;
-    find "$folder" -maxdepth 1 -type f -iname "*.heic" -exec mv {} "$folder/heic/" \;
-
-    # Convert JPG files to HEIC if they don't already exist
-    # convert_jpg_to_heic "$folder/jpg" "$folder/heic"
-
     echo "  ✓ Files organized"
     echo
 
-    mkdir -p "$LOGROOT"
-    # immich-go upload from-folder --server "$IMMICH_SERVER" --log-file="$LOGROOT/heic.log"  --api-key "$IMMICH_API_KEY_SHARED" --pause-immich-jobs=FALSE "$folder/heic/"
-    # immich-go upload from-folder --server "$IMMICH_SERVER" --log-file="$LOGROOT/raw.log"  --api-key "$IMMICH_API_KEY_SONY" --pause-immich-jobs=FALSE "$folder/raw/"
-
-    echo "  ✓ Upload complete"
-    echo
 done
 
-echo "Done!"
+for folder in "$DESKTOP"/100MSDCF*; do
+    [ -d "$folder" ] || continue
+    echo "$folder/raw/"
+    echo "to"
+    echo "$NAS_SERVER"
+    rsync -Pavu -e ssh "$folder/raw/" $NAS_SERVER
+done
+
+# echo
+# read -q "REPLY?Upload to Immich? [y/N] " || { echo; echo "Skipping upload."; exit 0; }
+# echo
+
+# mkdir -p "$LOGROOT"
+
+# for folder in "$DESKTOP"/100MSDCF*; do
+#     [ -d "$folder" ] || continue
+
+#     echo "Uploading: $(basename "$folder")"
+
+#     immich-go upload from-folder --server "$IMMICH_SERVER" --log-file="$LOGROOT/jpg.log" --api-key "$IMMICH_API_KEY_SHARED" --pause-immich-jobs=FALSE "$folder/jpg/"
+#     immich-go upload from-folder --server "$IMMICH_SERVER" --log-file="$LOGROOT/raw.log" --api-key "$IMMICH_API_KEY_SONY" --pause-immich-jobs=FALSE "$folder/raw/"
+
+#     echo "  ✓ Upload complete"
+#     echo
+# done
+
+# echo "Done!"
