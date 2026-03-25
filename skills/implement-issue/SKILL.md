@@ -30,12 +30,14 @@ backlog → todo → in-progress → in-review → qa → done
 
 Read the issue YAML file. Check:
 
-- acceptance criteria
+- acceptance criteria and steps
 - blocked_by — read those issues too, confirm they are in done or canceled
 - current status
 - assignee
 - labels
 - priority
+- track
+- tdd / headed flags
 
 If unresolved blockers exist (blocked_by issues not in done/canceled), report them and skip.
 If the issue is blocked, confirm the blocker is cleared before resuming.
@@ -61,18 +63,29 @@ Check if the current branch is already dedicated to this issue or its parent pro
 
 Understand:
 
-- modules mentioned in the issue
+- modules mentioned in the issue steps
 - adjacent code paths and existing patterns
 - existing tests for similar behavior
 
 ### 5. Implement
 
-Choose the approach that fits:
+#### When `steps` exist
+
+Follow the steps in order. Each step provides a `Target — required behavior` pair that specifies where to work and what the behavior should be.
+
+- **`tdd: true`**: invoke the `testing-tdd` skill. Use the steps to determine test boundaries — write tests for the behavior described in each step, then implement to make them pass.
+- **`headed: true`**: invoke the `tooling-agent-browser` skill for visual verification. Steps with verification targets (e.g., "verify toast appears") define what to check in the browser.
+- **Both flags**: TDD for logic, browser verification for visual outcomes.
+- **Neither flag**: implement steps directly, verify with lint and existing test suite.
+
+#### When steps are absent (legacy issues)
+
+Fall back to acceptance criteria:
 
 - **TDD** when acceptance criteria are clear and behavioral
 - **Implement-first** when the work is exploratory, UI-heavy, or requires discovery
 
-Rules:
+#### General rules
 
 - follow existing patterns and conventions
 - lint and test after implementation

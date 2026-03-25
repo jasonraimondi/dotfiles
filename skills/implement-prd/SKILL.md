@@ -39,6 +39,7 @@ Build the queue from YAML fields, not prose:
 - `priority`
 - `labels` (AFK / HITL)
 - `points`
+- `track`
 
 Routing rules:
 
@@ -52,9 +53,10 @@ Routing rules:
 
 Present the plan as a numbered list showing:
 
-- issue ID and title
+- issue ID, title, and track
 - current status
 - routing label (AFK / HITL)
+- tdd / headed flags
 - blockers
 - points
 - why it is next
@@ -82,6 +84,13 @@ QA:          <count>
 Remaining:   <count> (<issue list>)
 Points done: <sum> / <total>
 PRs:         <list of PR URLs>
+
+Track coverage:
+  intent:     <done>/<total>
+  experience: <done>/<total>
+  data:       <done>/<total>
+  rules:      <done>/<total>
+  resilience: <done>/<total>
 ```
 
 Update `prd.yaml` status to `complete` when all issues are done.
