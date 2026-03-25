@@ -1,6 +1,6 @@
 ---
 name: planning-prd-to-issues
-description: Break a PRD into independently grabbable issues using thin vertical slices, writing structured YAML files to ./plans/{slug}/issues/.
+description: Break a PRD into independently grabbable issues using thin vertical slices, writing structured YAML files to ./plans/{slug}/issues/. Use when user says "break this down", "create issues", "decompose the PRD", or wants to convert a PRD into actionable work items.
 ---
 
 # PRD to Issues

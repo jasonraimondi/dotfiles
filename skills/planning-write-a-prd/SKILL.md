@@ -1,6 +1,6 @@
 ---
 name: planning-write-a-prd
-description: Create a PRD by interviewing the user, exploring the codebase, and writing a structured YAML plan to ./plans/{slug}/prd.yaml.
+description: Create a PRD by interviewing the user, exploring the codebase, and writing a structured YAML plan to ./plans/{slug}/prd.yaml. Use when user says "write a PRD", "plan this feature", "create a plan", or wants structured project planning.
 ---
 
 # Write a PRD
@@ -99,6 +99,10 @@ validation:
 
 notes: |
   High-signal notes about modules, contracts, schema changes, or testing strategy.
+
+# Optional — used by implementation agent for headed verification
+dev_command: "npm run dev"
+base_url: "http://localhost:3000"
 ```
 
 Keep it scannable. The PRD should support decomposition into issues — not be a dumping ground for every implementation detail.
