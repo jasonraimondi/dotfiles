@@ -1,26 +1,25 @@
 ---
 name: planning-write-a-prd
-description: Create a Linear-native PRD by interviewing the user, exploring the codebase, and creating the right Linear container (default: a Project for multi-issue work).
+description: Create a PRD by interviewing the user, exploring the codebase, and writing a structured YAML plan to ./plans/{slug}/prd.yaml.
 ---
 
 # Write a PRD
 
-Create a PRD that is idiomatic to Linear: use Linear fields and relationships for structure, and keep markdown for human context.
+Create a PRD as a structured YAML file in the project's `./plans/` directory.
 
-## Default Linear model
+## Plan structure
 
-Prefer this model unless the work is truly small:
+Every PRD lives in its own directory:
 
-- **Project** = delivery container for the PRD
-- **Document** = longform spec, if needed
-- **Issues** = implementation slices
-- **Optional umbrella issue** = lightweight parent issue when sub-issue hierarchy helps execution
-
-Use a **single parent issue instead of a project** only when the feature is small and unlikely to become more than a few implementation issues.
+```
+./plans/{project-slug}/
+  prd.yaml
+  issues/          # created later by /planning-prd-to-issues
+```
 
 ## Process
 
-### 1. Clarify the problem and choose the container
+### 1. Clarify the problem
 
 Ask the user for:
 
@@ -30,15 +29,9 @@ Ask the user for:
 - rough scope
 - known solution ideas
 
-Then decide which Linear artifact to create:
-
-- **Project**: default for multi-issue PRDs
-- **Parent issue**: only for small, tightly-scoped efforts
-- **Document**: add when the PRD needs longform detail; do not cram a giant spec into an issue description
-
 ### 2. Explore the repo
 
-Explore the codebase to verify assumptions, understand the current system, and find existing patterns to follow.
+Explore the codebase to verify assumptions, understand the current system, and find existing patterns.
 
 ### 3. Interview to convergence
 
@@ -62,74 +55,67 @@ Check with the user that:
 
 ### 5. Draft the PRD
 
-Use the template below. Keep it scannable. The PRD body should support decomposition into issues; it should not be a dumping ground for every implementation detail.
+Write the PRD as a YAML file using this schema:
 
-If you have a large inventory of user stories or edge cases, put the exhaustive version in a **Linear document** and summarize only the important ones in the project or issue.
+```yaml
+name: "Project Name"
+slug: project-name
+status: draft  # draft | active | complete | archived
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
 
-<prd-template>
+description: |
+  One-line summary.
 
-## Why
+why: |
+  The problem from the user's perspective and why it matters now.
 
-The problem from the user's perspective and why it matters now.
+outcome: |
+  What success looks like.
 
-## Desired outcome
+in_scope:
+  - "Behavior or surface included"
 
-What success looks like from the user's perspective.
+out_of_scope:
+  - "What this PRD explicitly does not cover"
 
-## In scope
+use_cases:
+  - id: UC-1
+    description: "..."
+  - id: UC-2
+    description: "..."
 
-The behaviors, workflows, and surfaces included in this effort.
+decisions:
+  - "Decision that is already settled"
 
-## Out of scope
+open_questions:
+  - "Question that materially affects scope or architecture"
 
-What this PRD explicitly does not cover.
+risks:
+  - "Constraint, dependency, or rollout risk"
 
-## Key use cases
+validation:
+  - "How we know the work is correct or successful"
 
-A concise numbered list of the most important user stories / use cases needed to break the work into implementation slices.
+notes: |
+  High-signal notes about modules, contracts, schema changes, or testing strategy.
+```
 
-## Decisions already made
+Keep it scannable. The PRD should support decomposition into issues — not be a dumping ground for every implementation detail.
 
-Architectural, product, or UX decisions that are already settled.
+### 6. Write the file
 
-## Open questions
-
-Only the questions that materially affect scope, sequencing, or architecture.
-
-## Risks / dependencies
-
-Important constraints, migrations, third-party dependencies, cross-team dependencies, or rollout risks.
-
-## Validation / success signals
-
-How we will know the work is correct or successful. Include testing expectations at the level of behavior, not implementation details.
-
-## Implementation / testing notes
-
-High-signal notes about modules, contracts, schema changes, or prior art for tests. Do NOT include file paths or code snippets.
-
-</prd-template>
-
-### 6. Create the Linear artifacts
-
-Create the chosen Linear artifacts in a Linear-native way:
-
-- **Project**: default PRD container for RAL when the work spans multiple implementation issues
-- **Document**: store longform PRD detail here when needed
-- **Umbrella issue**: optional lightweight parent issue inside the project if sub-issues will make execution easier
+Create `./plans/{slug}/prd.yaml` using the drafted content.
 
 Rules:
 
-- keep project and issue descriptions concise and scannable
-- use native Linear relationships instead of markdown sections for structure
-- do **not** encode parent-child structure or blockers in markdown
-- link the project, document, and umbrella issue to each other where useful
+- the `slug` is a kebab-case version of the project name, used as the directory name
+- use_cases are numbered (UC-1, UC-2, ...) so issues can reference them
+- do not include file paths or code snippets in the PRD
 
 ### 7. Hand off cleanly
 
 After creation, share:
 
-- the project URL
-- the document URL, if created
-- the umbrella issue URL, if created
-- a one-paragraph summary of the recommended next step (`/planning-prd-to-issues` or direct execution)
+- the file path to the PRD
+- a one-paragraph summary of the recommended next step (`/planning-prd-to-issues`)

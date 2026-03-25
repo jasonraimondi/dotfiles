@@ -1,108 +1,87 @@
 ---
 name: implement-prd
-description: Work through a PRD project or umbrella issue in dependency order using native Linear relationships, RAL workflow lanes, and AFK/HITL labels.
+description: Work through a PRD's issues in dependency order using YAML workflow states, AFK/HITL routing, and proper status tracking.
 ---
 
 # Work on PRD
 
-Work through a PRD's implementation issues in Linear-native order.
+Work through a PRD's implementation issues in dependency order.
 
 ## Input
 
-The user provides a Linear **project** identifier or URL. If they only have a PRD umbrella issue, accept that too.
+The user provides a project slug or path (e.g., `auth` or `./plans/auth/`).
 
-If none is provided, ask: "Which PRD should I work on? (Linear project or umbrella issue URL/ID)"
+If none provided, ask: "Which PRD should I work on? (project slug or path)"
 
-## RAL workflow lanes
+## Workflow states
 
-Use the RAL team's current lanes rather than inventing your own:
-
-- **Backlog** = planned or not currently actionable
-- **Todo** = ready to pick up
-- **In Progress** = actively being implemented
-- **Blocked** = work started but is waiting on an external dependency, decision, or unblock
-- **In Review** = PR is open or awaiting review
-- **QA** = merged and awaiting verification / validation
-- **Done** = complete
-- **Canceled / Duplicate** = do not execute
+```
+backlog → todo → in-progress → in-review → qa → done
+                      ↕
+                   blocked
+```
 
 ## Process
 
-### 1. Fetch the PRD container and issues
+### 1. Read the PRD and issues
 
-If given a project:
+Read `./plans/{slug}/prd.yaml` and all files in `./plans/{slug}/issues/`.
 
-- fetch the project and its open implementation issues
-- exclude the umbrella PRD issue itself and any obvious planning-only meta issues from the executable queue
-- if the project has an umbrella issue, use it to understand hierarchy, but trust native project and dependency data first
-
-If given an umbrella issue:
-
-- fetch the issue, its project if any, and its native sub-issues
-
-If no implementation issues exist, tell the user: "This PRD has no implementation issues. Run `/planning-prd-to-issues` first."
+If no issue files exist, tell the user: "This PRD has no implementation issues. Run `/planning-prd-to-issues` first."
 
 ### 2. Build the execution queue
 
-Build the queue from native Linear fields, not markdown:
+Build the queue from YAML fields, not prose:
 
-- blocked-by dependencies
-- state
-- assignee
-- priority
-- cycle / target date
-- project ordering
-- AFK / HITL labels
+- `blocked_by` dependencies
+- `status`
+- `assignee`
+- `priority`
+- `labels` (AFK / HITL)
+- `points`
 
 Routing rules:
 
-- determine agent routing from labels, preferably **AFK** and **HITL**
-- prefer ready issues already in **Todo**
-- do not auto-pick issues already in **Blocked** unless the blocker is clearly resolved
-- if none are in Todo, choose the highest-priority unblocked **AFK** issue in **Backlog**, move it to Todo, then start it
-- if a previously blocked issue becomes truly unblocked, move it back to **Todo** before resuming
-- skip issues assigned to someone else unless the user explicitly says to take them over
-- never parse a `Blocked by` markdown section; use native dependencies only
+- determine agent routing from labels: **AFK** (autonomous) and **HITL** (needs human)
+- prefer issues already in **todo**
+- do not auto-pick issues in **blocked** unless the blocker is clearly resolved
+- if none are in todo, choose the highest-priority unblocked **AFK** issue in **backlog**, move it to todo, then start it
+- if a previously blocked issue becomes unblocked, move it to **todo** before resuming
+- skip issues assigned to someone else unless the user says to take them
+- read `blocked_by` fields — do not parse prose for dependency info
 
-Present the plan to the user as a numbered list showing:
+Present the plan as a numbered list showing:
 
-- issue identifier and title
-- current state
+- issue ID and title
+- current status
 - routing label (AFK / HITL)
 - blockers
+- points
 - why it is next
 
 ### 3. Work through issues
 
-Process issues in dependency order using the `implement-issue` skill.
+Process issues in dependency order using the `implement-issue` workflow.
 
-**AFK issues**:
+**AFK issues**: proceed automatically, then move to the next ready issue.
 
-- proceed automatically
-- after each issue, post a concise progress note on the PRD project or umbrella issue
-- then move to the next ready issue
+**HITL issues**: stop and explain the specific decision or input needed. Wait for the user's response.
 
-**HITL issues**:
-
-- stop and explain the specific decision or input needed
-- wait for the user's response before proceeding
-
-**Blocked issues**:
-
-- if work is waiting on an external dependency, decision, or unblock, move the issue to **Blocked** and record the blocker natively in Linear
-- once the blocker is cleared, move the issue back to **Todo** before resuming
-- do not rewrite blockers into markdown
+**Blocked issues**: set `status: blocked` in the YAML, record the reason in `notes`, move to the next ready issue. Once the blocker clears, set `status: todo` before resuming.
 
 ### 4. Status report
 
 After all ready issues are processed, print a summary:
 
 ```text
-PRD: <project or umbrella title>
-Done: <count>
-In Review: <count>
-Blocked: <count>
-QA: <count>
-Remaining: <count and issue list>
-PRs: <list of PR URLs>
+PRD: <project name>
+Done:        <count>
+In Review:   <count>
+Blocked:     <count> (<issue IDs>)
+QA:          <count>
+Remaining:   <count> (<issue list>)
+Points done: <sum> / <total>
+PRs:         <list of PR URLs>
 ```
+
+Update `prd.yaml` status to `complete` when all issues are done.

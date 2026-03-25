@@ -1,64 +1,65 @@
 ---
 name: implement-issue
-description: Implement one or more Linear issues end-to-end using native Linear workflow, RAL lanes, and GitHub↔Linear linking.
+description: Implement one or more plan issues end-to-end with proper branching, testing, and status tracking via YAML workflow states.
 ---
 
 # Work on Issue
 
-Implement one or more Linear issues end-to-end. Linear fields and relationships are the source of truth for workflow; markdown is for human context only.
+Implement one or more issues from a plan end-to-end. YAML fields are the source of truth for workflow; prose is for human context only.
 
 ## Input
 
-The user provides one or more Linear issue identifiers or URLs.
+The user provides one or more issue references:
 
-If none is provided, ask: "Which Linear issue(s) should I work on?"
+- file path: `./plans/auth/issues/1-setup-middleware.yaml`
+- shorthand: `auth#1` (project slug + issue ID)
 
-## RAL workflow lanes
+If none provided, ask: "Which issue(s) should I work on?"
 
-Use the RAL team's current lanes:
+## Workflow states
 
-- **Backlog** = planned or not currently actionable
-- **Todo** = ready to pick up
-- **In Progress** = actively being implemented
-- **Blocked** = work started but is waiting on an external dependency, decision, or unblock
-- **In Review** = PR is open or awaiting review
-- **QA** = merged and awaiting verification / validation
-- **Done** = complete
-- **Canceled / Duplicate** = stop
+```
+backlog → todo → in-progress → in-review → qa → done
+                      ↕
+                   blocked
+```
 
 ## Process (per issue)
 
-### 1. Fetch the issue
+### 1. Read the issue
 
-Fetch the issue from Linear. Read:
+Read the issue YAML file. Check:
 
-- description and acceptance criteria
-- native dependencies
-- current state
+- acceptance criteria
+- blocked_by — read those issues too, confirm they are in done or canceled
+- current status
 - assignee
 - labels
-- project / cycle / priority
+- priority
 
-If the issue has unresolved blockers, report them and skip it.
-If the issue is already in **Blocked**, confirm the blocker is actually cleared before resuming work.
-If the issue is assigned to someone else, ask before taking it over.
+If unresolved blockers exist (blocked_by issues not in done/canceled), report them and skip.
+If the issue is blocked, confirm the blocker is cleared before resuming.
+If assigned to someone else, ask before taking it.
 
-### 2. Move the issue into the active queue
+### 2. Update status
 
-If the issue is in **Backlog** and you are about to start it, move it to **Todo**.
-If the issue is in **Blocked** and the blocker is cleared, move it back to **Todo**.
-When implementation starts, move it to **In Progress**.
+Update the YAML file:
+
+- backlog → todo (when about to start)
+- blocked → todo (when blocker is cleared)
+- todo → in-progress (when implementation starts)
+- always update the `updated` date on status changes
 
 ### 3. Branch setup
 
-Check if the current branch is already dedicated to this issue or its parent PRD / project context.
+Check if the current branch is already dedicated to this issue or its parent project.
 
-- If yes: stay on the current branch.
-- If no: create a new branch using `<user>/<issue-id>-<short-slug>`.
+- If yes: stay on the current branch
+- If no: create a new branch using `<user>/<project-slug>/<issue-id>-<issue-slug>`
 
 ### 4. Explore the codebase
 
-Use the available tools to understand:
+Understand:
 
 - modules mentioned in the issue
 - adjacent code paths and existing patterns
@@ -69,45 +70,45 @@ Use the available tools to understand:
 Choose the approach that fits:
 
 - **TDD** when acceptance criteria are clear and behavioral
-- **Implement-first** when the work is exploratory, UI-heavy, or the acceptance criteria need discovery
+- **Implement-first** when the work is exploratory, UI-heavy, or requires discovery
 
 Rules:
 
 - follow existing patterns and conventions
-- use `moon run <project>:lint` to validate changes
-- use `moon run <project>:test` after implementation
+- lint and test after implementation
 - fix lint and test failures before moving on
 
 ### 6. Commit
 
-Create meaningful commits as you work. Use conventional commit format: `type(scope): description`.
+Create meaningful commits using conventional commit format: `type(scope): description`.
 
 ### 7. Open PR
 
 Once implementation is complete and tests pass:
 
 1. Push the branch with `-u`
-2. Create a PR with the Linear issue ID in the branch name, title, and body so GitHub↔Linear linking works automatically
+2. Create a PR with the issue reference in the title and body
 3. Include a concise test plan in the PR body
-4. Add a Linear comment only if the PR does not auto-link or if extra handoff context is useful
 
-### 8. Update Linear state
+### 8. Update issue YAML
 
-Use native RAL lanes, not hardcoded generic states:
+Update the issue file:
 
-- when the PR is open, move the issue to **In Review**
-- after merge, move the issue to **QA** if manual verification or stakeholder validation is still needed
-- move the issue to **Done** only after the work is actually complete for the team's workflow
-- if the issue becomes blocked after work has started, move it to **Blocked** and add the native dependency and/or concise blocker comment
-- once the blocker is cleared, move it back to **Todo** or **In Progress** as appropriate
+- set `branch` to the branch name
+- set `pr` to the PR URL
+- set `status: in-review`
+- after merge: `status: qa` if verification needed, or `status: done`
+- if blocked after starting: `status: blocked`, explain in `notes`
+- always update `updated` date
 
 ### 9. Next issue
 
-If there are more issues to work, proceed to the next one.
+If there are more issues, proceed to the next one.
 
-- stay on the same branch only when that matches the existing PRD / project workflow
+- stay on the same branch only when working on tightly coupled issues from the same project
 - otherwise create a new branch per issue
+- if any issue is blocked, skip it and report at the end
 
 ## Multiple issues
 
-When given multiple issues, work them sequentially in the chosen order. If any issue is blocked, skip it and report it at the end.
+When given multiple issues, work them sequentially. If any issue is blocked, skip it and report at the end.
