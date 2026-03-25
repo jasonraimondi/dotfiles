@@ -1,6 +1,7 @@
 ---
 name: implement-prd
-description: Work through a PRD's issues in dependency order using YAML workflow states, AFK/HITL routing, and proper status tracking.
+description: Work through a PRD's issues in dependency order using YAML workflow states, AFK/HITL routing, and proper status tracking. When synced to Linear, updates both local YAML and Linear.
+allowed-tools: Bash(linear:*), Bash(jq:*)
 ---
 
 # Work on PRD
@@ -94,3 +95,16 @@ Track coverage:
 ```
 
 Update `prd.yaml` status to `complete` when all issues are done.
+
+## Linear sync
+
+When `prd.yaml` has `linear.project_id`, the plan has been synced to Linear. In this case:
+
+- **Issue updates** flow through `implement-issue`, which handles per-issue Linear sync automatically
+- **PRD completion**: when setting `prd.yaml` status to `complete`, also update the Linear project:
+
+```bash
+linear api --method POST --body '{"query":"mutation{projectUpdate(id:\"{linear.project_id}\",input:{state:\"completed\"}){success}}"}'
+```
+
+Linear updates are best-effort — if they fail, log the failure and continue.
