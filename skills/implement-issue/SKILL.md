@@ -53,10 +53,10 @@ Update the YAML file:
 - todo → in-progress (when implementation starts)
 - always update the `updated` date on status changes
 
-**Linear sync**: if the issue has `linear.issue_id`, also update the Linear issue state:
+**Linear sync**: if the issue has `linear_id`, also update the Linear issue state:
 
 ```bash
-linear issue update {linear.issue_id} --state "{new_status}"
+linear issue update {linear_id} --state "{new_status}"
 ```
 
 ### 3. Branch setup
@@ -121,17 +121,17 @@ Update the issue file:
 - if blocked after starting: `status: blocked`, explain in `notes`
 - always update `updated` date
 
-**Linear sync**: if the issue has `linear.issue_id`, also push these changes to Linear:
+**Linear sync**: if the issue has `linear_id`, also push these changes to Linear:
 
 ```bash
 # Update status
-linear issue update {linear.issue_id} --state "{new_status}"
+linear issue update {linear_id} --state "{new_status}"
 ```
 
 Attach the PR to the Linear issue if one was created — use `linear api` with a GraphQL mutation to create an attachment:
 
 ```bash
-linear api --method POST --body '{"query":"mutation{attachmentCreate(input:{issueId:\"{linear.issue_id}\",url:\"{pr_url}\",title:\"Pull Request\"}){success}}"}'
+linear api --method POST --body '{"query":"mutation{attachmentCreate(input:{issueId:\"{linear_id}\",url:\"{pr_url}\",title:\"Pull Request\"}){success}}"}'
 ```
 
 ### 9. Next issue
@@ -144,9 +144,9 @@ If there are more issues, proceed to the next one.
 
 ## Linear sync
 
-When a plan has been synced to Linear (issues have `linear.issue_id` fields), update both local YAML **and** Linear on every status change. Local YAML is always updated first — Linear updates are best-effort. If a Linear update fails, log the failure and continue (do not block implementation).
+When a plan has been synced to Linear (issues have a `linear_id` field), update both local YAML **and** Linear on every status change. Local YAML is always updated first — Linear updates are best-effort. If a Linear update fails, log the failure and continue (do not block implementation).
 
-Check for `linear.issue_id` once when reading the issue (step 1). If present, all status transitions in steps 2 and 8 push to Linear.
+Check for `linear_id` once when reading the issue (step 1). If present, all status transitions in steps 2 and 8 push to Linear.
 
 ## Multiple issues
 

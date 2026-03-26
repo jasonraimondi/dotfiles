@@ -33,9 +33,8 @@ linear:
 **Issue YAML** additions:
 
 ```yaml
-linear:
-  issue_id: RAL-123
-  issue_url: "https://linear.app/..."
+linear_id: RAL-123
+linear_url: "https://linear.app/..."
 ```
 
 ## Process
@@ -118,7 +117,7 @@ For each issue YAML, ordered by `id`:
 
 Convert issue YAML fields to a markdown description and write to a temp file. See [formatting rules](#issue-description-format) below.
 
-**Create** (no `linear.issue_id`):
+**Create** (no `linear_id`):
 
 ```bash
 linear issue create \
@@ -133,9 +132,9 @@ linear issue create \
   --no-interactive
 ```
 
-Capture the issue identifier (e.g., `RAL-123`) from output. Write `linear.issue_id` and `linear.issue_url` back to the issue YAML.
+Capture the issue identifier (e.g., `RAL-123`) from output. Write `linear_id` and `linear_url` back to the issue YAML.
 
-**Update** (has `linear.issue_id`):
+**Update** (has `linear_id`):
 
 ```bash
 linear issue update {issue_id} \

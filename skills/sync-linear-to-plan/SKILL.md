@@ -53,11 +53,11 @@ Resolve the team in priority order:
 
 Write the resolved `team_key` back to `prd.yaml` if it changed or was missing.
 
-Build a lookup map: `linear.issue_id` → local file path.
+Build a lookup map: `linear_id` → local file path.
 
 ### 2. Fetch linked issues from Linear
 
-For each local issue that has `linear.issue_id`:
+For each local issue that has `linear_id`:
 
 ```bash
 linear issue view {issue_id} --json
@@ -107,7 +107,7 @@ For each new issue discovered in Linear:
 - Create `{id}-{slug}.yaml` with all fields populated from Linear
 - Set `outcome` and `scope` from the Linear issue description (parse the markdown sections if they follow the standard format, otherwise put the full description in `outcome`)
 - Set `acceptance_criteria` from parsed checkbox items, or leave empty
-- Write `linear.issue_id` and `linear.issue_url`
+- Write `linear_id` and `linear_url`
 
 ### 8. Sync PRD project status
 

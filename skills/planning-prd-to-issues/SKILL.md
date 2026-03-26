@@ -39,6 +39,7 @@ blocked_by: []     # issue IDs within this project
 blocking: []       # issue IDs within this project
 branch: null
 pr: null
+linear_id: null       # Linear issue identifier (e.g., RAL-123), set by sync
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
 tdd: true          # optional — issue has testable behavior
@@ -263,6 +264,7 @@ blocked_by: [1]
 blocking: [5]
 branch: null
 pr: null
+linear_id: null
 created: 2026-03-25
 updated: 2026-03-25
 tdd: true
