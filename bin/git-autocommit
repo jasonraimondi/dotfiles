@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+git fetch -p --quiet
+
+echo
+
+claude \
+    --allowedTools "Bash(git commit:*)" "Bash(git add:*)" "Bash(git status)" "Bash(git diff:*)" "Bash(git log:*)" \
+    --verbose \
+    -p \
+    "commit really"

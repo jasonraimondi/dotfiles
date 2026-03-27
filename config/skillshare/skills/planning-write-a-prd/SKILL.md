@@ -1,74 +1,125 @@
 ---
-name: write-a-prd
-description: Create a PRD through user interview, codebase exploration, and module design, then submit as a GitHub issue. Use when user wants to write a PRD, create a product requirements document, or plan a new feature.
+name: planning-write-a-prd
+description: Create a PRD by interviewing the user, exploring the codebase, and writing a structured YAML plan to ./plans/{slug}/prd.yaml. Use when user says "write a PRD", "plan this feature", "create a plan", or wants structured project planning.
 ---
 
-This skill will be invoked when the user wants to create a PRD. You may skip steps if you don't consider them necessary.
+# Write a PRD
 
-1. Ask the user for a long, detailed description of the problem they want to solve and any potential ideas for solutions.
+Create a PRD as a structured YAML file in the project's `./plans/` directory.
 
-2. Explore the repo to verify their assertions and understand the current state of the codebase.
+## Plan structure
 
-3. Interview the user relentlessly about every aspect of this plan until you reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one.
+Every PRD lives in its own directory:
 
-4. Sketch out the major modules you will need to build or modify to complete the implementation. Actively look for opportunities to extract deep modules that can be tested in isolation.
+```
+./plans/{project-slug}/
+  prd.yaml
+  issues/          # created later by /planning-prd-to-issues
+```
 
-A deep module (as opposed to a shallow module) is one which encapsulates a lot of functionality in a simple, testable interface which rarely changes.
+## Process
 
-Check with the user that these modules match their expectations. Check with the user which modules they want tests written for.
+### 1. Clarify the problem
 
-5. Once you have a complete understanding of the problem and solution, use the template below to write the PRD. The PRD should be submitted as a GitHub issue.
+Ask the user for:
 
-<prd-template>
+- the problem to solve
+- desired outcome
+- constraints or deadlines
+- rough scope
+- known solution ideas
 
-## Problem Statement
+### 2. Explore the repo
 
-The problem that the user is facing, from the user's perspective.
+Explore the codebase to verify assumptions, understand the current system, and find existing patterns.
 
-## Solution
+### 3. Interview to convergence
 
-The solution to the problem, from the user's perspective.
+Interview the user until you reach shared understanding. Resolve:
 
-## User Stories
+- core use cases
+- non-goals
+- constraints
+- rollout and validation expectations
+- open questions that materially change scope or architecture
 
-A LONG, numbered list of user stories. Each user story should be in the format of:
+### 4. Sketch modules and testing strategy
 
-1. As an <actor>, I want a <feature>, so that <benefit>
+Identify the major modules you expect to build or modify. Prefer deep, stable, testable modules over shallow glue.
 
-<user-story-example>
-1. As a mobile bank customer, I want to see balance on my accounts, so that I can make better informed decisions about my spending
-</user-story-example>
+Check with the user that:
 
-This list of user stories should be extremely extensive and cover all aspects of the feature.
+- the module boundaries make sense
+- the testing plan matches expectations
+- any risky unknowns are called out explicitly
 
-## Implementation Decisions
+### 5. Draft the PRD
 
-A list of implementation decisions that were made. This can include:
+Write the PRD as a YAML file using this schema:
 
-- The modules that will be built/modified
-- The interfaces of those modules that will be modified
-- Technical clarifications from the developer
-- Architectural decisions
-- Schema changes
-- API contracts
-- Specific interactions
+```yaml
+name: "Project Name"
+slug: project-name
+status: draft  # draft | active | complete | archived
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
 
-Do NOT include specific file paths or code snippets. They may end up being outdated very quickly.
+description: |
+  One-line summary.
 
-## Testing Decisions
+why: |
+  The problem from the user's perspective and why it matters now.
 
-A list of testing decisions that were made. Include:
+outcome: |
+  What success looks like.
 
-- A description of what makes a good test (only test external behavior, not implementation details)
-- Which modules will be tested
-- Prior art for the tests (i.e. similar types of tests in the codebase)
+in_scope:
+  - "Behavior or surface included"
 
-## Out of Scope
+out_of_scope:
+  - "What this PRD explicitly does not cover"
 
-A description of the things that are out of scope for this PRD.
+use_cases:
+  - id: UC-1
+    description: "..."
+  - id: UC-2
+    description: "..."
 
-## Further Notes
+decisions:
+  - "Decision that is already settled"
 
-Any further notes about the feature.
+open_questions:
+  - "Question that materially affects scope or architecture"
 
-</prd-template>
+risks:
+  - "Constraint, dependency, or rollout risk"
+
+validation:
+  - "How we know the work is correct or successful"
+
+notes: |
+  High-signal notes about modules, contracts, schema changes, or testing strategy.
+
+# Optional — used by implementation agent for headed verification
+dev_command: "npm run dev"
+base_url: "http://localhost:3000"
+```
+
+Keep it scannable. The PRD should support decomposition into issues — not be a dumping ground for every implementation detail.
+
+### 6. Write the file
+
+Create `./plans/{slug}/prd.yaml` using the drafted content.
+
+Rules:
+
+- the `slug` is a kebab-case version of the project name, used as the directory name
+- use_cases are numbered (UC-1, UC-2, ...) so issues can reference them
+- do not include file paths or code snippets in the PRD
+
+### 7. Hand off cleanly
+
+After creation, share:
+
+- the file path to the PRD
+- a one-paragraph summary of the recommended next step (`/planning-prd-to-issues`)

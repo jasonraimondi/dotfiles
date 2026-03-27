@@ -18,13 +18,12 @@ Use this skill when:
 
 Design finite state machines and statecharts for modeling entity lifecycles, workflows, and system behavior.
 
-## MANDATORY: Documentation-First Approach
+## Documentation-First Approach
 
 Before designing state machines:
 
-1. **Invoke `docs-management` skill** for state machine patterns
-2. **Verify implementation patterns** via MCP servers (context7 for XState, etc.)
-3. **Base all guidance on Harel statechart semantics**
+1. **Verify implementation patterns** via MCP servers (context7 for XState, etc.)
+2. **Base all guidance on Harel statechart semantics**
 
 ## State Machine Concepts
 
@@ -42,20 +41,55 @@ Before designing state machines:
 
 ### State Types
 
-```csharp
-public enum StateType
-{
-    Initial,       // Starting state (filled circle)
-    Normal,        // Regular state
-    Final,         // End state (circle with border)
-    Composite,     // Contains sub-states
-    Parallel,      // Concurrent regions
-    History,       // Remember last sub-state
-    Choice         // Decision point
-}
+```typescript
+type StateType =
+  | 'initial'    // Starting state (filled circle)
+  | 'normal'     // Regular state
+  | 'final'      // End state (circle with border)
+  | 'composite'  // Contains sub-states
+  | 'parallel'   // Concurrent regions
+  | 'history'    // Remember last sub-state
+  | 'choice';    // Decision point
 ```
 
 ## State Machine Notation
+
+### Mermaid Syntax
+
+```mermaid
+stateDiagram-v2
+    [*] --> Draft : Create
+
+    state Draft {
+        direction LR
+        [*] --> Empty
+        Empty --> HasItems : AddItem
+        HasItems --> HasItems : AddItem
+        HasItems --> Empty : RemoveLastItem
+    }
+
+    Draft --> Submitted : Submit
+    Draft --> Cancelled : Cancel
+
+    Submitted --> Paid : PaymentReceived
+    Submitted --> Cancelled : Cancel
+    Submitted --> Draft : RequireChanges
+
+    Paid --> Shipped : Ship
+    Paid --> Refunded : Refund
+
+    Shipped --> Delivered : Deliver
+    Shipped --> Returned : Return
+
+    Delivered --> Completed : Finalize
+    Delivered --> Returned : Return
+
+    Returned --> Refunded : ProcessReturn
+
+    Completed --> [*]
+    Refunded --> [*]
+    Cancelled --> [*]
+```
 
 ### PlantUML Syntax
 
@@ -107,230 +141,69 @@ Cancelled --> [*]
 @enduml
 ```
 
-### Mermaid Syntax
+## TypeScript Implementation Patterns
 
-```mermaid
-stateDiagram-v2
-    [*] --> Draft : Create
+### Transition Map Pattern
 
-    state Draft {
-        direction LR
-        [*] --> Empty
-        Empty --> HasItems : AddItem
-        HasItems --> HasItems : AddItem
-        HasItems --> Empty : RemoveLastItem
-    }
+Simple, declarative — good for machines with no side effects in the transition logic itself.
 
-    Draft --> Submitted : Submit
-    Draft --> Cancelled : Cancel
+```typescript
+const OrderStatus = {
+  Draft: 'draft',
+  Submitted: 'submitted',
+  Paid: 'paid',
+  Shipped: 'shipped',
+  Delivered: 'delivered',
+  Completed: 'completed',
+  Cancelled: 'cancelled',
+  Returned: 'returned',
+  Refunded: 'refunded',
+} as const;
 
-    Submitted --> Paid : PaymentReceived
-    Submitted --> Cancelled : Cancel
-    Submitted --> Draft : RequireChanges
+type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus];
 
-    Paid --> Shipped : Ship
-    Paid --> Refunded : Refund
+const OrderEvent = {
+  Submit: 'submit',
+  Cancel: 'cancel',
+  Pay: 'pay',
+  RequireChanges: 'requireChanges',
+  Ship: 'ship',
+  Refund: 'refund',
+  Deliver: 'deliver',
+  Return: 'return',
+  Finalize: 'finalize',
+  ProcessReturn: 'processReturn',
+} as const;
 
-    Shipped --> Delivered : Deliver
-    Shipped --> Returned : Return
+type OrderEvent = (typeof OrderEvent)[keyof typeof OrderEvent];
 
-    Delivered --> Completed : Finalize
-    Delivered --> Returned : Return
+const transitions: Record<string, OrderStatus> = {
+  [`${OrderStatus.Draft}:${OrderEvent.Submit}`]: OrderStatus.Submitted,
+  [`${OrderStatus.Draft}:${OrderEvent.Cancel}`]: OrderStatus.Cancelled,
+  [`${OrderStatus.Submitted}:${OrderEvent.Pay}`]: OrderStatus.Paid,
+  [`${OrderStatus.Submitted}:${OrderEvent.Cancel}`]: OrderStatus.Cancelled,
+  [`${OrderStatus.Submitted}:${OrderEvent.RequireChanges}`]: OrderStatus.Draft,
+  [`${OrderStatus.Paid}:${OrderEvent.Ship}`]: OrderStatus.Shipped,
+  [`${OrderStatus.Paid}:${OrderEvent.Refund}`]: OrderStatus.Refunded,
+  [`${OrderStatus.Shipped}:${OrderEvent.Deliver}`]: OrderStatus.Delivered,
+  [`${OrderStatus.Shipped}:${OrderEvent.Return}`]: OrderStatus.Returned,
+  [`${OrderStatus.Delivered}:${OrderEvent.Finalize}`]: OrderStatus.Completed,
+  [`${OrderStatus.Delivered}:${OrderEvent.Return}`]: OrderStatus.Returned,
+  [`${OrderStatus.Returned}:${OrderEvent.ProcessReturn}`]: OrderStatus.Refunded,
+};
 
-    Returned --> Refunded : ProcessReturn
-
-    Completed --> [*]
-    Refunded --> [*]
-    Cancelled --> [*]
-```
-
-## C# Implementation Patterns
-
-### Simple State Machine
-
-```csharp
-public sealed class Order : Entity
-{
-    public OrderStatus Status { get; private set; }
-
-    private static readonly Dictionary<(OrderStatus From, OrderEvent Event), OrderStatus> _transitions =
-        new()
-        {
-            { (OrderStatus.Draft, OrderEvent.Submit), OrderStatus.Submitted },
-            { (OrderStatus.Draft, OrderEvent.Cancel), OrderStatus.Cancelled },
-            { (OrderStatus.Submitted, OrderEvent.Pay), OrderStatus.Paid },
-            { (OrderStatus.Submitted, OrderEvent.Cancel), OrderStatus.Cancelled },
-            { (OrderStatus.Submitted, OrderEvent.RequireChanges), OrderStatus.Draft },
-            { (OrderStatus.Paid, OrderEvent.Ship), OrderStatus.Shipped },
-            { (OrderStatus.Paid, OrderEvent.Refund), OrderStatus.Refunded },
-            { (OrderStatus.Shipped, OrderEvent.Deliver), OrderStatus.Delivered },
-            { (OrderStatus.Shipped, OrderEvent.Return), OrderStatus.Returned },
-            { (OrderStatus.Delivered, OrderEvent.Finalize), OrderStatus.Completed },
-            { (OrderStatus.Delivered, OrderEvent.Return), OrderStatus.Returned },
-            { (OrderStatus.Returned, OrderEvent.ProcessReturn), OrderStatus.Refunded },
-        };
-
-    public Result Transition(OrderEvent @event)
-    {
-        if (!_transitions.TryGetValue((Status, @event), out var newStatus))
-        {
-            return Result.Failure($"Cannot {@event} order in {Status} status");
-        }
-
-        var oldStatus = Status;
-        Status = newStatus;
-
-        AddDomainEvent(new OrderStatusChangedEvent(Id, oldStatus, newStatus, @event));
-
-        return Result.Success();
-    }
-}
-
-public enum OrderStatus
-{
-    Draft, Submitted, Paid, Shipped, Delivered, Completed, Cancelled, Returned, Refunded
-}
-
-public enum OrderEvent
-{
-    Submit, Cancel, Pay, RequireChanges, Ship, Refund, Deliver, Return, Finalize, ProcessReturn
+function transition(current: OrderStatus, event: OrderEvent): OrderStatus {
+  const next = transitions[`${current}:${event}`];
+  if (!next) {
+    throw new Error(`Cannot ${event} order in ${current} status`);
+  }
+  return next;
 }
 ```
 
-### State Pattern Implementation
+### XState Pattern
 
-```csharp
-public abstract class OrderState
-{
-    public abstract OrderStatus Status { get; }
-
-    public virtual Result Submit(Order order) =>
-        Result.Failure($"Cannot submit order in {Status} state");
-
-    public virtual Result Cancel(Order order) =>
-        Result.Failure($"Cannot cancel order in {Status} state");
-
-    public virtual Result Pay(Order order) =>
-        Result.Failure($"Cannot pay order in {Status} state");
-
-    public virtual Result Ship(Order order) =>
-        Result.Failure($"Cannot ship order in {Status} state");
-
-    protected void TransitionTo(Order order, OrderState newState)
-    {
-        order.SetState(newState);
-    }
-}
-
-public sealed class DraftState : OrderState
-{
-    public override OrderStatus Status => OrderStatus.Draft;
-
-    public override Result Submit(Order order)
-    {
-        if (!order.HasItems)
-            return Result.Failure("Order must have items to submit");
-
-        TransitionTo(order, new SubmittedState());
-        order.ReserveInventory();
-        return Result.Success();
-    }
-
-    public override Result Cancel(Order order)
-    {
-        TransitionTo(order, new CancelledState());
-        return Result.Success();
-    }
-}
-
-public sealed class SubmittedState : OrderState
-{
-    public override OrderStatus Status => OrderStatus.Submitted;
-
-    public override Result Pay(Order order)
-    {
-        TransitionTo(order, new PaidState());
-        order.ConfirmInventory();
-        return Result.Success();
-    }
-
-    public override Result Cancel(Order order)
-    {
-        order.ReleaseInventory();
-        TransitionTo(order, new CancelledState());
-        return Result.Success();
-    }
-}
-```
-
-### Stateless Library Pattern
-
-```csharp
-using Stateless;
-
-public sealed class OrderStateMachine
-{
-    private readonly StateMachine<OrderStatus, OrderEvent> _machine;
-    private readonly Order _order;
-
-    public OrderStateMachine(Order order)
-    {
-        _order = order;
-        _machine = new StateMachine<OrderStatus, OrderEvent>(
-            () => order.Status,
-            status => order.SetStatus(status));
-
-        ConfigureTransitions();
-    }
-
-    private void ConfigureTransitions()
-    {
-        _machine.Configure(OrderStatus.Draft)
-            .Permit(OrderEvent.Submit, OrderStatus.Submitted)
-            .Permit(OrderEvent.Cancel, OrderStatus.Cancelled)
-            .OnEntry(() => _order.InitializeOrder());
-
-        _machine.Configure(OrderStatus.Submitted)
-            .PermitIf(OrderEvent.Pay, OrderStatus.Paid,
-                () => _order.PaymentIsValid)
-            .Permit(OrderEvent.Cancel, OrderStatus.Cancelled)
-            .Permit(OrderEvent.RequireChanges, OrderStatus.Draft)
-            .OnEntry(() => _order.ReserveInventory())
-            .OnExit(() => { /* cleanup if needed */ });
-
-        _machine.Configure(OrderStatus.Paid)
-            .Permit(OrderEvent.Ship, OrderStatus.Shipped)
-            .Permit(OrderEvent.Refund, OrderStatus.Refunded)
-            .OnEntry(() => _order.ConfirmInventory());
-
-        _machine.Configure(OrderStatus.Shipped)
-            .Permit(OrderEvent.Deliver, OrderStatus.Delivered)
-            .Permit(OrderEvent.Return, OrderStatus.Returned)
-            .OnEntry(() => _order.SendTrackingNotification());
-
-        _machine.Configure(OrderStatus.Delivered)
-            .Permit(OrderEvent.Finalize, OrderStatus.Completed)
-            .Permit(OrderEvent.Return, OrderStatus.Returned);
-
-        _machine.Configure(OrderStatus.Returned)
-            .Permit(OrderEvent.ProcessReturn, OrderStatus.Refunded);
-
-        // Terminal states
-        _machine.Configure(OrderStatus.Completed);
-        _machine.Configure(OrderStatus.Cancelled);
-        _machine.Configure(OrderStatus.Refunded);
-    }
-
-    public bool CanFire(OrderEvent trigger) => _machine.CanFire(trigger);
-
-    public void Fire(OrderEvent trigger) => _machine.Fire(trigger);
-
-    public IEnumerable<OrderEvent> GetPermittedTriggers() =>
-        _machine.GetPermittedTriggers();
-}
-```
-
-## XState Pattern (TypeScript)
+Full statechart implementation with context, guards, actions, and services.
 
 ```typescript
 import { createMachine, assign } from 'xstate';
@@ -428,7 +301,6 @@ const orderMachine = createMachine({
         RETURN: 'returned',
       },
       after: {
-        // Auto-complete after 14 days
         '14d': 'completed',
       },
     },
@@ -459,6 +331,199 @@ const orderMachine = createMachine({
   },
 });
 ```
+
+## Testing State Machines
+
+### What to Test
+
+| Category | What to Verify |
+|----------|---------------|
+| **Happy paths** | Each valid transition produces correct next state |
+| **Invalid transitions** | Rejected events in wrong states throw/return errors |
+| **Guards** | Transitions blocked when guard conditions are false |
+| **Actions** | Entry, exit, and transition actions fire correctly |
+| **Context** | State context is updated correctly on transitions |
+| **Terminal states** | Final states accept no further transitions |
+| **Full paths** | End-to-end flows through the entire lifecycle |
+
+### Testing the Transition Map Pattern
+
+```typescript
+import { describe, it, expect } from 'vitest';
+
+describe('order state machine', () => {
+  // Happy path transitions
+  describe('valid transitions', () => {
+    it.each([
+      ['draft', 'submit', 'submitted'],
+      ['draft', 'cancel', 'cancelled'],
+      ['submitted', 'pay', 'paid'],
+      ['submitted', 'cancel', 'cancelled'],
+      ['submitted', 'requireChanges', 'draft'],
+      ['paid', 'ship', 'shipped'],
+      ['paid', 'refund', 'refunded'],
+      ['shipped', 'deliver', 'delivered'],
+      ['shipped', 'return', 'returned'],
+      ['delivered', 'finalize', 'completed'],
+      ['delivered', 'return', 'returned'],
+      ['returned', 'processReturn', 'refunded'],
+    ] as const)('%s + %s → %s', (from, event, expected) => {
+      expect(transition(from, event)).toBe(expected);
+    });
+  });
+
+  // Invalid transitions
+  describe('rejected transitions', () => {
+    it.each([
+      ['draft', 'pay'],
+      ['draft', 'ship'],
+      ['submitted', 'ship'],
+      ['paid', 'cancel'],
+      ['completed', 'cancel'],
+      ['cancelled', 'submit'],
+      ['refunded', 'refund'],
+    ] as const)('%s + %s → throws', (from, event) => {
+      expect(() => transition(from, event)).toThrow();
+    });
+  });
+
+  // Full lifecycle paths
+  describe('end-to-end paths', () => {
+    it('happy path: draft → completed', () => {
+      let status: OrderStatus = 'draft';
+      for (const event of ['submit', 'pay', 'ship', 'deliver', 'finalize'] as const) {
+        status = transition(status, event);
+      }
+      expect(status).toBe('completed');
+    });
+
+    it('return path: draft → refunded', () => {
+      let status: OrderStatus = 'draft';
+      for (const event of ['submit', 'pay', 'ship', 'return', 'processReturn'] as const) {
+        status = transition(status, event);
+      }
+      expect(status).toBe('refunded');
+    });
+
+    it('cancellation from submitted', () => {
+      let status: OrderStatus = 'draft';
+      status = transition(status, 'submit');
+      status = transition(status, 'cancel');
+      expect(status).toBe('cancelled');
+    });
+  });
+
+  // Terminal states accept nothing
+  describe('terminal states', () => {
+    const terminalStates: OrderStatus[] = ['completed', 'cancelled', 'refunded'];
+    const allEvents = Object.values(OrderEvent);
+
+    for (const state of terminalStates) {
+      it(`${state} rejects all events`, () => {
+        for (const event of allEvents) {
+          expect(() => transition(state, event)).toThrow();
+        }
+      });
+    }
+  });
+});
+```
+
+### Testing XState Machines
+
+```typescript
+import { describe, it, expect, vi } from 'vitest';
+import { createActor } from 'xstate';
+
+describe('order machine (XState)', () => {
+  function createOrderActor(context?: Partial<OrderContext>) {
+    return createActor(orderMachine, {
+      input: context,
+    });
+  }
+
+  // Snapshot testing: verify state after events
+  describe('transitions', () => {
+    it('submits when items exist', () => {
+      const actor = createOrderActor();
+      actor.start();
+
+      actor.send({ type: 'ADD_ITEM', item: { id: '1', name: 'Widget', qty: 1 } });
+      actor.send({ type: 'SUBMIT' });
+
+      expect(actor.getSnapshot().value).toBe('submitted');
+      expect(actor.getSnapshot().context.items).toHaveLength(1);
+    });
+
+    it('blocks submit without items (guard)', () => {
+      const actor = createOrderActor();
+      actor.start();
+
+      actor.send({ type: 'SUBMIT' });
+
+      expect(actor.getSnapshot().value).toBe('draft');
+    });
+  });
+
+  // Guard testing
+  describe('guards', () => {
+    it('blocks payment without paymentId', () => {
+      const actor = createOrderActor();
+      actor.start();
+
+      actor.send({ type: 'ADD_ITEM', item: { id: '1', name: 'Widget', qty: 1 } });
+      actor.send({ type: 'SUBMIT' });
+      actor.send({ type: 'PAY', paymentId: '' });
+
+      expect(actor.getSnapshot().value).toBe('submitted');
+    });
+  });
+
+  // Action testing: verify side effects
+  describe('actions', () => {
+    it('calls reserveInventory on entering submitted', () => {
+      const reserveInventory = vi.fn();
+
+      const testMachine = orderMachine.provide({
+        actions: { reserveInventory },
+      });
+
+      const actor = createActor(testMachine);
+      actor.start();
+
+      actor.send({ type: 'ADD_ITEM', item: { id: '1', name: 'Widget', qty: 1 } });
+      actor.send({ type: 'SUBMIT' });
+
+      expect(reserveInventory).toHaveBeenCalledOnce();
+    });
+  });
+
+  // Context mutation testing
+  describe('context updates', () => {
+    it('stores trackingNumber on ship', () => {
+      const actor = createOrderActor();
+      actor.start();
+
+      actor.send({ type: 'ADD_ITEM', item: { id: '1', name: 'Widget', qty: 1 } });
+      actor.send({ type: 'SUBMIT' });
+      actor.send({ type: 'PAY', paymentId: 'pay_123' });
+      actor.send({ type: 'SHIP', trackingNumber: 'TRACK_456' });
+
+      expect(actor.getSnapshot().context.trackingNumber).toBe('TRACK_456');
+    });
+  });
+});
+```
+
+### Testing Strategies Checklist
+
+1. **Table-driven tests** for transition maps — enumerate all valid/invalid pairs
+2. **Guard isolation** — test each guard predicate returns correct boolean independently
+3. **Action spies** — use `machine.provide({ actions })` to inject mocks and verify calls
+4. **Context snapshots** — assert context shape after each transition
+5. **Path coverage** — test every reachable path from initial to each final state
+6. **Exhaustive invalid transitions** — for every `(state, event)` pair not in the valid set, assert rejection
+7. **Model-based testing** — use `@xstate/test` to auto-generate test paths from the machine definition
 
 ## Design Best Practices
 
@@ -493,11 +558,8 @@ When designing state machines:
 6. **Define actions**: What happens on transitions?
 7. **Draw diagram**: Visualize for review
 8. **Implement**: Choose appropriate pattern
-
-## References
-
-For detailed guidance:
+9. **Test**: Verify all transitions, guards, and paths
 
 ---
 
-**Last Updated:** 2025-12-26
+**Last Updated:** 2026-03-25
