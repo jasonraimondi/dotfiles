@@ -22,3 +22,11 @@ if command -v fnox > /dev/null; then
   echo "using fnox";
   eval "$(fnox activate bash)"
 fi
+
+if command -v direnv > /dev/null; then
+  eval "$(direnv hook zsh)"
+fi
+
+if command -v plan-bender > /dev/null; then
+  eval "$(plan-bender completion zsh)"
+fi
