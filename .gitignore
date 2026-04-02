@@ -16,3 +16,6 @@ ssh/config
 
 zsh/dot-zsh/00-SECRETS.zsh
 zsh/dot-zsh/*-custom.zsh
+.plan-bender/
+.plan-bender.local.yaml
+.claude/skills/bender-*

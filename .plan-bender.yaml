@@ -1,0 +1,4 @@
+plans_dir: ./.plan-bender/plans/
+max_points: 3
+agents:
+    - claude-code
