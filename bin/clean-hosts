@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# fuck adobe https://old.reddit.com/r/apple/comments/1sb0zqn/users_say_adobe_creative_cloud_rewrote_hosts_file/
+
+set -euo pipefail
+
+HOSTS_FILE="/etc/hosts"
+
+log() { echo "$(date '+%Y-%m-%d %H:%M:%S') $*"; }
+
+usage() {
+  echo "Usage: clean-hosts [--dry-run] [--help]"
+  echo "Remove Adobe Creative Cloud entries from /etc/hosts"
+}
+
+DRY_RUN=false
+for arg in "$@"; do
+  case "$arg" in
+    --dry-run|-n) DRY_RUN=true ;;
+    --help|-h) usage; exit 0 ;;
+    *) echo "Unknown option: $arg"; usage; exit 1 ;;
+  esac
+done
+
+if ! grep -q '## Adobe Creative Cloud.*Start ##' "$HOSTS_FILE"; then
+  log "No Adobe entries found, nothing to do"
+  exit 0
+fi
+
+cleaned=$(sed '/^## Adobe Creative Cloud.*Start ##$/,/^## Adobe Creative Cloud.*End ##$/d' "$HOSTS_FILE")
+
+if [ "$DRY_RUN" = true ]; then
+  echo "$cleaned"
+else
+  echo "$cleaned" > "$HOSTS_FILE"
+  log "Adobe entries removed from $HOSTS_FILE"
+fi
