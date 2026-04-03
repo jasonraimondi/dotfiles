@@ -58,7 +58,7 @@ textconv = hexdump -v -C
 [help]
 
 # Automatically correct and execute mistyped commands.
-autocorrect = 1
+autocorrect = prompt
 
 [merge]
 
@@ -103,11 +103,6 @@ added = green
 changed = yellow
 untracked = cyan
 
-[commit]
-
-# Add a custom template with std commit messages
-template = /Users/jason/.gitcommit
-
 [submodule]
 
 # automatically update submodules when pulling
@@ -120,7 +115,7 @@ fp = push --force-with-lease --force-if-includes
 ane = commit --amend --no-edit
 
 subinit = submodule update --init --recursive
-subup = submodule update --recursive --remote
+subup = submodule update --init --recursive --remote
 
 # View abbreviated SHA, description, and history graph of the latest 20 commits.
 l = log --pretty=oneline -n 20 --graph --abbrev-commit
@@ -129,10 +124,10 @@ l = log --pretty=oneline -n 20 --graph --abbrev-commit
 s = status -s
 
 # Show the diff between the latest commit and the current state.
-d = !"git diff-index --quiet HEAD -- || clear; git --no-pager diff --patch-with-stat"
+d = !"git diff-index --quiet HEAD -- || git --no-pager diff --patch-with-stat"
 
 # `git di $number` shows the diff between the state `$number` revisions ago and the current state.
-di = !"d() { git diff --patch-with-stat HEAD~$1; }; git diff-index --quiet HEAD -- || clear; d"
+di = !"d() { git diff --patch-with-stat HEAD~\"$1\"; }; git diff-index --quiet HEAD -- || d"
 
 # Pull in remote changes for the current repository and all its submodules.
 p = pull --recurse-submodules
@@ -164,24 +159,20 @@ credit = "!f() { git commit --amend --author \"$1 <$2>\" -C HEAD; }; f"
 reb = "!r() { git rebase -i HEAD~$1; }; r"
 
 # Remove the old tag with this name and tag the latest commit with it.
-retag = "!r() { git tag -d $1 && git push origin :refs/tags/$1 && git tag $1; }; r"
+retag = "!r() { git tag -d \"$1\" && git push origin :refs/tags/\"$1\" && git tag \"$1\"; }; r"
 
 # Find branches containing commit
-fb = "!f() { git branch -a --contains $1; }; f"
+fb = "!f() { git branch -a --contains \"$1\"; }; f"
 
 # Find tags containing commit
-ft = "!f() { git describe --always --contains $1; }; f"
+ft = "!f() { git describe --always --contains \"$1\"; }; f"
 
 # Find commits by source code
-fc = "!f() { git log --pretty=format:'%C(yellow)%h  %Cblue%ad  %Creset%s%Cgreen  [%cn] %Cred%d' --decorate --date=short -S$1; }; f"
+fc = "!f() { git log --pretty=format:'%C(yellow)%h  %Cblue%ad  %Creset%s%Cgreen  [%cn] %Cred%d' --decorate --date=short -S\"$1\"; }; f"
 
 # Find commits by commit message
-fm = "!f() { git log --pretty=format:'%C(yellow)%h  %Cblue%ad  %Creset%s%Cgreen  [%cn] %Cred%d' --decorate --date=short --grep=$1; }; f"
+fm = "!f() { git log --pretty=format:'%C(yellow)%h  %Cblue%ad  %Creset%s%Cgreen  [%cn] %Cred%d' --decorate --date=short --grep=\"$1\"; }; f"
 
-# @deprecated use git cleanup
-# Remove branches that have already been merged with main.
-# a.k.a. ‘delete merged’
-# dm = "!git branch --merged | grep -v '\\*' | xargs -n 1 git branch -d"
 
 # List contributors with number of commits.
 contributors = shortlog --summary --numbered
