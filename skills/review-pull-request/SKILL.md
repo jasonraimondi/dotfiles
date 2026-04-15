@@ -34,13 +34,13 @@ Skip dimensions that don't apply to the changeset.
 ## <PR title> (#number)
 
 ### Critical
-- file:line — finding
+1. file:line — finding
 
 ### Suggestions
-- file:line — finding
+2. file:line — finding
 
 ### Nitpicks
-- file:line — finding
+3. file:line — finding
 
 ### Verdict
 APPROVE | REQUEST_CHANGES | COMMENT — one-sentence rationale
