@@ -1,16 +1,21 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/runkids/skillshare/main/schemas/config.schema.json
 source: ~/.config/skillshare/skills
 mode: merge
 targets:
   claude:
-    path: ~/.claude/skills
+    skills:
+      path: ~/.claude/skills
   cursor:
-    path: ~/.cursor/skills
+    skills:
+      path: ~/.cursor/skills
   junie:
-    path: ~/.junie/skills
+    skills:
+      path: ~/.junie/skills
   pi:
-    path: ~/.pi/agent/skills
+    skills:
+      path: ~/.pi/agent/skills
 ignore:
-  - "**/.DS_Store"
-  - "**/.git/**"
+  - '**/.DS_Store'
+  - '**/.git/**'
 audit:
   block_threshold: CRITICAL
