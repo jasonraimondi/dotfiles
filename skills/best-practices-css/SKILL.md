@@ -1,5 +1,5 @@
 ---
-name: frontend-css-best-practices
+name: best-practices-css
 description: Produce idiomatic, browser-aware modern CSS with progressive-enhancement fallbacks for CSS, Tailwind, and Svelte styling tasks. Use for layout, spacing, typography, color/theming, animation, responsive/container-query work, selector/specificity cleanup, and interactive UI styling. Do not use for non-styling business logic or design critique without code edits.
 ---
 
