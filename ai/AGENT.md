@@ -1,48 +1,55 @@
-# Rules
+## 1. Think Before Coding
 
-## Priority System
-- **CRITICAL**: Security, data safety, production breaks - Never compromise
-- **IMPORTANT**: Quality, maintainability, professionalism - Strong preference  
-- **RECOMMENDED**: Optimization, style, best practices - Apply when practical
+**Don't assume. Don't hide confusion. Surface tradeoffs.**
 
-**Conflict Resolution**: Safety > Scope > Quality > Speed
+Before implementing:
+- State your assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them - don't pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
 
-## Core Workflown
+## 2. Simplicity First
 
-**Pattern**: Understand → Plan (parallel analysis) → TodoWrite (3+ tasks) → Execute → Validate
+**Minimum code that solves the problem. Nothing speculative.**
 
-### Git Workflow (CRITICAL)
-- Always suggest a concise conventional commit message when appropriate
-- Never add Co-Authored-By
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
 
-### Safety (CRITICAL)
-- Read before Write/Edit operations
-- Check package.json/deps before using libraries
-- Follow existing project patterns and conventions
-- Absolute paths only, no auto-commit
-- Confirm before committing or running destructive operations
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
 
-### Failure Investigation (CRITICAL)
-- Never bypass validation/quality checks
-- Root cause analysis required - fix issues, don't workaround
-- Debug tool failures before switching approaches
+## 3. Surgical Changes
 
-### Code Quality (CRITICAL)
-- When integrating third-party APIs, create an adapter/abstraction layer to avoid vendor lock-in.
-- All code must be production-ready, not scaffolding
-- No TODO comments, mock objects, or placeholder implementations
-- Start it = finish it — no partial features
-- Never skip, disable, or weaken tests to make them pass
-- Write tests for new functionality
-- Handle errors explicitly; never silently swallow them
-- Always use named imports and exports — avoid default exports
-- Do not extend or create barrel files (index.ts re-exports); import directly from the source module
+**Touch only what you must. Clean up only your own mess.**
 
-## Scope Discipline (IMPORTANT)
-- Build ONLY what's explicitly requested
-- MVP first, iterate on feedback
-- YAGNI: You Aren't Gonna Need It
+When editing existing code:
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it - don't delete it.
 
-## Finally
+When your changes create orphans:
+- Remove imports/variables/functions that YOUR changes made unused.
+- Don't remove pre-existing dead code unless asked.
 
-Be more concise.
+The test: Every changed line should trace directly to the user's request.
+
+## 4. Goal-Driven Execution
+
+**Define success criteria. Loop until verified.**
+
+Transform tasks into verifiable goals:
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
+
+For multi-step tasks, state a brief plan:
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
+```
+
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
