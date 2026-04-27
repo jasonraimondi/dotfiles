@@ -1,6 +1,6 @@
 ---
 name: best-practices-css
-description: Produce idiomatic, browser-aware modern CSS with progressive-enhancement fallbacks for CSS, Tailwind, and Svelte styling tasks. Use for layout, spacing, typography, color/theming, animation, responsive/container-query work, selector/specificity cleanup, and interactive UI styling. Do not use for non-styling business logic or design critique without code edits.
+description: Produce idiomatic, browser-aware modern CSS with progressive-enhancement fallbacks for vanilla CSS and Svelte styling tasks. Use for layout, spacing, typography, color/theming, animation, responsive/container-query work, selector/specificity cleanup, and interactive UI styling. Do not use for non-styling business logic, or design critique without code edits.
 ---
 
 # CSS Best Practices
@@ -9,16 +9,15 @@ Replace outdated styling patterns with idiomatic, accessible, performance-aware 
 
 ## Defaults
 
-- **Output:** vanilla CSS unless user requests Tailwind or Svelte syntax.
 - **Compatibility:** Baseline (Tier A only) unless user requests Progressive or Experimental.
 - **Recommendations:** one primary solution per problem — no competing options.
 
 ## Workflow
 
-1. **Classify** — determine the styling domain (layout, motion, theme, selectors, interactive, typography, workflow/architecture) and constraints (browser support, a11y, framework).
-2. **Load references** — read `references/index.md`, then the matching profile and **only** the relevant rule files from `references/rules/`. Load at most 5 rule files per task.
+1. **Classify** — name the styling domain (layout, motion, theme, selectors, interactive, typography, workflow/architecture) and constraints (browser support, a11y, framework).
+2. **Load context** — read `preferences/index.md` first (token-driven, scope-local, cascade-first defaults). Then `references/index.md` to find the matching profile and **only** the relevant rule files in `references/rules/`. Cap rule files at 5 per task.
 3. **Match tier** — confirm each rule's `tier` matches the active compatibility mode. Use `bcd_id` and `mdn_url` from rule frontmatter for any user-facing support claims.
-4. **Implement** — provide a patch-level code change. For B/C features, include an `@supports` fallback that preserves a usable baseline.
+4. **Implement** — provide a patch-level code change. For B/C features, include an `@supports` fallback that preserves a usable Tier A baseline.
 5. **Quality check:**
    - No a11y regressions
    - No unnecessary specificity escalation
@@ -33,24 +32,25 @@ Replace outdated styling patterns with idiomatic, accessible, performance-aware 
 | **Progressive** | A + B (`80–89%`) | User accepts fallbacks |
 | **Experimental** | A + B + C (`<80%`) | User explicitly asks for cutting-edge |
 
-For B/C features: always keep a robust Tier A baseline and layer enhancements with `@supports`.
+For B/C features: keep a robust Tier A baseline and layer enhancements with `@supports`.
 
-## Idiomatic CSS Principles
+## Core Principles
+
+Topical map of the rules in `preferences/index.md`. The preferences file (and individual rule files) are authoritative on conflicts.
 
 1. **Cascade** — `@layer` ordering, `:where()`/class selectors, avoid `!important`.
-2. **Tokens** — centralize values as custom properties; no hardcoded magic numbers.
-3. **Logical properties** — `margin-inline`, `padding-block`, `inset-inline` over physical directions.
-4. **Layout** — `gap`, `aspect-ratio`, Grid/Flex, container queries, `subgrid`, `inset`.
-5. **Animation** — transform/opacity-based motion, `prefers-reduced-motion`, no JS-driven style hacks.
-6. **Accessibility** — preserve `:focus-visible`, keyboard semantics; never trade a11y for visuals.
-7. **Architecture** — `@scope`, nesting, `@property` for typed custom properties; keep component styles local.
-8. **Readability** — limit deep selector chains, avoid unnecessary nesting.
+2. **Tokens** — every color, size, shadow, space is a `var(--*)`; centralize at `:root`, override per component.
+3. **Variants** — override the custom property downstream properties already read; don't restyle the surface.
+4. **Layout** — intrinsic first (`gap`, `aspect-ratio`, Grid/Flex, `auto-fit`, `minmax`, `clamp`); container queries when component size is the constraint, media queries when the viewport is.
+5. **Logical properties** — `margin-inline`, `padding-block`, `inset-inline` over physical directions.
+6. **Animation** — transform/opacity-based motion, `prefers-reduced-motion`, no JS-driven style hacks.
+7. **Accessibility** — preserve `:focus-visible`, keyboard semantics; never trade a11y for visuals.
+8. **Architecture** — `@scope`, nesting, `@property` with `inherits: false` for component-local primitives.
+9. **Readability** — limit deep selector chains, avoid unnecessary nesting.
 
 ## Framework Output
 
-When user requests **Tailwind**: use utility classes, respect the project's Tailwind config, prefer `@apply` sparingly. Map CSS rules to their Tailwind equivalents.
-
-When user requests **Svelte**: use `<style>` blocks (scoped by default), leverage Svelte's `:global()` only when necessary. Follow the project's existing Svelte styling conventions.
+When user requests **Svelte**: use `<style>` blocks (scoped by default), reach for `:global()` only when necessary. Follow the project's existing Svelte styling conventions.
 
 ## Output Format
 
@@ -62,10 +62,11 @@ When user requests **Svelte**: use `<style>` blocks (scoped by default), leverag
 
 ## References
 
-- `references/index.md` — entrypoint, rule map, quick search commands
+- `preferences/index.md` — author preferences (token-driven, scope-local, cascade-first); load first
+- `references/index.md` — rule map and quick search commands
 - `references/profiles/` — `stable.md` (A), `progressive.md` (B), `experimental.md` (C)
 - `references/css-techniques-guide.md` — full catalog with before/after examples
-- `references/rules/` — per-technique rule files with `tier`, `bcd_id`, `mdn_url`, and caveats
+- `references/rules/` — per-technique files with `tier`, `bcd_id`, `mdn_url`, and caveats
 
 ## Anti-Patterns
 
