@@ -1,15 +1,17 @@
 ---
 name: pr-review-multi-agent
-description: Run a rigorous multi-agent review on a pull request. Use when the user asks to review, audit, or critique a PR and wants high-signal findings rather than a single-pass summary. Dispatches five specialized subagents (correctness/security and design/maintainability in full and caveman modes, plus merge-risk scoring), then a verifier that confirms claims against the code, deduplicates, and categorizes findings as critical, suggestion, or nit.
+description: High-rigor multi-agent PR review. Fans out five specialized reviewers in parallel (correctness/security and design/maintainability in full + caveman modes, plus merge-risk scoring), then a verifier confirms each claim against the diff and dedupes. Use when user asks for a "deep review", "thorough review", "multi-agent review", "audit this PR", "fan out review", or invokes /pr-review-multi-agent — and wants higher signal than a single-pass review.
 ---
 
 # Multi-Agent PR Review
 
-Review PR `$ARGUMENTS` by dispatching six agents: five reviewers in parallel, then one verifier.
+Six agents: five reviewers fanned out in parallel, one verifier afterwards. Reduces single-pass blind spots and surfaces only verified findings.
 
-## Finding Schema
+## Input
 
-Every reviewer outputs JSON findings with this shape:
+PR number or URL from the user. If none, run `gh pr list` and ask.
+
+## Finding schema (Agents 1–4 emit JSON)
 
 ```json
 {
@@ -23,31 +25,23 @@ Every reviewer outputs JSON findings with this shape:
 }
 ```
 
-## Agents
+## Step 1 — Dispatch reviewers in parallel
 
-### Agent 1 — correctness + security (full)
+Send a **single message** with five Agent tool calls. Parallel execution requires one message; separate messages run sequentially.
 
-Run `Skill(pr-review-full)` scoped to logic bugs, race conditions, error handling, auth, injection, data loss, and broken API contracts.
+| # | Agent | Style skill | Scope |
+|---|-------|-------------|-------|
+| 1 | correctness + security (full) | pr-review-full | logic bugs, races, error handling, auth, injection, data loss, broken contracts |
+| 2 | correctness + security (caveman) | pr-review-caveman | same scope, terse output |
+| 3 | design + maintainability (full) | pr-review-full | naming, abstraction, test gaps, missing docs, dead code, unclear control flow |
+| 4 | design + maintainability (caveman) | pr-review-caveman | same scope, terse output |
+| 5 | merge risk | pr-merge-risk | 1–10 score, key risk factors, backwards-compat, CI/review state |
 
-### Agent 2 — correctness + security (caveman)
+Each reviewer prompt must include: the PR identifier, the focused scope, the style skill to invoke, and the finding-schema requirement (Agents 1–4 only). Agent 5 returns its native report verbatim.
 
-Run `Skill(pr-review-caveman)` scoped to the same: logic bugs, race conditions, error handling, auth, injection, data loss, and broken API contracts.
+## Step 2 — Verifier (sequential, after fan-out completes)
 
-### Agent 3 — design + maintainability (full)
-
-Run `Skill(pr-review-full)` scoped to naming, abstraction, test coverage gaps, missing docs, dead code, and unclear control flow.
-
-### Agent 4 — design + maintainability (caveman)
-
-Run `Skill(pr-review-caveman)` scoped to the same: naming, abstraction, test coverage gaps, missing docs, dead code, and unclear control flow.
-
-### Agent 5 — merge risk
-
-Run `Skill(pr-merge-risk)` to produce a 1-10 merge-risk score with key risk factors, backwards-compat notes, and CI/review state. Output the full report verbatim — it does not use the finding schema above.
-
-### Agent 6 — verifier
-
-Take the four reviewer finding lists (Agents 1-4). For each finding:
+Dispatch a sixth Agent with the four reviewer finding lists. For each finding it must:
 
 1. Open the cited file and confirm the code matches the claim.
 2. Drop findings that don't verify.
@@ -61,8 +55,14 @@ Then categorize against this bar:
 
 **Caps:** 5 critical, 10 suggestions, nits collapsed into a single list.
 
-## Final Output
+## Final output
 
 1. **Summary** — what the PR does, grounded in the diff (not the description).
 2. **Merge risk** — score and key factors from Agent 5.
 3. **Findings** grouped by severity, each with `file:line`, claim, and a suggested diff where applicable.
+
+## Rules
+
+- Never approve, comment on, or merge the PR.
+- Don't run the verifier in parallel with reviewers — it depends on their output.
+- If a reviewer fails or returns nothing, note it in the summary; don't silently drop.

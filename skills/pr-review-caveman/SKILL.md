@@ -1,32 +1,32 @@
 ---
 name: pr-review-caveman
-description: >
-  Ultra-compressed code review comments. Cuts noise from PR feedback while preserving
-  the actionable signal. Each comment is one line: location, problem, fix. Use when user
-  says "review this PR", "code review", "review the diff", "/review", or invokes
-  /pr-review-caveman. Auto-triggers when reviewing pull requests.
+description: Ultra-compressed code review comment style — one line per finding (location, problem, fix). This is a STYLE skill, not a workflow; pair with pr-review-full or pr-review-multi-agent for the actual review pass. Use when user says "caveman review", "terse review", "review in caveman style", or invokes /pr-review-caveman.
 ---
+
+# Caveman Review Style
 
 Write code review comments terse and actionable. One line per finding. Location, problem, fix. No throat-clearing.
 
-## Rules
+## Format
 
-**Format:** `L<line>: <problem>. <fix>.` — or `<file>:L<line>: ...` when reviewing multi-file diffs.
+`L<line>: <problem>. <fix>.` — or `<file>:L<line>: ...` for multi-file diffs.
 
-**Severity prefix (optional, when mixed):**
+**Severity prefix (when mixed):**
 - `🔴 bug:` — broken behavior, will cause incident
 - `🟡 risk:` — works but fragile (race, missing null check, swallowed error)
-- `🔵 nit:` — style, naming, micro-optim. Author can ignore
+- `🔵 nit:` — style, naming, micro-optim. Author can ignore.
 - `❓ q:` — genuine question, not a suggestion
 
-**Drop:**
+## Drop
+
 - "I noticed that...", "It seems like...", "You might want to consider..."
 - "This is just a suggestion but..." — use `nit:` instead
 - "Great work!", "Looks good overall but..." — say it once at the top, not per comment
 - Restating what the line does — the reviewer can read the diff
-- Hedging ("perhaps", "maybe", "I think") — if unsure use `q:`
+- Hedging ("perhaps", "maybe", "I think") — if unsure, use `q:`
 
-**Keep:**
+## Keep
+
 - Exact line numbers
 - Exact symbol/function/variable names in backticks
 - Concrete fix, not "consider refactoring this"
@@ -46,10 +46,16 @@ Write code review comments terse and actionable. One line per finding. Location,
 
 ✅ `L23: 🟡 risk: no retry on 429. Wrap in withBackoff(3).`
 
-## Auto-Clarity
+## Drop terse mode for
 
-Drop terse mode for: security findings (CVE-class bugs need full explanation + reference), architectural disagreements (need rationale, not just a one-liner), and onboarding contexts where the author is new and needs the "why". In those cases write a normal paragraph, then resume terse for the rest.
+- **Security findings** — CVE-class bugs need full explanation + reference
+- **Architectural disagreements** — need rationale, not a one-liner
+- **Onboarding contexts** — when the author is new and needs the "why"
+
+In those cases, write a normal paragraph, then resume terse for the rest.
 
 ## Boundaries
 
-Reviews only — does not write the code fix, does not approve/request-changes, does not run linters. Output the comment(s) ready to paste into the PR. "stop pr-review-caveman" or "normal mode": revert to verbose review style.
+Reviews only. Does not write the code fix, does not approve / request-changes, does not run linters. Output the comment(s) ready to paste into the PR.
+
+"stop pr-review-caveman" or "normal mode": revert to verbose review style.

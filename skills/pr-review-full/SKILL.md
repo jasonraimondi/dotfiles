@@ -1,37 +1,37 @@
 ---
 name: pr-review-full
-description: "Review a pull request for correctness, security, and quality. Use when user says: review PR, check this PR, review pull request, or provides a GitHub PR URL or number."
+description: Single-pass pull request review for correctness, security, and quality. Reads the diff plus the changed files in full, emits findings grouped by severity with a verdict. Use when user says "review this PR", "review pull request", "check this PR", or provides a GitHub PR URL/number for review. Use pr-review-multi-agent for higher-rigor parallel reviews; use pr-merge-risk for go/no-go scoring; pair with pr-review-caveman for terse output style.
 ---
 
 # Review Pull Request
 
-## Input Resolution
+Single-pass review. One model, one read, one report.
 
-1. If a PR number or URL is provided, use it directly.
-2. If no PR is specified, run `gh pr list` for the current repo and ask which PR to review.
+## Input
+
+1. PR number or URL → use it directly.
+2. No PR specified → run `gh pr list` and ask which PR to review.
 
 ## Workflow
 
-1. **Fetch context**: Run `gh pr view <number> --json title,body,baseRefName,headRefName,files` and `gh pr diff <number>` to get the full changeset.
-2. **Read changed files**: Read each modified file to understand surrounding context — never review a diff in isolation.
-3. **Analyze** each change against the review checklist below.
-4. **Output findings** grouped by severity, then a summary verdict.
+1. **Fetch**: `gh pr view <n> --json title,body,baseRefName,headRefName,files` and `gh pr diff <n>`.
+2. **Read changed files in full** — never review a diff in isolation; surrounding code determines correctness.
+3. **Analyze** each change against the checklist below; skip dimensions that don't apply.
+4. **Emit** findings grouped by severity, then a verdict.
 
-## Review Checklist
+## Checklist
 
-- **Correctness**: Logic errors, edge cases, off-by-ones, null/undefined paths
-- **Security**: Injection, auth gaps, secret exposure, unsafe deserialization
-- **Breaking changes**: API contract changes, removed exports, schema migrations
-- **Tests**: New behavior has tests; existing tests aren't weakened
-- **Naming & clarity**: Variables, functions, and types express intent
-- **Performance**: Unnecessary allocations, N+1 queries, missing indexes
+- **Correctness** — logic errors, edge cases, off-by-ones, null/undefined paths
+- **Security** — injection, auth gaps, secret exposure, unsafe deserialization
+- **Breaking changes** — API contract changes, removed exports, schema migrations
+- **Tests** — new behavior has tests; existing tests aren't weakened
+- **Naming & clarity** — variables, functions, types express intent
+- **Performance** — unnecessary allocations, N+1 queries, missing indexes
 
-Skip dimensions that don't apply to the changeset.
-
-## Output Format
+## Output
 
 ```
-## <PR title> (#number)
+## <PR title> (#<n>)
 
 ### Critical
 1. file:line — finding
@@ -46,10 +46,10 @@ Skip dimensions that don't apply to the changeset.
 APPROVE | REQUEST_CHANGES | COMMENT — one-sentence rationale
 ```
 
-Omit empty severity sections. Be direct — no filler praise.
+Omit empty sections. Be direct — no filler praise.
 
 ## Rules
 
 - Never approve or submit a review on behalf of the user without explicit confirmation.
-- Flag uncertainty — if you lack context to judge a change, say so rather than guessing.
-- Stay scoped to the diff. Don't review unchanged code unless it's directly affected.
+- Flag uncertainty — say so rather than guessing.
+- Stay scoped to the diff. Don't review unchanged code unless directly affected.
