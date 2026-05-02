@@ -1,5 +1,5 @@
 ---
-name: review-pull-request
+name: pr-review-full
 description: "Review a pull request for correctness, security, and quality. Use when user says: review PR, check this PR, review pull request, or provides a GitHub PR URL or number."
 ---
 
