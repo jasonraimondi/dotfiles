@@ -1,5 +1,5 @@
 ---
-name: create-readme
+name: writing-readme
 description: 'Create a README.md file for the project'
 ---
 
