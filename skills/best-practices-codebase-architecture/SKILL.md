@@ -70,7 +70,3 @@ Present designs sequentially, then compare them in prose.
 After comparing, give your own recommendation: which design you think is strongest and why. If elements from different designs would combine well, propose a hybrid. Be opinionated — the user wants a strong read, not just a menu.
 
 ### 6. User picks an interface (or accepts recommendation)
-
-### 7. Create GitHub issue
-
-Create a refactor RFC as a GitHub issue using `gh issue create`. Use the template in [REFERENCE.md](REFERENCE.md). Do NOT ask the user to review before creating — just create it and share the URL.
