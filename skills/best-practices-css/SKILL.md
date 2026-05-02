@@ -66,6 +66,7 @@ When user requests **Svelte**: use `<style>` blocks (scoped by default), reach f
 - `references/index.md` — rule map and quick search commands
 - `references/profiles/` — `stable.md` (A), `progressive.md` (B), `experimental.md` (C)
 - `references/css-techniques-guide.md` — full catalog with before/after examples
+- `references/disney-animation-principles.md` — Disney's 12 animation principles in CSS (squash, anticipation, follow-through, arcs, timing)
 - `references/rules/` — per-technique files with `tier`, `bcd_id`, `mdn_url`, and caveats
 
 ## Anti-Patterns

@@ -1,11 +1,10 @@
----
-name: css-native
-description: Use when implementing Disney's 12 animation principles with pure CSS animations and transitions
----
-
-# CSS Native Animation Principles
+# Disney Animation Principles
 
 Implement all 12 Disney animation principles using CSS animations, transitions, and transforms.
+
+> **Accessibility:** Wrap motion-heavy examples in `@media (prefers-reduced-motion: no-preference) { ... }` per the parent skill's quality check. Users with vestibular disorders need motion as opt-in.
+
+> **Performance:** Prefer `transform` and `opacity` (compositor properties). Avoid animating `width`, `height`, `top`, `left` — they trigger layout. See `rules/animation-independent-transforms.md`.
 
 ## 1. Squash and Stretch
 
