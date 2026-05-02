@@ -7,7 +7,8 @@ description: >
   (3) deciding between borrowing vs cloning or ownership patterns,
   (4) implementing error handling with Result types,
   (5) optimizing Rust code for performance,
-  (6) writing tests or documentation for Rust projects.
+  (6) writing tests or documentation for Rust projects,
+  (7) building async Rust applications with Tokio (tasks, channels, streams, graceful shutdown).
 license: MIT
 compatibility: Rust 1.70+, Cargo
 metadata:
@@ -33,6 +34,7 @@ Before reviewing, familiarize yourself with Apollo's Rust best practices. Read A
 - [Chapter 7 - Type State Pattern](references/chapter_07.md): Compile-time state safety, when to use it
 - [Chapter 8 - Comments vs Documentation](references/chapter_08.md): When to comment, doc comments, rustdoc
 - [Chapter 9 - Understanding Pointers](references/chapter_09.md): Thread safety, Send/Sync, pointer types
+- [Async Patterns - Tokio Runtime](references/async-patterns.md): Tokio tasks, channels, async traits, streams, graceful shutdown, error handling
 
 ## Quick Reference
 
