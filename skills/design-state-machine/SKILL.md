@@ -1,5 +1,5 @@
 ---
-name: design-state-machine-design
+name: design-state-machine
 description: Statechart and state machine modeling for lifecycle and behavior specification
 allowed-tools: Read, Glob, Grep, Write, Edit
 ---
