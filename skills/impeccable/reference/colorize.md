@@ -1,16 +1,14 @@
----
-name: frontend-colorize
-description: Add strategic color to features that are too monochromatic or lack visual interest, making interfaces more engaging and expressive. Use when the user mentions the design looking gray, dull, lacking warmth, needing more color, or wanting a more vibrant or expressive palette.
-version: 2.1.1
-user-invocable: true
-argument-hint: "[target]"
----
+> **Additional context needed**: existing brand colors.
 
 Strategically introduce color to designs that are too monochromatic, gray, or lacking in visual warmth and personality.
 
-## MANDATORY PREPARATION
+---
 
-Invoke /impeccable — it contains design principles, anti-patterns, and the **Context Gathering Protocol**. Follow the protocol before proceeding — if no design context exists yet, you MUST run /impeccable teach first. Additionally gather: existing brand colors.
+## Register
+
+Brand: palette IS voice. Pick a color strategy first per SKILL.md (Restrained / Committed / Full palette / Drenched) and follow its dosage. Committed, Full palette, and Drenched deliberately exceed the ≤10% rule — that rule is Restrained only. Unexpected combinations are allowed; a dominant color can own the page when the chosen strategy calls for it.
+
+Product: semantic-first and almost always Restrained. Accent color is reserved for primary action, current selection, and state indicators — not decoration. Every color has a consistent meaning across every screen.
 
 ---
 
@@ -32,7 +30,7 @@ Analyze the current state and identify opportunities:
    - **Wayfinding**: Helping users navigate and understand structure
    - **Delight**: Moments of visual interest and personality
 
-If any of these are unclear from the codebase, ask the user directly to clarify what you cannot infer.
+If any of these are unclear from the codebase, STOP and call the AskUserQuestion tool to clarify.
 
 **CRITICAL**: More color ≠ better. Strategic color beats rainbow vomit every time. Every color should have a purpose.
 
@@ -83,10 +81,13 @@ Add color systematically across these dimensions:
 - **Comparison**: Color coding for different datasets or timeframes
 
 ### Borders & Accents
-- **Accent borders**: Add colored left/top borders to cards or sections
+- **Hairline borders**: 1px colored borders on full perimeter (not side-stripes — see the absolute ban on `border-left/right > 1px`)
 - **Underlines**: Color underlines for emphasis or active states
 - **Dividers**: Subtle colored dividers instead of gray lines
 - **Focus rings**: Colored focus indicators matching brand
+- **Surface tints**: A 4-8% background wash of the accent color instead of a stripe
+
+**NEVER**: `border-left` or `border-right` greater than 1px as a colored accent stripe. This is one of the three absolute bans in the parent skill. If you want to mark a card as "active" or "warning", use a full hairline border, a background tint, a leading glyph, or a numbered prefix — not a side stripe.
 
 ### Typography Color
 - **Colored headings**: Use brand colors for section headings (maintain contrast)
@@ -141,3 +142,13 @@ Test that colorization improves the experience:
 - **Not overwhelming**: Is color balanced and purposeful?
 
 Remember: Color is emotional and powerful. Use it to create warmth, guide attention, communicate meaning, and express personality. But restraint and strategy matter more than saturation and variety. Be colorful, but be intentional.
+
+## Live-mode signature params
+
+When invoked from live mode, each variant MUST declare a `color-amount` param so the user can dial between a restrained accent and a drenched surface without regeneration. Author the variant's CSS against `var(--p-color-amount, 0.5)` — typically as the alpha multiplier on backgrounds, or as a scaling factor on the chroma axis in an OKLCH expression. 0 = neutral/monochrome, 1 = full saturation / dominant coverage.
+
+```json
+{"id":"color-amount","kind":"range","min":0,"max":1,"step":0.05,"default":0.5,"label":"Color amount"}
+```
+
+Layer 1-2 variant-specific params on top: palette selection (`steps` with named options), temperature warmth, or tint vs. true color. See `reference/live.md` for the full params contract.

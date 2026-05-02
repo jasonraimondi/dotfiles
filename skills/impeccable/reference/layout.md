@@ -1,16 +1,12 @@
----
-name: frontend-layout
-description: Improve layout, spacing, and visual rhythm. Fixes monotonous grids, inconsistent spacing, and weak visual hierarchy. Use when the user mentions layout feeling off, spacing issues, visual hierarchy, crowded UI, alignment problems, or wanting better composition.
-version: 2.1.1
-user-invocable: true
-argument-hint: "[target]"
----
-
 Assess and improve layout and spacing that feels monotonous, crowded, or structurally weak — turning generic arrangements into intentional, rhythmic compositions.
 
-## MANDATORY PREPARATION
+---
 
-Invoke /impeccable — it contains design principles, anti-patterns, and the **Context Gathering Protocol**. Follow the protocol before proceeding — if no design context exists yet, you MUST run /impeccable teach first.
+## Register
+
+Brand: asymmetric compositions, fluid spacing with `clamp()`, intentional grid-breaking for emphasis. Rhythm through contrast — tight groupings paired with generous separations.
+
+Product: predictable grids, consistent densities, familiar navigation patterns. Responsive behavior is structural (collapse sidebar, responsive table), not fluid typography. Consistency IS an affordance.
 
 ---
 
@@ -47,7 +43,7 @@ Analyze what's weak about the current spatial design:
 
 ## Plan Layout Improvements
 
-Consult the [spatial design reference](reference/spatial-design.md) from the impeccable skill for detailed guidance on grids, rhythm, and container queries.
+Consult the [spatial design reference](spatial-design.md) for detailed guidance on grids, rhythm, and container queries.
 
 Create a systematic plan:
 
@@ -123,3 +119,23 @@ Create a systematic plan:
 - **Responsiveness**: Does the layout adapt gracefully across screen sizes?
 
 Remember: Space is the most underused design tool. A layout with the right rhythm and hierarchy can make even simple content feel polished and intentional.
+
+## Live-mode signature params
+
+Each variant MUST declare a `density` param. Drive all spacing tokens in the variant's scoped CSS through `calc(var(--p-density, 1) * <base>)` — paddings, gaps, column widths. Users slide from airy to packed and see layout re-breathe with no regeneration.
+
+```json
+{"id":"density","kind":"range","min":0.6,"max":1.4,"step":0.05,"default":1,"label":"Density"}
+```
+
+For variants whose topology genuinely changes (stacked vs. side-by-side, grid vs. bento), use a `steps` param whose scoped CSS branches via `:scope[data-p-structure="X"]`. One structure param + one density param is a powerful combo; resist adding a third.
+
+```json
+{"id":"structure","kind":"steps","default":"grid","label":"Structure","options":[
+  {"value":"stacked","label":"Stacked"},
+  {"value":"grid","label":"Grid"},
+  {"value":"bento","label":"Bento"}
+]}
+```
+
+See `reference/live.md` for the full params contract.
