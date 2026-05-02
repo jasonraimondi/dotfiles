@@ -1,5 +1,5 @@
 ---
-name: iot-homeassistant-best-practices
+name: best-practices-homeassistant
 description: >
   Home Assistant automation, helper, script, and device control best practices.
   Enforces native HA constructs over Jinja2 templates and safe refactoring workflows.
