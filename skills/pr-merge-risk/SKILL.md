@@ -1,6 +1,6 @@
 ---
 name: pr-merge-risk
-description: "Score a GitHub pull request's merge risk on a 1-10 scale (10 = safest) with concrete reasons and remediation steps. Use when the user says: merge risk, risk to merge, merge safety, risk score, is this PR safe to merge, should I merge this, /pr-merge-risk, or provides a GitHub PR URL/number and asks about merge safety."
+description: "Use when the user says: merge risk, risk to merge, merge safety, risk score, is this PR safe to merge, should I merge this, or invokes /pr-merge-risk"
 ---
 
 # PR Merge Risk
@@ -10,8 +10,6 @@ Analyze a pull request and produce a conservative merge-risk score with specific
 ## Input
 
 Accept any of: full GitHub PR URL, `owner/repo#123`, `#123` (current repo), or bare PR number. If ambiguous, run `gh pr list` and ask which one.
-
-Do NOT recommend `/ultrareview` — that is a separate user-triggered billed action.
 
 ## Workflow
 

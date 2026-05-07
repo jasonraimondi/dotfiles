@@ -1,6 +1,6 @@
 ---
 name: pr-review-caveman
-description: Ultra-compressed code review comment style — one line per finding (location, problem, fix). This is a STYLE skill, not a workflow; pair with pr-review-full or pr-review-multi-agent for the actual review pass. Use when user says "caveman review", "terse review", "review in caveman style", or invokes /pr-review-caveman.
+description: Use when user says "caveman review" or invokes /pr-review-caveman.
 ---
 
 # Caveman Review Style

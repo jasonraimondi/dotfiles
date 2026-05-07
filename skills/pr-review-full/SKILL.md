@@ -1,6 +1,6 @@
 ---
 name: pr-review-full
-description: Single-pass pull request review for correctness, security, and quality. Reads the diff plus the changed files in full, emits findings grouped by severity with a verdict. Use when user says "review this PR", "review pull request", "check this PR", or provides a GitHub PR URL/number for review. Use pr-review-multi-agent for higher-rigor parallel reviews; use pr-merge-risk for go/no-go scoring; pair with pr-review-caveman for terse output style.
+description: Single-pass pull request review for correctness, security, and quality. Reads the diff plus the changed files in full, emits findings grouped by severity with a verdict
 ---
 
 # Review Pull Request

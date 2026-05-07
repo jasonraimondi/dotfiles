@@ -1,6 +1,6 @@
 ---
 name: best-practices-svelte5
-description: "Svelte 5 runes, snippets, SvelteKit patterns, and modern best practices. Use when creating, editing, reviewing, or refactoring .svelte components, .svelte.ts/.svelte.js modules, or SvelteKit applications. Triggers on: runes ($state, $derived, $effect, $props, $bindable, $inspect), snippets ({#snippet}, {@render}), event handling, SvelteKit data loading, form actions, Svelte 4→5 migration, TypeScript props, generic components, SSR state isolation, performance, or component testing."
+description: "Use when creating, editing, reviewing, or refactoring .svelte components, .svelte.ts/.svelte.js modules, or SvelteKit applications"
 license: MIT
 metadata:
   author: ejirocodes

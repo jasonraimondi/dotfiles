@@ -1,6 +1,6 @@
 ---
 name: pr-review-multi-agent
-description: High-rigor multi-agent PR review. Fans out five specialized reviewers in parallel (correctness/security and design/maintainability in full + caveman modes, plus merge-risk scoring), then a verifier confirms each claim against the diff and dedupes. Use when user asks for a "deep review", "thorough review", "multi-agent review", "audit this PR", "fan out review", or invokes /pr-review-multi-agent — and wants higher signal than a single-pass review.
+description: Use when user asks for a "deep review", "thorough review", "multi-agent review", "audit this PR", or invokes /pr-review-multi-agent
 ---
 
 # Multi-Agent PR Review
