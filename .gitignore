@@ -19,3 +19,4 @@ zsh/dot-zsh/*-custom.zsh
 .plan-bender/
 .plan-bender.local.yaml
 .claude/skills/bender-*
+.claude/skills/.dotfiles-skills-manifest
