@@ -18,8 +18,7 @@ Start with these before lower-impact optimizations:
 - **Layout / spacing:** `layout-gap-spacing.md`, `layout-aspect-ratio.md`, `layout-container-queries.md`, `layout-logical-properties.md`
 - **Theme / color:** `workflow-custom-properties.md`, `color-scheme.md`, `color-oklch.md`
 - **Typography:** `typography-fluid.md`, `typography-line-clamp.md`, `typography-variable-fonts.md`
-- **Motion / interaction:** `animation-independent-transforms.md`, `interactive-dialog.md`, `interactive-scroll-snap.md`
-- **Animation framework:** `disney-animation-principles.md` (12 principles for character/personality in motion)
+- **Motion / interaction:** `animation-independent-transforms.md`, `interactive-dialog.md`, `interactive-scroll-snap.md` (feature compatibility only — for motion *design*, use the `css-motion-systems` skill)
 
 ## Rule Prefix Map
 

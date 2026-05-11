@@ -1,6 +1,6 @@
 ---
 name: best-practices-css
-description: Produce idiomatic, browser-aware modern CSS with progressive-enhancement fallbacks for vanilla CSS and Svelte styling tasks. Use for layout, spacing, typography, color/theming, animation, responsive/container-query work, selector/specificity cleanup, and interactive UI styling. Do not use for non-styling business logic, or design critique without code edits.
+description: Produce idiomatic, browser-aware modern CSS with progressive-enhancement fallbacks for vanilla CSS and Svelte styling tasks. Use for layout, spacing, typography, color/theming, responsive/container-query work, selector/specificity cleanup, and interactive UI styling, plus feature-compatibility lookups (tier, `bcd_id`, `@supports` fallbacks) for individual motion features. For motion *design* — easing systems, transform strategy, View Transitions choreography, Disney principles — defer to `css-motion-systems`. Do not use for non-styling business logic, or design critique without code edits.
 ---
 
 # CSS Best Practices
@@ -43,7 +43,7 @@ Topical map of the rules in `preferences/index.md`. The preferences file (and in
 3. **Variants** — override the custom property downstream properties already read; don't restyle the surface.
 4. **Layout** — intrinsic first (`gap`, `aspect-ratio`, Grid/Flex, `auto-fit`, `minmax`, `clamp`); container queries when component size is the constraint, media queries when the viewport is.
 5. **Logical properties** — `margin-inline`, `padding-block`, `inset-inline` over physical directions.
-6. **Animation** — transform/opacity-based motion, `prefers-reduced-motion`, no JS-driven style hacks.
+6. **Animation** — transform/opacity-based motion, `prefers-reduced-motion`, no JS-driven style hacks. For motion design, easing systems, and View Transitions choreography, use the `css-motion-systems` skill; the `animation-*` rule files here remain authoritative for per-feature tier and compatibility data.
 7. **Accessibility** — preserve `:focus-visible`, keyboard semantics; never trade a11y for visuals.
 8. **Architecture** — `@scope`, nesting, `@property` with `inherits: false` for component-local primitives.
 9. **Readability** — limit deep selector chains, avoid unnecessary nesting.
@@ -66,8 +66,8 @@ When user requests **Svelte**: use `<style>` blocks (scoped by default), reach f
 - `references/index.md` — rule map and quick search commands
 - `references/profiles/` — `stable.md` (A), `progressive.md` (B), `experimental.md` (C)
 - `references/css-techniques-guide.md` — full catalog with before/after examples
-- `references/disney-animation-principles.md` — Disney's 12 animation principles in CSS (squash, anticipation, follow-through, arcs, timing)
 - `references/rules/` — per-technique files with `tier`, `bcd_id`, `mdn_url`, and caveats
+- `css-motion-systems` skill — companion skill for motion design, easing systems, View Transitions choreography, and Disney animation principles
 
 ## Anti-Patterns
 
