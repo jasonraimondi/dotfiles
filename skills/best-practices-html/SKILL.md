@@ -1,0 +1,105 @@
+---
+name: best-practices-html
+description: Use when writing or refactoring HTML or template markup (including Svelte), choosing between div/section/article/ul/li, cleaning up div soup, fixing heading or landmark structure, labeling forms, deciding between buttons and links, or replacing custom controls with native HTML.
+---
+
+# HTML Best Practices
+
+Write semantic, accessible, low-noise HTML. Pick the element that matches the content or interaction — not the element a rule prescribes.
+
+**Violating the spirit beats violating the letter.** "Semantic HTML" does not mean using the most specialized element everywhere. A plain `<div>` is better than a wrong semantic element.
+
+## Decision order
+
+1. Pick the element that matches the content or interaction.
+2. Prefer native HTML behavior before custom behavior.
+3. Remove wrappers that add no structural, styling, or behavioral value.
+4. Get labels, headings, landmarks, and image handling right.
+5. Reach for ARIA only when native HTML cannot express the behavior.
+
+## Template safety
+
+When the file is a Svelte component or other template (not a standalone document):
+
+- Preserve framework syntax: `{#if}`, `{#each}`, `{:else}`, `{@html}`, `bind:`, `class:`, `style:`, event attributes, `<svelte:head>`.
+- Do not replace components or capitalized tags with native elements unless the task asks for it.
+- Do not add `<!doctype html>`, `<html>`, `<head>`, or `<body>` inside component files. Document metadata in Svelte goes through `<svelte:head>`.
+- Treat compiler accessibility warnings as guardrails. Do not silence them with `svelte-ignore` casually.
+
+## Element choice
+
+### Lists vs sections vs articles vs containers
+
+Repetition is not list semantics. Wrapping card grids in `<ul>`/`<li>` by default is the most common mistake.
+
+| Content | Element |
+|---|---|
+| Steps, menu items, bullets, grouped items where *being a list* is the point | `<ul>` / `<ol>` / `<li>` |
+| Each repeated item stands on its own (post, card, search result) with its own heading or actions | `<article>` |
+| Block of content unified by a theme that benefits from its own heading | `<section>` |
+| Mostly layout, no stronger semantic available | plain `<div>` |
+
+### Forms
+
+- Every input has an associated `<label>` (wrap or `for`/`id`). Placeholder is not a label.
+- Use the right `type` (`email`, `tel`, `number`, `url`, `password`, `search`, `date`).
+- Group related inputs in `<fieldset>` with a `<legend>`.
+- Mark required fields with the `required` attribute, not just text.
+
+### Links vs buttons
+
+- `<a>` to go somewhere (changes URL/location).
+- `<button>` to do something (mutates state, submits, opens UI).
+- Never a clickable `<div>` or `<span>`.
+
+### Images
+
+- `alt=""` for decorative images.
+- Descriptive `alt` for informative ones — describe meaning, not file content.
+- Provide `width` and `height` to reduce layout shift.
+- `<figure>` + `<figcaption>` when the caption is part of the content.
+
+### Headings
+
+- One clear `<h1>` per page or main view.
+- Follow the outline (`h1` → `h2` → `h3`). Do not skip levels for visual reasons.
+- Do not use headings to make text big.
+
+### Landmarks
+
+- Use `<header>`, `<nav>`, `<main>`, `<aside>`, `<footer>` where they help orientation.
+- Do not wrap every block in a landmark — too many landmarks is noise, not structure.
+
+### Native controls first
+
+`<button>`, `<details>`/`<summary>`, `<dialog>`, `<input>`, `<select>`, `<fieldset>`, `<table>` are almost always better than rebuilding them from `<div>`s and JS.
+
+### Document metadata (full documents only)
+
+For standalone documents include: `<!doctype html>`, `lang` on `<html>`, `<meta charset="utf-8">`, `<meta name="viewport" content="width=device-width, initial-scale=1">`, a meaningful `<title>`.
+
+## Anti-patterns
+
+- Clickable `<div>` or `<span>` instead of `<button>` or `<a>`.
+- ARIA added where native HTML already does the job.
+- Inputs without an associated `<label>`; placeholder used as the label.
+- Headings chosen for font size, or levels skipped.
+- Deeply nested wrappers that exist only because they were there before.
+- Tables used for layout.
+- `onclick="..."` strings in raw HTML (different from framework event attributes).
+- `<html>`, `<head>`, or `<body>` inside component files.
+- `<ul>`/`<li>` around card grids by default.
+- `<section>` or `<article>` forced onto layout-only structures.
+- Extra landmarks with no navigational purpose.
+- Class names that describe appearance (`box1`, `red_text`, `left_side`).
+
+## Heuristics
+
+When in doubt, ask:
+
+- Can each element justify why it exists?
+- Would this still make sense without CSS?
+- Is this truly a list, or just repeated content?
+- Could each repeated item stand alone as an `<article>`?
+- Am I editing a document or a component? Would this break a directive, binding, or component boundary?
+- Am I choosing this element because it's accurate, or because it's a rule I memorized?
