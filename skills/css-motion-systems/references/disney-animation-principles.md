@@ -2,9 +2,9 @@
 
 Implement all 12 Disney animation principles using CSS animations, transitions, and transforms.
 
-> **Accessibility:** Wrap motion-heavy examples in `@media (prefers-reduced-motion: no-preference) { ... }` per the parent skill's quality check. Users with vestibular disorders need motion as opt-in.
+> **Accessibility:** Wrap motion-heavy examples in `@media (prefers-reduced-motion: no-preference) { ... }`. Users with vestibular disorders need motion as opt-in. See `MOTION_REVIEW_CHECKLIST.md`.
 
-> **Performance:** Prefer `transform` and `opacity` (compositor properties). Avoid animating `width`, `height`, `top`, `left` — they trigger layout. See `rules/animation-independent-transforms.md`.
+> **Performance:** Prefer `transform` and `opacity` (compositor properties). Avoid animating `width`, `height`, `top`, `left` — they trigger layout. For feature compatibility and tier data on independent transform properties, see the `best-practices-css` skill's `references/rules/animation-independent-transforms.md`.
 
 ## 1. Squash and Stretch
 
