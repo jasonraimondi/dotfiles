@@ -18,12 +18,13 @@ Follow these steps in order. Don't skip the confirmation step at the end — the
 1. **Identify the PR.** Use whichever the user supplied: number (`gh pr view 123`), URL (pass to `gh pr view`), branch (`gh pr view <branch>`), or the current branch (`gh pr view` with no arg). If ambiguous, ask.
 2. **Fetch the data.** Run `gh pr view <ref> --json title,body,headRefName,commits,files,additions,deletions`. This single call returns everything needed.
 3. **Fetch the diff for smart todos.** Run `gh pr diff <ref>`. If the diff is large (>2000 lines), truncate sensibly — file headers and a sample of hunks per file is enough to classify changes.
-4. **Extract the ticket ID.** Search the PR body and each commit message for a `[A-Z]{2,}-\d+` pattern (e.g., `PROJ-456`, `JIRA-123`). Use the first match. If none is found, note this in the draft and ask the user to supply one (don't fabricate one).
+4. **Extract the ticket ID.** A ticket may be provided by {argument}, if not search the PR body and each commit message for a `[A-Z]{2,}-\d+` pattern (e.g., `PROJ-456`, `JIRA-1234`). If found, read each one.
 5. **Build the title** following the format below.
 6. **Build the description** following the section rules below.
 7. **Show the draft to the user.** Display the proposed title and body in a code block. State clearly which sections were omitted and why (e.g., "no breaking changes detected, omitting that section").
 8. **Ask for confirmation.** Ask the user something like: "Apply this to PR #123 now? (yes / edit / no)". Wait for an affirmative response.
-9. **Apply on confirmation.** Run `gh pr edit <ref> --title "<title>" --body "<body>"`. Use a temp file for the body to avoid shell-quoting issues with multi-line content.
+9. **Apply on confirmation.** Pipe the body to `gh pr edit --body-file -` via a heredoc (see "Applying the edit" below). Do **not** use `mktemp` + `cat >` — zsh's `noclobber` makes that redirect fail silently and you'll push an empty body.
+10. **Verify the apply.** Immediately after `gh pr edit`, run `gh pr view <ref> --json title,body` and confirm the body is non-empty and starts with `## Summary`. If it doesn't match, the apply failed — retry and surface the failure to the user. Never claim success without this check.
 
 ## Title format
 
@@ -43,7 +44,7 @@ Where:
 
 ## Description format
 
-Use Markdown. Include sections **only if they have substantive content**. Omit entirely otherwise — don't write "None" or "N/A". The static checklist at the end is the one exception: it always appears, with two fixed items, plus smart additions.
+Use Markdown. Include sections **only if they have substantive content**. Omit entirely otherwise — don't write "None" or "N/A". The `## Pre-Merge Checklist` section is the one exception: it always appears, but every item in it is derived from the diff (see the rules below) — there are no fixed items.
 
 ### Section rules
 
@@ -61,18 +62,13 @@ Use Markdown. Include sections **only if they have substantive content**. Omit e
 
 ### Pre-merge checklist
 
-Render as GitHub-style task list using `- [ ]`. Always include these two static items first:
-
-```
-- [ ] Migrations applied
-- [ ] Backward compatibility verified
-```
-
-Then append smart items derived from the diff. Use these rules:
+Render as a GitHub-style task list using `- [ ]`. Every item is derived from the diff — there are no fixed items. Walk the rules below and add an item for each signal present:
 
 | Signal in diff / changed files                                  | Add checklist item                                                                 |
 | --------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| New or modified files under `migrations/`, `db/migrate/`, `schema/`, `*.sql` | Migrations applied                                                    |
 | New files under `migrations/`, `db/migrate/`, `schema/`, `*.sql`| Migration tested against production-sized dataset; rollback path verified          |
+| Changed public API signatures, exported symbols, DB schema, serialized/wire formats, or removed CLI flags | Backward compatibility verified                          |
 | Changed public API routes, OpenAPI specs, or exported handlers  | API docs updated to reflect changes                                                |
 | New non-trivial logic without matching test file changes        | Tests added for the new logic paths                                                |
 | Changes touching auth, crypto, permissions, secrets handling    | Security review requested                                                          |
@@ -81,9 +77,9 @@ Then append smart items derived from the diff. Use these rules:
 | Feature flag references introduced                              | Feature flag default and rollout plan documented                                   |
 | Performance-sensitive paths (queries, hot loops, render code)   | Benchmark or load test results captured                                            |
 
-Each smart item should be specific to the PR — paraphrase the rule to mention the actual change. For example, if a new `/oauth/authorize` route appears, write "Tests added for new PKCE validation paths" rather than the generic "Tests added for the new logic paths."
+Each item should be specific to the PR — paraphrase the rule to mention the actual change. For example, if a new `/oauth/authorize` route appears, write "Tests added for new PKCE validation paths" rather than the generic "Tests added for the new logic paths."
 
-Aim for a total checklist of 2–6 items. If smart rules would produce more than 4 additions, keep the most relevant ones for this PR's risk profile and drop the rest.
+Aim for a total checklist of 2–6 items. If the rules would produce more than 6, keep the most relevant ones for this PR's risk profile and drop the rest. If no rule matches at all, include "Backward compatibility verified" as the single baseline item.
 
 ## Worked examples
 
@@ -114,14 +110,13 @@ Public clients must now supply `code_challenge`. Existing integrations
 without it will receive `400 invalid_request`.
 
 ## Pre-Merge Checklist
-- [ ] Migrations applied
 - [ ] Backward compatibility verified
 - [ ] Tests added for new PKCE validation paths
 - [ ] API docs updated for the new required parameter
 - [ ] Security review requested
 ```
 
-Note: no `Screenshots` section because no UI files changed.
+Note: no `Screenshots` section because no UI files changed; no "Migrations applied" item because no migration files are touched.
 
 ### Example 2 — backend fix, no UI, no breaking changes
 
@@ -157,18 +152,19 @@ Note: no `Breaking Changes` section (none detected), no `Screenshots` section (n
 
 ## Applying the edit
 
-Once the user confirms, write the body to a temp file (multi-line content through `--body` directly is fragile in shells). Then:
+Pipe the body to `gh pr edit` via stdin using a heredoc. This avoids both shell-quoting issues with multi-line content **and** the zsh `noclobber` failure mode where `cat > $(mktemp)` is rejected because `mktemp` already created the file:
 
 ```bash
-BODY_FILE=$(mktemp)
-cat > "$BODY_FILE" <<'EOF'
+gh pr edit <ref> --title "<the generated title>" --body-file - <<'EOF'
 <the generated body>
 EOF
-gh pr edit <ref> --title "<the generated title>" --body-file "$BODY_FILE"
-rm "$BODY_FILE"
 ```
 
-Confirm success to the user and link to the PR.
+**Do not** use the `mktemp` + `cat > "$BODY_FILE"` pattern. Under zsh with `noclobber` set (the default on many setups), the `>` redirect to an existing file fails with `file exists`, the body file stays empty, and `gh pr edit` happily pushes an empty body. The single-tool stdin approach is shorter and immune to this.
+
+**Then verify.** Always run `gh pr view <ref> --json body` after the edit and confirm the body is non-empty and contains `## Summary`. If the body is empty or wrong, the edit silently failed — retry with the stdin form, and tell the user what happened. The cost of a check is one tool call; the cost of falsely reporting success is the user discovering an empty PR on GitHub.
+
+Once verified, confirm success to the user and link to the PR.
 
 ## Edge cases and judgment calls
 
