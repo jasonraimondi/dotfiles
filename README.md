@@ -26,9 +26,21 @@ The repo itself wires `.claude/skills` and `.pi/skills` as symlinks to [`skills/
 > [!TIP]
 > Drop the repo into any directory you frequently open with an agent and the skills come along with it. No package install, no build step.
 
+### Dotfile-style install
+
+If you want per-skill symlinks into `~/.claude/skills/` and `~/.pi/agent/skills/` (so each skill shows up individually, and renames/removals get cleaned up on the next sync), use [`setup.sh`](./setup.sh):
+
+```sh
+./setup.sh             # link everything
+./setup.sh --dry-run   # preview without touching the filesystem
+./setup.sh --delete    # remove the symlinks this script created
+```
+
+The script also wires the shared `AGENT.md` from `~/dotfiles/ai` into the rule/memory locations Claude Code, Cursor, Windsurf, Junie, and Pi each look for. Safe to skip if you don't keep your AI config there.
+
 ## What's inside
 
-Thirty-plus skills, grouped by what they help you do.
+Skills are grouped by what they help you do.
 
 ### Best practices
 
@@ -72,10 +84,11 @@ Thirty-plus skills, grouped by what they help you do.
 | [`git-commit-caveman`](./skills/git-commit-caveman) | Ultra-compressed Conventional Commits messages |
 | [`git-commit-full`](./skills/git-commit-full) | Full conventional-commit workflow with intelligent staging |
 
-### Testing
+### Testing & debugging
 
 | Skill | Use for |
 | --- | --- |
+| [`diagnose`](./skills/diagnose) | Disciplined reproduce → minimise → hypothesise → fix loop for hard bugs and perf regressions |
 | [`testing-tdd`](./skills/testing-tdd) | Red-green-refactor TDD loop, integration-test-first |
 | [`testing-vitest`](./skills/testing-vitest) | Vitest setup, mocking, coverage, filtering |
 
@@ -100,6 +113,7 @@ Thirty-plus skills, grouped by what they help you do.
 | Skill | Use for |
 | --- | --- |
 | [`code-simplifier`](./skills/code-simplifier) | Refining code for clarity while preserving behavior |
+| [`handoff`](./skills/handoff) | Compacting the current conversation into a handoff doc for another agent |
 | [`karpathy-guidelines`](./skills/karpathy-guidelines) | Behavioral guardrails to reduce common LLM coding mistakes |
 | [`meta-write-a-skill`](./skills/meta-write-a-skill) | Authoring new skills with progressive disclosure |
 | [`writing-copy`](./skills/writing-copy) | Marketing/landing/feature page copy |
