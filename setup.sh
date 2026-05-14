@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# Symlink installer: links this repo's skills (and the shared AI editor config
-# from ~/dotfiles/ai) into the locations Claude Code and Pi look for them.
+# Symlink installer: links this repo's skills and shared AI editor config
+# (AGENT.md, pi/extensions) into the locations Claude Code and Pi look for them.
 #
 # Usage: setup.sh [-n|--dry-run] [-D|--delete] [-h|--help]
 
@@ -13,8 +13,8 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # --- sources -----------------------------------------------------------------
 SKILLS_SOURCE="$SCRIPT_DIR/skills"
 SKILL_MARKER="SKILL.md"                       # a dir is a skill iff it has this
-AGENT_MD_SOURCE="$HOME/dotfiles/ai/AGENT.md"
-PI_EXTENSIONS_SOURCE="$HOME/dotfiles/ai/pi/extensions"
+AGENT_MD_SOURCE="$SCRIPT_DIR/AGENT.md"
+PI_EXTENSIONS_SOURCE="$SCRIPT_DIR/pi/extensions"
 
 # --- targets -----------------------------------------------------------------
 SKILLS_TARGETS=(
