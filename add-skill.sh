@@ -5,7 +5,7 @@ usage() {
   cat <<'EOF'
 Usage: add-skill.sh [add] <repo-url> --skill <name> [--ref <ref>] [--path <subpath>] [--dest <dir>]
 
-Download a single skill folder from a git repo into ./skills/<name>/.
+Download a single skill folder from a git repo into ./vendor/<name>/.
 No lockfile, no prompts.
 
 Arguments:
@@ -13,7 +13,7 @@ Arguments:
   --skill <name>    Skill folder to extract
   --ref <ref>       Branch or tag (default: repo's default branch)
   --path <subpath>  Path within the repo (default: skills/<name>)
-  --dest <dir>      Destination dir (default: ./skills)
+  --dest <dir>      Destination dir (default: ./vendor)
   -f, --force       Overwrite existing destination without confirmation
 
 Example:
@@ -25,7 +25,7 @@ REPO=""
 SKILL=""
 REF=""
 SUBPATH=""
-DEST="./skills"
+DEST="./vendor"
 FORCE=0
 
 # Allow `add-skill.sh add <repo> ...` to mirror `skills add <repo> ...`

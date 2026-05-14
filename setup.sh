@@ -11,7 +11,13 @@ shopt -s nullglob
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 
 # --- sources -----------------------------------------------------------------
-SKILLS_SOURCE="$SCRIPT_DIR/skills"
+# Personal skills live under ./skills/, vendored (downloaded) skills under
+# ./vendor/. Both get linked into the agent skill directories. On name
+# collision, personal wins (vendor entry is skipped with a warning).
+SKILLS_SOURCES=(
+  "$SCRIPT_DIR/skills"
+  "$SCRIPT_DIR/vendor"
+)
 SKILL_MARKER="SKILL.md"                       # a dir is a skill iff it has this
 AGENT_MD_SOURCE="$SCRIPT_DIR/AGENT.md"
 PI_EXTENSIONS_SOURCE="$SCRIPT_DIR/pi/extensions"
@@ -97,11 +103,25 @@ link_path() {
   log "linked $destination -> $source"
 }
 
-# Print the names of skill directories (those containing $SKILL_MARKER).
+# Print "<name>|<source_dir>" for each skill directory across all sources
+# (those containing $SKILL_MARKER). Earlier sources win on name collision: if
+# the same skill name appears in both ./skills/ and ./vendor/, the personal
+# one is emitted and the vendor one is skipped with a warning.
 list_skills() {
-  local dir
-  for dir in "$SKILLS_SOURCE"/*/; do
-    [[ -f "$dir$SKILL_MARKER" ]] && basename "$dir"
+  local source dir name
+  declare -A seen=()
+  for source in "${SKILLS_SOURCES[@]}"; do
+    [[ -d "$source" ]] || continue
+    for dir in "$source"/*/; do
+      [[ -f "$dir$SKILL_MARKER" ]] || continue
+      name="$(basename "$dir")"
+      if [[ -n "${seen[$name]:-}" ]]; then
+        warn "duplicate skill name '$name' in $source — keeping ${seen[$name]}"
+        continue
+      fi
+      seen[$name]="$source"
+      printf '%s|%s\n' "$name" "$source"
+    done
   done
 }
 
@@ -157,21 +177,26 @@ link_ai_config() {
 }
 
 sync_skills() {
-  if [[ ! -d "$SKILLS_SOURCE" ]]; then
-    warn "skills source not found: $SKILLS_SOURCE"
+  local source found=false
+  for source in "${SKILLS_SOURCES[@]}"; do
+    [[ -d "$source" ]] && found=true
+  done
+  if [[ "$found" != true ]]; then
+    warn "no skills sources found: ${SKILLS_SOURCES[*]}"
     return 1
   fi
 
   # Always clear out the previous run's links first; that handles skills that
-  # were since renamed or deleted.
+  # were since renamed, deleted, or moved between ./skills/ and ./vendor/.
   cleanup_stale_skills
 
-  local skills name dir
+  local skills entry name src dir names=""
   skills="$(list_skills)"
 
   if [[ "$DELETE_MODE" == true ]]; then
-    while IFS= read -r name; do
-      [[ -z "$name" ]] && continue
+    while IFS= read -r entry; do
+      [[ -z "$entry" ]] && continue
+      name="${entry%%|*}"
       for dir in "${SKILLS_TARGETS[@]}"; do
         unlink_path "$dir/$name"
       done
@@ -180,18 +205,21 @@ sync_skills() {
   fi
 
   if [[ -z "$skills" ]]; then
-    warn "no skills (dirs containing $SKILL_MARKER) found under $SKILLS_SOURCE"
+    warn "no skills (dirs containing $SKILL_MARKER) found under ${SKILLS_SOURCES[*]}"
     return 1
   fi
 
-  while IFS= read -r name; do
-    [[ -z "$name" ]] && continue
+  while IFS= read -r entry; do
+    [[ -z "$entry" ]] && continue
+    name="${entry%%|*}"
+    src="${entry#*|}"
     for dir in "${SKILLS_TARGETS[@]}"; do
-      link_path "$SKILLS_SOURCE/$name" "$dir/$name"
+      link_path "$src/$name" "$dir/$name"
     done
+    names+="$name"$'\n'
   done <<< "$skills"
 
-  write_manifest "$skills"$'\n'
+  write_manifest "$names"
 }
 
 main() {
