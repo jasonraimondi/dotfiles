@@ -1,6 +1,2 @@
-alias superclaude="SuperClaude"
-alias sc="superclaude"
-function sc-setup() {
-    pipx install SuperClaude && pipx upgrade SuperClaude && SuperClaude install
-}
-# alias claude="claude --model=claude-sonnet-4-5"
+# @todo move skills dir to ~/ai
+alias skills="$HOME/Code/jason/skills/add-skill.sh"
