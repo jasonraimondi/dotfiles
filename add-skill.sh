@@ -25,6 +25,7 @@ REPO=""
 SKILL=""
 REF=""
 SUBPATH=""
+PATH_EXPLICIT=0
 DEST="./vendor"
 FORCE=0
 
@@ -37,7 +38,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --skill) SKILL="${2:-}"; shift 2 ;;
     --ref) REF="${2:-}"; shift 2 ;;
-    --path) SUBPATH="${2:-}"; shift 2 ;;
+    --path) SUBPATH="${2:-}"; PATH_EXPLICIT=1; shift 2 ;;
     --dest) DEST="${2:-}"; shift 2 ;;
     -f|--force) FORCE=1; shift ;;
     -h|--help) usage; exit 0 ;;
@@ -84,6 +85,22 @@ git clone \
 git -C "$TMP/repo" sparse-checkout set --no-cone "$SUBPATH" >/dev/null
 
 SRC="$TMP/repo/$SUBPATH"
+if [ ! -d "$SRC" ] && [ "$PATH_EXPLICIT" -eq 0 ]; then
+  # Default path missing — try to find skills/*/<SKILL> (category-nested repos).
+  CANDIDATES=$(git -C "$TMP/repo" ls-tree -r -d --name-only HEAD \
+    | awk -v s="$SKILL" -F/ 'NF==3 && $1=="skills" && $3==s')
+  COUNT=$(printf '%s\n' "$CANDIDATES" | grep -c . || true)
+  if [ "$COUNT" = "1" ]; then
+    SUBPATH="$CANDIDATES"
+    echo "→ Default path missing; found nested at $SUBPATH"
+    git -C "$TMP/repo" sparse-checkout set --no-cone "$SUBPATH" >/dev/null
+    SRC="$TMP/repo/$SUBPATH"
+  elif [ "$COUNT" -gt 1 ]; then
+    echo "Error: '$SKILL' matches multiple paths in $REPO; pass --path explicitly:" >&2
+    printf '  %s\n' $CANDIDATES >&2
+    exit 1
+  fi
+fi
 if [ ! -d "$SRC" ]; then
   echo "Error: '$SUBPATH' not found in $REPO" >&2
   exit 1
