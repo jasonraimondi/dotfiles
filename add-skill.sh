@@ -12,7 +12,9 @@ Arguments:
   <repo-url>        Git URL (https or ssh) of the source repo
   --skill <name>    Skill folder to extract
   --ref <ref>       Branch or tag (default: repo's default branch)
-  --path <subpath>  Path within the repo (default: skills/<name>)
+  --path <subpath>  Path within the repo. When omitted, tries
+                    skills/<name>, .gemini/skills/<name>,
+                    .claude/skills/<name>, then skills/*/<name>.
   --dest <dir>      Destination dir (default: ./vendor)
   -f, --force       Overwrite existing destination without confirmation
 
