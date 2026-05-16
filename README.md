@@ -78,8 +78,10 @@ Skills sourced from other public repos. Re-sync with [`add-skill.sh`](./add-skil
 
 | Skill | Use for |
 | --- | --- |
+| [`code-reviewer`](./vendor/code-reviewer) | Reviewing local changes or remote PRs for correctness and maintainability |
 | [`git-commit-caveman`](./vendor/git-commit-caveman) | Ultra-compressed Conventional Commits messages |
 | [`git-commit-full`](./vendor/git-commit-full) | Full conventional-commit workflow with intelligent staging |
+| [`my-pull-requests`](./vendor/my-pull-requests) | Listing the PRs assigned to me in the current repo |
 
 ### Testing & debugging
 
@@ -156,4 +158,6 @@ For pulling a skill from another public repo, use [`add-skill.sh`](./add-skill.s
 ./add-skill.sh add https://github.com/anthropics/skills --skill frontend-design
 ```
 
-It lands under `./vendor/<name>/`.
+It lands under `./vendor/<name>/`. The source folder is resolved by trying
+`skills/<name>`, `.gemini/skills/<name>`, `.claude/skills/<name>`, then any
+`skills/*/<name>` — pass `--path <subpath>` to point at it explicitly.
