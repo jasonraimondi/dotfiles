@@ -86,7 +86,19 @@ git -C "$TMP/repo" sparse-checkout set --no-cone "$SUBPATH" >/dev/null
 
 SRC="$TMP/repo/$SUBPATH"
 if [ ! -d "$SRC" ] && [ "$PATH_EXPLICIT" -eq 0 ]; then
-  # Default path missing — try to find skills/*/<SKILL> (category-nested repos).
+  # Default path missing — probe common alternate locations.
+  for alt in ".gemini/skills/$SKILL" ".claude/skills/$SKILL"; do
+    git -C "$TMP/repo" sparse-checkout set --no-cone "$alt" >/dev/null
+    if [ -d "$TMP/repo/$alt" ]; then
+      SUBPATH="$alt"
+      SRC="$TMP/repo/$alt"
+      echo "→ Default path missing; found at $SUBPATH"
+      break
+    fi
+  done
+fi
+if [ ! -d "$SRC" ] && [ "$PATH_EXPLICIT" -eq 0 ]; then
+  # Still missing — try to find skills/*/<SKILL> (category-nested repos).
   CANDIDATES=$(git -C "$TMP/repo" ls-tree -r -d --name-only HEAD \
     | awk -v s="$SKILL" -F/ 'NF==3 && $1=="skills" && $3==s')
   COUNT=$(printf '%s\n' "$CANDIDATES" | grep -c . || true)
