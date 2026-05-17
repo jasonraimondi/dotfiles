@@ -1,6 +1,6 @@
 ---
-name: pr-review-caveman
-description: Use when user says "caveman review" or invokes /pr-review-caveman.
+name: review-caveman
+description: Use when user says "caveman review" or invokes /review-caveman.
 ---
 
 # Caveman Review Style
@@ -58,4 +58,4 @@ In those cases, write a normal paragraph, then resume terse for the rest.
 
 Reviews only. Does not write the code fix, does not approve / request-changes, does not run linters. Output the comment(s) ready to paste into the PR.
 
-"stop pr-review-caveman" or "normal mode": revert to verbose review style.
+"stop review-caveman" or "normal mode": revert to verbose review style.

@@ -1,6 +1,6 @@
 ---
-name: pr-review-multi-agent
-description: "Orchestrate a seven-agent PR review: six reviewers in parallel (correctness, dedicated security, design/maintainability, a cross-cutting caveman, a comments auditor, and merge risk) plus a verifier that confirms findings against the source. Use when user asks for a 'deep review', 'thorough review', 'multi-agent review', 'audit this PR', or invokes /pr-review-multi-agent"
+name: review-multi-agent
+description: "Orchestrate a seven-agent PR review: six reviewers in parallel (correctness, dedicated security, design/maintainability, a cross-cutting caveman, a comments auditor, and merge risk) plus a verifier that confirms findings against the source. Use when user asks for a 'deep review', 'thorough review', 'multi-agent review', 'audit this PR', or invokes /review-multi-agent"
 ---
 
 # Multi-Agent PR Review
@@ -9,9 +9,14 @@ Seven agents: six reviewers fanned out in parallel, one verifier afterwards. Red
 
 Two focused "full" reviewers cover correctness and design/maintainability. A dedicated **security** reviewer runs OWASP-style analysis with high-confidence-only filtering. A **cross-cutting caveman** reads the whole PR terse and unscoped — different style, no tunnel vision, catches what the focused passes miss. A **comments auditor** flags noisy, redundant, or stale comments and refactors that would obviate them. The sixth scores merge risk.
 
-## Input
+## Input — resolve the scope once
 
-PR number or URL from the user. If none, run `gh pr list` and ask.
+Review a pull request or local changes. Resolve the scope here, then pass the *same resolved scope* to every reviewer so they all review the same code:
+
+1. **PR** — PR number or URL.
+2. **Branch** — "this branch" / "my changes": the merge-base diff against the default branch.
+3. **Working tree** — named files or "these changes": the staged/unstaged diff.
+4. **Unclear** — no PR and a clean working tree: run `gh pr list` and ask. Otherwise ask which scope.
 
 ## Finding schema (Agents 1–4 emit JSON)
 
@@ -33,16 +38,16 @@ Send a **single message** with six Agent tool calls. Parallel execution requires
 
 | # | Agent | Style skill | Scope |
 |---|-------|-------------|-------|
-| 1 | correctness (full) | pr-review-full | logic bugs, races, error handling, data loss, broken contracts |
-| 2 | security (dedicated) | pr-review-security | OWASP-style: injection, XSS, auth/authz, SSRF, deserialization, crypto, secrets — HIGH-confidence findings only |
-| 3 | design + maintainability (full) | pr-review-full | naming, abstraction, test gaps, missing docs, dead code, unclear control flow |
-| 4 | cross-cutting caveman | pr-review-caveman | unscoped: anything across correctness, security, design, maintainability — terse, surface what looks worst |
+| 1 | correctness (full) | review-full | logic bugs, races, error handling, data loss, broken contracts |
+| 2 | security (dedicated) | review-security | OWASP-style: injection, XSS, auth/authz, SSRF, deserialization, crypto, secrets — HIGH-confidence findings only |
+| 3 | design + maintainability (full) | review-full | naming, abstraction, test gaps, missing docs, dead code, unclear control flow |
+| 4 | cross-cutting caveman | review-caveman | unscoped: anything across correctness, security, design, maintainability — terse, surface what looks worst |
 | 5 | comments auditor | best-practices-comments | journal/noise/redundant/mumbling/nonlocal comments, stale or misleading comments, refactors that would obviate a comment — scoped to lines the PR adds or modifies |
-| 6 | merge risk | pr-merge-risk | verdict (SHIP / SHIP WITH MITIGATIONS / HOLD / DO NOT MERGE), reversibility, blast radius, key risk factors, BC, CI/review state |
+| 6 | merge risk | review-merge-risk | verdict (SHIP / SHIP WITH MITIGATIONS / HOLD / DO NOT MERGE), reversibility, blast radius, key risk factors, BC, CI/review state |
 
 Every reviewer prompt must include all four:
 
-1. **PR identifier** (URL, `owner/repo#n`, or bare number).
+1. **Review scope** — the resolved scope from Input (PR identifier, or the branch / working-tree diff instruction), passed verbatim so every reviewer reviews the same code.
 2. **Focused scope** (the row's Scope cell — don't widen).
 3. **Style skill to invoke** via the Skill tool before reviewing (the row's Style-skill cell).
 4. **Output requirement** — Agents 1–5: emit findings as JSON matching the schema above (Agent 2: only HIGH-confidence security findings; Agent 5: use `category: "maintainability"` and quote the offending comment in `code_evidence`). Agent 6: return its native report verbatim.
@@ -75,7 +80,7 @@ Justify in 1–2 sentences citing specific evidence from the verified findings o
 
 ## Final output
 
-1. **Summary** — what the PR does, grounded in the diff (not the description).
+1. **Summary** — what the change does, grounded in the diff (not the description).
 2. **Merge risk** — verdict and reversibility from Agent 6, followed by its key risk factors. Pass through Agent 6's report verbatim where useful.
 3. **Engineering quality** — rating (overengineered / underengineered / perfectly engineered) + 1–2 sentence justification.
 4. **Findings** grouped by severity, each with `file:line`, claim, and a suggested diff where applicable.

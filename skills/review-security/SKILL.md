@@ -1,5 +1,5 @@
 ---
-name: pr-review-security
+name: review-security
 description: Security code review for vulnerabilities. Use when asked to "security review", "find vulnerabilities", "check for security issues", "audit security", "OWASP review", or review code for injection, XSS, authentication, authorization, cryptography issues. Provides systematic review with confidence-based reporting.
 allowed-tools: Read, Grep, Glob, Bash, Task
 license: LICENSE
@@ -13,6 +13,17 @@ https://cheatsheetseries.owasp.org/
 # Security Review Skill
 
 Identify exploitable security vulnerabilities in code. Report only **HIGH CONFIDENCE** findings—clear vulnerable patterns with attacker-controlled input.
+
+## Input — resolve what to review
+
+Works on a pull request or local changes:
+
+1. **PR** — PR number or URL: `gh pr diff <n>` for the changeset; read changed files in full.
+2. **Branch** — "this branch" / "my changes": `git diff $(git merge-base HEAD <base>)...HEAD`.
+3. **Working tree** — named files or "these changes": `git diff` and `git diff --staged`, or the named files.
+4. **Unclear** — ask which PR or scope before reviewing.
+
+Report findings only on the changed code; research the rest of the codebase freely (next section).
 
 ## Scope: Research vs. Reporting
 

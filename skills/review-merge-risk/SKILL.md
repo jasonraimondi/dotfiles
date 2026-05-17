@@ -1,25 +1,30 @@
 ---
-name: pr-merge-risk
-description: "Analyze a PR's merge risk and emit a verdict (SHIP / SHIP WITH MITIGATIONS / HOLD / DO NOT MERGE) with explicit reversibility analysis. Analysis-only — never approves, comments, or merges. Use when the user says: merge risk, risk to merge, merge safety, risk score, is this PR safe to merge, should I merge this, one-way door, or invokes /pr-merge-risk"
+name: review-merge-risk
+description: "Analyze the merge risk of a pull request or local branch and emit a verdict (SHIP / SHIP WITH MITIGATIONS / HOLD / DO NOT MERGE) with explicit reversibility analysis. Analysis-only — never approves, comments, or merges. Use when the user says: merge risk, risk to merge, merge safety, risk score, is this PR safe to merge, should I merge this, one-way door, or invokes /review-merge-risk"
 ---
 
 # PR Merge Risk
 
 Analyze a pull request and produce a conservative merge verdict with explicit reversibility analysis. Reversibility is load-bearing: a 5,000-line PR that's pure additions to a new service can be safer than a 20-line PR that drops a column. **One-way doors** — irreversible actions — are the single biggest risk multiplier.
 
-## Input
+## Input — PR or local branch
 
-Accept any of: full GitHub PR URL, `owner/repo#123`, `#123` (current repo), or bare PR number. If ambiguous, run `gh pr list` and ask which one.
+Accept either:
+
+- **PR** — full GitHub PR URL, `owner/repo#123`, `#123` (current repo), or bare PR number. If ambiguous, run `gh pr list` and ask which one.
+- **Local branch** — "this branch" / "my changes" with no PR yet. Diff against the merge-base with the default branch: `git diff $(git merge-base HEAD <base>)...HEAD`. No PR exists, so CI checks, review decision, and mergeable status are unavailable — report each as "no PR yet — not available" and run the full risk, reversibility, and blast-radius analysis normally. Detect local merge conflicts with `git merge-tree <base> HEAD`.
 
 ## Workflow
 
 1. **Read intent**: PR title, body, and linked issues. Empty/unclear description is itself a risk signal — note it and proceed.
 2. **Triage from file paths first** (before reading code): categorize each changed file — migration, auth/session/crypto, public API, infra/IaC, config, internal logic, test, doc. Use the categorization to decide where to read hardest.
-3. **Gather** (run in parallel; for cross-repo PRs add `--repo owner/repo`):
+3. **Gather** — PR mode (run in parallel; for cross-repo PRs add `--repo owner/repo`):
    - `gh pr view <n> --json title,body,baseRefName,headRefName,author,isDraft,mergeable,mergeStateStatus,reviewDecision,reviews,files,additions,deletions,labels,createdAt,updatedAt`
    - `gh pr diff <n>`
    - `gh pr checks <n>`
    - `gh pr view <n> --comments`
+
+   Local-branch mode: use `git diff $(git merge-base HEAD <base>)...HEAD` and `git log <base>..HEAD` instead; CI, reviews, and mergeable status are "no PR yet — not available".
 4. **Read high-risk files in full.** A diff alone hides blast radius; surrounding code reveals it.
 5. **Identify one-way doors.** For each meaningful change ask: *if this is wrong and we revert in 15 minutes, are we back to a safe state?* Classify reversibility using the tiers below. Any one-way door pulls the verdict toward HOLD or DO NOT MERGE unless a specific mitigation is in place.
 6. **Ask what the diff doesn't show.** Surface unverifiable assumptions: upstream invariants, prod traffic patterns the new path will see, env vars whose defaults differ between code and prod, behavior straddling the deploy boundary, dependencies on flags that flip later. Each unverifiable assumption is a finding.
@@ -108,6 +113,7 @@ Verdict is primary; score is a secondary signal.
 ## Rules
 
 - Cite `file:line` for every code-level risk claim. Vague claims aren't useful.
+- In local-branch mode, title the report `<head-branch> → <base-branch> (local, no PR)` and report the **CI & review state** section as "no PR yet — not available".
 - **Reversibility**, **Blast radius**, and **What the diff doesn't show** are required output sections — never omit. For trivially safe PRs, write "clean revert", a one-line scope statement, and "none — self-contained" respectively.
 - For monorepos, list affected packages/services and weight by blast radius.
 - Don't suggest generic advice ("add tests"). Say what to test, where.

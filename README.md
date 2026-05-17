@@ -44,11 +44,10 @@ The script also wires the shared `AGENT.md` from this repo into the rule/memory 
 | [`best-practices-svelte5`](./skills/best-practices-svelte5) | Authoring Svelte 5 components and SvelteKit apps |
 | [`frontend-oklch`](./skills/frontend-oklch) | OKLCH conversions, palettes, contrast, gamut handling |
 | [`pr-description-template`](./skills/pr-description-template) | Rewriting PR titles/bodies to a conventional-commits + JIRA template |
-| [`pr-merge-risk`](./skills/pr-merge-risk) | Verdict-style merge-risk analysis with reversibility scoring |
-| [`pr-review-caveman`](./skills/pr-review-caveman) | Ultra-blunt cross-cutting PR review |
-| [`pr-review-full`](./skills/pr-review-full) | Single-pass review for correctness, security, and quality |
-| [`pr-review-multi-agent`](./skills/pr-review-multi-agent) | Six-agent orchestrated deep review (5 reviewers + verifier) |
-| [`pr-review-security`](./skills/pr-review-security) | OWASP-style security review with confidence-based reporting |
+| [`review-full`](./skills/review-full) | Single-pass review for correctness, security, and quality |
+| [`review-merge-risk`](./skills/review-merge-risk) | Verdict-style merge-risk analysis with reversibility scoring |
+| [`review-multi-agent`](./skills/review-multi-agent) | Six-agent orchestrated deep review (5 reviewers + verifier) |
+| [`review-security`](./skills/review-security) | OWASP-style security review with confidence-based reporting |
 
 ## Vendored
 
@@ -78,7 +77,7 @@ Skills sourced from other public repos. Re-sync with [`add-skill.sh`](./add-skil
 
 | Skill | Use for |
 | --- | --- |
-| [`code-reviewer`](./vendor/code-reviewer) | Reviewing local changes or remote PRs for correctness and maintainability |
+| [`review-caveman`](./vendor/review-caveman) | Ultra-blunt cross-cutting review (style for PR or local diffs) |
 | [`git-commit-caveman`](./vendor/git-commit-caveman) | Ultra-compressed Conventional Commits messages |
 | [`git-commit-full`](./vendor/git-commit-full) | Full conventional-commit workflow with intelligent staging |
 | [`my-pull-requests`](./vendor/my-pull-requests) | Listing the PRs assigned to me in the current repo |

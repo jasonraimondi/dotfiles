@@ -1,20 +1,24 @@
 ---
-name: pr-review-full
-description: Single-pass pull request review for correctness, security, and quality. Reads the diff plus the changed files in full, emits findings grouped by severity with a verdict
+name: review-full
+description: Single-pass review of a pull request or local changes for correctness, security, and quality. Reads the diff plus the changed files in full, emits findings grouped by severity with a verdict
 ---
 
-# Review Pull Request
+# Code Review
 
 Single-pass review. One model, one read, one report.
 
-## Input
+## Input — resolve the scope first
 
-1. PR number or URL → use it directly.
-2. No PR specified → run `gh pr list` and ask which PR to review.
+Review a pull request or local changes:
+
+1. **PR** — PR number or URL: `gh pr view <n> --json title,body,baseRefName,headRefName,files` and `gh pr diff <n>`.
+2. **Branch** — "this branch" / "my changes" with no PR: diff against the merge-base with the default branch — `git diff $(git merge-base HEAD <base>)...HEAD`.
+3. **Working tree** — named files or "these changes": `git diff` (unstaged) and `git diff --staged`, or read the named files directly.
+4. **Unclear** — no PR given and a clean working tree: run `gh pr list` and ask which PR. Otherwise ask which scope is meant.
 
 ## Workflow
 
-1. **Fetch**: `gh pr view <n> --json title,body,baseRefName,headRefName,files` and `gh pr diff <n>`.
+1. **Resolve scope** and get the diff (see Input).
 2. **Read changed files in full** — never review a diff in isolation; surrounding code determines correctness.
 3. **Analyze** each change against the checklist below; skip dimensions that don't apply.
 4. **Emit** findings grouped by severity, then a verdict.
@@ -31,7 +35,7 @@ Single-pass review. One model, one read, one report.
 ## Output
 
 ```
-## <PR title> (#<n>)
+## <PR title (#n), or branch/scope description>
 
 ### Critical
 1. file:line — finding
