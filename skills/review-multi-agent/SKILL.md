@@ -1,13 +1,13 @@
 ---
 name: review-multi-agent
-description: "Orchestrate a seven-agent PR review: six reviewers in parallel (correctness, dedicated security, design/maintainability, a cross-cutting caveman, a comments auditor, and merge risk) plus a verifier that confirms findings against the source. Use when user asks for a 'deep review', 'thorough review', 'multi-agent review', 'audit this PR', or invokes /review-multi-agent"
+description: "Orchestrate a seven-agent PR review: six reviewers in parallel (correctness, dedicated security, architecture/design, a cross-cutting caveman, a comments auditor, and merge risk) plus a verifier that confirms findings against the source. Use when user asks for a 'deep review', 'thorough review', 'multi-agent review', 'audit this PR', or invokes /review-multi-agent"
 ---
 
 # Multi-Agent PR Review
 
 Seven agents: six reviewers fanned out in parallel, one verifier afterwards. Reduces single-pass blind spots and surfaces only verified findings.
 
-Two focused "full" reviewers cover correctness and design/maintainability. A dedicated **security** reviewer runs OWASP-style analysis with high-confidence-only filtering. A **cross-cutting caveman** reads the whole PR terse and unscoped — different style, no tunnel vision, catches what the focused passes miss. A **comments auditor** flags noisy, redundant, or stale comments and refactors that would obviate them. The sixth scores merge risk.
+A **correctness** reviewer and an **architecture/design** reviewer split logic from structure. A dedicated **security** reviewer runs OWASP-style analysis with high-confidence-only filtering. A **cross-cutting caveman** reads the whole change terse and unscoped — different style, no tunnel vision, catches what the focused passes miss. A **comments auditor** flags noisy, redundant, or stale comments and refactors that would obviate them. The sixth scores merge risk.
 
 ## Input — resolve the scope once
 
@@ -40,7 +40,7 @@ Send a **single message** with six Agent tool calls. Parallel execution requires
 |---|-------|-------------|-------|
 | 1 | correctness (full) | review-full | logic bugs, races, error handling, data loss, broken contracts |
 | 2 | security (dedicated) | review-security | OWASP-style: injection, XSS, auth/authz, SSRF, deserialization, crypto, secrets — HIGH-confidence findings only |
-| 3 | design + maintainability (full) | review-full | naming, abstraction, test gaps, missing docs, dead code, unclear control flow |
+| 3 | architecture + design | review-architecture | module depth, coupling, abstraction boundaries, layering, testability at the seams, naming/clarity, dead code, speculative structure |
 | 4 | cross-cutting caveman | review-caveman | unscoped: anything across correctness, security, design, maintainability — terse, surface what looks worst |
 | 5 | comments auditor | best-practices-comments | journal/noise/redundant/mumbling/nonlocal comments, stale or misleading comments, refactors that would obviate a comment — scoped to lines the PR adds or modifies |
 | 6 | merge risk | review-merge-risk | verdict (SHIP / SHIP WITH MITIGATIONS / HOLD / DO NOT MERGE), reversibility, blast radius, key risk factors, BC, CI/review state |
