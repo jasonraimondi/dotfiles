@@ -1,6 +1,6 @@
 ---
 name: review-architecture
-description: Single-pass architecture and design review of a pull request or local changes. Evaluates module depth, coupling, abstraction boundaries, layering, testability at the seams, naming, and dead weight. Use when asked for an "architecture review", "design review", to "review the structure", check coupling or module boundaries, or as the design reviewer in a multi-agent review.
+description: Single-pass architecture and design review of a pull request or local changes. Evaluates module depth, coupling, abstraction boundaries, layering, testability at the seams, naming, and dead weight. Use when asked for an "architecture review", or to "review the structure", check coupling or module boundaries, or as the design reviewer in a multi-agent review.
 ---
 
 # Architecture & Design Review
