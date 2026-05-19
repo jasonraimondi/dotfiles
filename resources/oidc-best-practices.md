@@ -1,8 +1,8 @@
 # oidc-best-practices — Knowledge Base for Building an OIDC Library in TypeScript
 
 ## TL;DR
-- **OIDC = OAuth 2.0 + identity.** OAuth 2.0 issues access tokens (authorization); OIDC layers an **ID Token** (signed JWT), **UserInfo Endpoint**, **Discovery**, standardized **scopes/claims**, and a **nonce** to deliver authentication. Build every interactive client on **Authorization Code + PKCE (S256)** — public and confidential alike — per RFC 9700 ("OAuth 2.0 Security Best Current Practice", January 2025) and OAuth 2.1 (current draft-ietf-oauth-v2-1-15, published 2 March 2026, expiring 3 September 2026).
-- **Build the library on `panva/oauth4webapi` + `panva/jose`**; for the OP side, study `panva/node-oidc-provider`. Use Web Crypto by default (stable in Node ≥19 per the Node.js 19 release announcement "The WebCrypto API is now stable", Deno, Bun, Cloudflare Workers, browsers); gate `node:crypto` only in optional adapters. Do not write JWT crypto yourself.
+- **OIDC = OAuth 2.0 + identity.** OAuth 2.0 issues access tokens (authorization); OIDC layers an **ID Token** (signed JWT), **UserInfo Endpoint**, **Discovery**, standardized **scopes/claims**, and a **nonce** to deliver authentication. Build every interactive client on **Authorization Code + PKCE (S256)** — public and confidential alike — per RFC 9700 ("Best Current Practice for OAuth 2.0 Security", January 2025) and OAuth 2.1 (current draft-ietf-oauth-v2-1-15, published 2 March 2026, expiring 3 September 2026).
+- **Build the library on `panva/oauth4webapi` + `panva/jose`**; for the OP side, study `panva/node-oidc-provider`. Use Web Crypto by default (stable in Node ≥19 per the Node.js 19 release announcement "The WebCrypto API is now stable (with the exception of the following algorithms: Ed25519, Ed448, X25519, and X448)", Deno, Bun, Cloudflare Workers, browsers); gate `node:crypto` only in optional adapters. Do not write JWT crypto yourself.
 - **Always reject `alg:"none"`** (the panva/jose verifier documents: "Unsecured JWTs ({ \"alg\": \"none\" }) are never accepted by this API"). **Always validate** `iss` (exact string), `aud` (must contain `client_id`), `exp`, `iat`, `nonce`, and `at_hash`/`c_hash` when present. Never use the access token to identify the user; never store tokens in `localStorage` from a SPA; never accept the implicit grant.
 
 ---
@@ -151,7 +151,7 @@ Decoupled flow: the client asks the OP to authenticate a user identified out-of-
 **Opaque (reference) token**: random string; RS calls `introspection_endpoint` (RFC 7662). Easy revocation, higher per-request latency.
 
 **JWT access token (RFC 9068, October 2021)**:
-- `typ` header MUST be `at+jwt` — this is the guard that prevents an ID Token being accepted as an access token.
+- `typ` header SHOULD be `at+jwt` (RFC 9068 §2.1; `application/at+jwt` is the registered media type) — this is the guard that prevents an ID Token being accepted as an access token.
 - REQUIRED claims: `iss`, `exp`, `aud`, `sub`, `client_id`, `iat`, `jti`.
 - OPTIONAL: `scope`, `auth_time`, `acr`, `amr`, plus `groups`, `roles`, `entitlements` (RFC 9068 §7.2.1 from RFC 7643).
 - `aud` MUST identify the resource server. RFC 8707 `resource` indicators let the client request audience-restricted tokens.
@@ -176,7 +176,7 @@ Opaque to the client. Single-use under rotation; sender-constrained for public c
 **Algorithm confusion attacks**:
 - The classic: `verify(token, RSA_PUBLIC_KEY)` that trusts the token's `alg`. Attacker submits `alg:"HS256"` and HMACs the token using the RSA public-key bytes as the HMAC secret.
 - Mitigation: **pin allowed algs at the call site**; bind key type to algorithm; never pass the token's `alg` into the verifier as a parameter.
-- Do not use `jsonwebtoken` (npm). It carries the historical CVE-2022-23541 (algorithm confusion allowing HS256 verification with an RSA public key) and CVE-2022-23540 (signature bypass when alg is omitted and secret is falsy), both affecting versions ≤ 8.5.1 and fixed in v9.0.0 (per GitHub Advisory Database GHSA-qwph-4952-7xr6 and GHSA-27h2-hvpr-p74q). Use `panva/jose`.
+- Do not use `jsonwebtoken` (npm). It carries the historical CVE-2022-23541 (algorithm confusion allowing HS256 verification with an RSA public key) and CVE-2022-23540 (signature bypass when alg is omitted and secret is falsy), both affecting versions ≤ 8.5.1 and fixed in v9.0.0 (per GitHub Advisory Database GHSA-hjrf-2m68-5959 and GHSA-qwph-4952-7xr6 respectively). Use `panva/jose`.
 
 **`kid` handling**:
 - Select the JWK by header `kid`.
@@ -270,14 +270,14 @@ Per OpenID Connect RP-Initiated Logout 1.0 §2:
 
 ### 4.10 Back-Channel Logout
 OP POSTs a Logout Token (signed JWT) to each RP's registered `backchannel_logout_uri`. The Logout Token MUST contain:
-- `iss`, `aud`, `iat`, `jti`
+- `iss`, `aud`, `iat`, `jti`, `exp`
 - `events` claim with member `"http://schemas.openid.net/event/backchannel-logout"` mapping to a JSON object `{}`
 - `sub` and/or `sid`
 
 Logout Token MUST NOT contain `nonce`. OP metadata: `backchannel_logout_supported`, `backchannel_logout_session_supported`. RP metadata: `backchannel_logout_uri`, `backchannel_logout_session_required`. RP MUST validate signature, `iss`, `aud`, `iat`, the events claim, and presence of `sub` or `sid`. OP SHOULD use short expirations (the spec suggests at most two minutes).
 
 ### 4.11 Front-Channel Logout and Session Management
-Front-Channel Logout: OP returns HTML embedding an `<iframe>` per RP's `frontchannel_logout_uri`. Session Management 1.0: cross-origin `postMessage` from a `check_session_iframe`. Both depend on third-party cookies. Apple Safari has blocked third-party cookies by default since 2020, Firefox blocks them via Total Cookie Protection by default, and although Google cancelled its own Chrome deprecation plan on 22 April 2025 (Privacy Sandbox blog: "Instead of deprecating third-party cookies, we would introduce a new experience in Chrome that lets people make an informed choice"), the trend is irreversible enough that you should plan for CHIPS/Partitioned cookies or migrate to **back-channel logout** regardless.
+Front-Channel Logout: OP returns HTML embedding an `<iframe>` per RP's `frontchannel_logout_uri`. Session Management 1.0: cross-origin `postMessage` from a `check_session_iframe`. Both depend on third-party cookies. Apple Safari has blocked third-party cookies by default since 2020, Firefox blocks them via Total Cookie Protection by default, and although Google cancelled its own Chrome deprecation plan on 22 April 2025 (Privacy Sandbox blog: "we've made the decision to maintain our current approach to offering users third-party cookie choice in Chrome, and will not be rolling out a new standalone prompt for third-party cookies"), the trend is irreversible enough that you should plan for CHIPS/Partitioned cookies or migrate to **back-channel logout** regardless.
 
 ### 4.12 PAR — Pushed Authorization Requests (RFC 9126)
 - POST to `pushed_authorization_request_endpoint` with the full authorization request as `application/x-www-form-urlencoded`, authenticated as the client.
@@ -298,7 +298,7 @@ Replace front-channel parameters with `request=<JWS>` or `request_uri=<URL>`. Th
 - `code_verifier`: 43–128 chars; ≥256 bits of entropy from a CSPRNG.
 - `code_challenge = BASE64URL(SHA-256(code_verifier))`.
 - `code_challenge_method=S256`.
-- **`plain` MUST NOT be used.** RFC 7636 §4.4.1: "Clients MUST NOT downgrade to 'plain' after trying the 'S256' method." An error when `S256` is presented can only mean a faulty server or a MITM downgrade attempt.
+- **`plain` MUST NOT be used.** RFC 7636 §7.2: "Clients MUST NOT downgrade to 'plain' after trying the 'S256' method." An error when `S256` is presented can only mean a faulty server or a MITM downgrade attempt.
 - PKCE provides robust CSRF protection even against attackers who can read the authorization response (RFC 9700).
 
 ### 5.2 `state` for CSRF (and beyond)
@@ -519,15 +519,15 @@ src/
 ```
 
 ### 9.2 Crypto: Web Crypto by default
-Web Crypto (`globalThis.crypto.subtle`) is stable in Node ≥19 (Node.js 19 release blog, nodejs.org/en/blog/announcements/v19-release-announce: "The WebCrypto API is now stable"), Deno, Bun, browsers, Cloudflare Workers, Vercel Edge. `node:crypto` is Node-only. Use Web Crypto by default; gate `node:crypto` only in legacy adapters. `panva/oauth4webapi` does exactly this — its `package.json` lists `bun`, `cloudflare`, `deno`, `edge`, `workerd`, `workers` among keywords and ships **zero runtime dependencies**.
+Web Crypto (`globalThis.crypto.subtle`) is stable in Node ≥19 (Node.js 19 release blog, nodejs.org/en/blog/announcements/v19-release-announce: "The WebCrypto API is now stable (with the exception of the following algorithms: Ed25519, Ed448, X25519, and X448)"), Deno, Bun, browsers, Cloudflare Workers, Vercel Edge. `node:crypto` is Node-only. Use Web Crypto by default; gate `node:crypto` only in legacy adapters. `panva/oauth4webapi` does exactly this — its `package.json` lists `bun`, `cloudflare`, `deno`, `workers`, `vercel`, `electron` among keywords and ships **zero runtime dependencies**.
 
 ### 9.3 JWT/JOSE library choice
 - **Use `panva/jose`**: cross-runtime, modern, secure defaults. The `JWTVerifyOptions` doc states verbatim "Unsecured JWTs ({ \"alg\": \"none\" }) are never accepted by this API." It exposes `createRemoteJWKSet(url)` with built-in caching/single-flight, supports algorithm allow-lists, and supports `typ` checks (for `at+jwt`).
-- **Do not use `jsonwebtoken` (npm)** — CVE-2022-23541 (algorithm confusion: HS256 verification with RSA public key) and CVE-2022-23540 (signature bypass when alg is omitted and secret is falsy) both affecting versions ≤ 8.5.1, fixed in v9.0.0 (GHSA-qwph-4952-7xr6, GHSA-27h2-hvpr-p74q).
+- **Do not use `jsonwebtoken` (npm)** — CVE-2022-23541 (algorithm confusion: HS256 verification with RSA public key) and CVE-2022-23540 (signature bypass when alg is omitted and secret is falsy) both affecting versions ≤ 8.5.1, fixed in v9.0.0 (GHSA-hjrf-2m68-5959, GHSA-qwph-4952-7xr6).
 - `node-jose` is heavier and Node-only.
 
 ### 9.4 `oauth4webapi` vs `openid-client`
-- `oauth4webapi` (panva): low-level, function-based, framework-free, Web Crypto, ESM only, zero deps. The right engine for a new library or for users wanting minimum surface area.
+- `oauth4webapi` (panva): low-level, function-based, framework-free, Web Crypto, ESM-first (CommonJS `require()` works on Node with `require(esm)` support), zero deps. The right engine for a new library or for users wanting minimum surface area.
 - `openid-client` (panva): higher-level `Client` class with auto-discovery, callback handling, refresh, UserInfo. Excellent reference for ergonomics.
 
 ### 9.5 Public API shape — function-first, with optional Client wrapper
