@@ -41,6 +41,7 @@ The script also wires the shared `AGENT.md` from this repo into the rule/memory 
 | [`best-practices-comments`](./skills/best-practices-comments) | Auditing and removing journal/noise/redundant code comments |
 | [`best-practices-css`](./skills/best-practices-css) | Idiomatic modern CSS with progressive-enhancement fallbacks |
 | [`best-practices-html`](./skills/best-practices-html) | Semantic HTML/Svelte markup, landmarks, forms, native controls |
+| [`best-practices-oidc`](./skills/best-practices-oidc) | OIDC/OAuth 2.0 flows, token validation, endpoints, security hardening |
 | [`best-practices-svelte5`](./skills/best-practices-svelte5) | Authoring Svelte 5 components and SvelteKit apps |
 | [`frontend-oklch`](./skills/frontend-oklch) | OKLCH conversions, palettes, contrast, gamut handling |
 | [`pr-description-template`](./skills/pr-description-template) | Rewriting PR titles/bodies to a conventional-commits + JIRA template |
