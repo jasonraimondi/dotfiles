@@ -4,13 +4,6 @@ cask_args appdir: "/Applications"
 
 # ==== Quick Look Plugins ====
 # @see https://github.com/sindresorhus/quick-look-plugins
-cask "qlcolorcode"
 cask "qlmarkdown"
-cask "qlprettypatch"
-cask "qlstephen"
 cask "quicklook-video"
-cask "quicklook-csv"
-cask "quicklook-json"
-cask "quicklookase"
 cask "suspicious-package" # http://www.mothersruin.com/software/SuspiciousPackage/
-cask "webpquicklook"
