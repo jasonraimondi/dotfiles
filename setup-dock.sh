@@ -27,6 +27,7 @@ applications=(
     "$HOME/Applications/RustRover.app"
     "$HOME/Applications/GoLand.app"
     "$HOME/Applications/DataGrip.app"
+    "/Applications/Cmux.app"
     "/Applications/Zed.app"
     "/Applications/Linear.app"
     "/Applications/Proxyman.app"

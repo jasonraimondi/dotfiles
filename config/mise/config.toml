@@ -18,6 +18,9 @@ terraform = "1.14"
 uv        = "latest"
 zig       = "latest"
 
+# uv tool install -p 3.13 serena-agent@latest --prerelease=allow
+"pipx:serena-agent" = { version = "latest", uvx_args = "--python 3.13 --prerelease allow" }
+
 # software verification
 # https://mise.jdx.dev/tips-and-tricks.html#software-verification
 slsa-verifier = "latest"

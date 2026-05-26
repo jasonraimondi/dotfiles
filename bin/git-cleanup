@@ -46,12 +46,17 @@ if [ ${#worktree_conflicts[@]} -gt 0 ]; then
     done
     echo
 
+    worktree_rm_dirs=()
     for branch in "${worktree_conflicts[@]}"; do
         worktree_path="${worktree_branches[$branch]}"
         read -p "Delete worktree '$worktree_path'? (y/N): " -n 1 -r
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
-            git worktree remove "$worktree_path"
+            # Move the worktree aside (instant) so its slow directory
+            # deletion can run in the background — node_modules takes ages.
+            staged="${worktree_path}.deleting-$$"
+            mv "$worktree_path" "$staged"
+            worktree_rm_dirs+=("$staged")
             echo "  Removed worktree: $worktree_path"
         else
             # Remove from branches_to_delete if worktree not removed
@@ -59,6 +64,14 @@ if [ ${#worktree_conflicts[@]} -gt 0 ]; then
             echo "  Skipping branch: $branch"
         fi
     done
+
+    if [ ${#worktree_rm_dirs[@]} -gt 0 ]; then
+        git worktree prune
+        nohup rm -rf "${worktree_rm_dirs[@]}" >/dev/null 2>&1 &
+        disown
+        echo
+        echo "Deleting worktree files in the background (pid $!)."
+    fi
     echo
 fi
 
