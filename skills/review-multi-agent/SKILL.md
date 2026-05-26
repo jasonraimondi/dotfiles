@@ -51,7 +51,7 @@ Send all seven Agent calls in a **single message** — separate messages run seq
 | 3 | architecture + design | review-architecture | module depth, coupling, abstraction boundaries, layering, testability at the seams, naming/clarity, dead code, speculative structure, noisy/redundant/stale comments and refactors that would obviate a comment |
 | 4 | cross-cutting caveman | review-caveman | unscoped: anything across correctness, security, design, maintainability — terse, surface what looks worst |
 | 5 | tests reviewer | testing-tdd | do the tests exercise the risky and changed paths; would each test still pass if the bug were present; are assertions correct and specific; missing cases for new branches and error paths — scoped to the change |
-| 6 | adversarial (gap auditor) | (inline) | audit the diff against its stated intent: PR description for PRs; commit messages and any plan doc / task list passed in scope for branches. Adversarial stance — assume the implementer rationalized; surface what they hand-waved. Look for items in the stated intent the diff doesn't deliver, items the diff adds beyond scope, verification steps the intent names that aren't actually exercised, tests that pass vacuously (would pass with the change reverted), and interface drift from the plan. Read-only |
+| 6 | adversarial (gap auditor) | review-adversarial | audit the diff against its stated intent (PR description, commit messages, plan or task doc passed in scope): descoped items, vacuous tests, skipped verification, interface drift, scope creep. Read-only |
 | 7 | merge risk | review-merge-risk | verdict (SHIP / SHIP WITH MITIGATIONS / HOLD / DO NOT MERGE), reversibility, blast radius, key risk factors, BC, CI/review state |
 
 Every reviewer prompt must include all four:
