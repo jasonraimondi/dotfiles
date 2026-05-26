@@ -1,7 +1,7 @@
 ---
 name: review-code
-description: "Code-review skill with mode routing. Default lens is `standard` (alias `quick`) — correctness, security, quality in one pass with a verdict. Other modes: `security` (OWASP, high-confidence only), `architecture` (module depth, coupling, boundaries), `merge-risk` (shippability + reversibility), `intent` (does the diff deliver what was promised), `multi` (alias `full`) — six parallel reviewers plus a verifier. Invoke as /review-code [<mode>] [<scope>]. Use for any code-review or PR-audit task."
-argument-hint: "[standard|quick|security|architecture|merge-risk|intent|multi|full] [<scope>]"
+description: "Code-review skill with mode routing. Default lens is `standard` (alias `quick`) — correctness, security, quality in one pass with a verdict. Other modes: `security` (OWASP, high-confidence only), `architecture` (module depth, coupling, boundaries), `merge-risk` (shippability + reversibility), `intent` (alias `adversarial`) — does the diff deliver what was promised, `multi` (alias `full`) — six parallel reviewers plus a verifier. Invoke as /review-code [<mode>] [<scope>]. Use for any code-review or PR-audit task."
+argument-hint: "[standard|quick|security|architecture|merge-risk|intent|adversarial|multi|full] [<scope>]"
 license: LICENSE
 ---
 
@@ -15,7 +15,7 @@ One skill, six lenses. Each mode lives in its own file under `modes/`; load it o
 | `security` | exploitable OWASP-style vulnerabilities (high-confidence only) | `modes/security.md` |
 | `architecture` | module depth, coupling, abstraction boundaries, layering | `modes/architecture.md` |
 | `merge-risk` | shippability and reversibility — SHIP / SHIP WITH MITIGATIONS / HOLD / DO NOT MERGE | `modes/merge-risk.md` |
-| `intent` | did the diff deliver what the stated intent promised | `modes/intent.md` |
+| `intent` *(alias `adversarial`)* | did the diff deliver what the stated intent promised | `modes/intent.md` |
 | `multi` *(alias `full`)* | six reviewers in parallel through a verifier — most thorough | `modes/multi.md` |
 
 ## Dispatch
@@ -27,11 +27,12 @@ If the user's phrasing implies a different mode, pick it:
 - "security review" / "find vulnerabilities" → `security`
 - "architecture review" → `architecture`
 - "merge safety" / "is this safe to merge" → `merge-risk`
-- "audit against PR description" / "intent fidelity" → `intent`
+- "audit against PR description" / "intent fidelity" / "adversarial review" → `intent`
 - "thorough review" / "deep review" / "multi-agent" / "full review" → `multi`
 
 **Aliases**:
 - `quick` → `standard` (single-pass default; load `modes/standard.md`)
+- `adversarial` → `intent` (gap-audit against stated intent; load `modes/intent.md`)
 - `full` → `multi` (thorough parallel review; load `modes/multi.md`)
 
 If ambiguous, ask. Then **load `modes/<canonical-mode>.md` and follow it.**

@@ -45,7 +45,7 @@ The script also wires the shared `AGENT.md` from this repo into the rule/memory 
 | [`best-practices-svelte5`](./skills/best-practices-svelte5) | Authoring Svelte 5 components and SvelteKit apps |
 | [`frontend-oklch`](./skills/frontend-oklch) | OKLCH conversions, palettes, contrast, gamut handling |
 | [`pr-description-template`](./skills/pr-description-template) | Rewriting PR titles/bodies to a conventional-commits + JIRA template |
-| [`review-code`](./skills/review-code) | Code review with six modes — `standard` (default, alias `quick`), `security`, `architecture`, `merge-risk`, `intent`, `multi` (six parallel reviewers + verifier, alias `full`). Invoke as `/review-code [<mode>] [<scope>]` |
+| [`review-code`](./skills/review-code) | Code review with six modes — `standard` (default, alias `quick`), `security`, `architecture`, `merge-risk`, `intent` (alias `adversarial`), `multi` (six parallel reviewers + verifier, alias `full`). Invoke as `/review-code [<mode>] [<scope>]` |
 
 ## Vendored
 
