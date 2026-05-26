@@ -18,17 +18,25 @@ Review a pull request or local changes. Resolve the scope here, then pass the *s
 3. **Working tree** — named files or "these changes": the staged/unstaged diff.
 4. **Unclear** — no PR and a clean working tree: run `gh pr list` and ask. Otherwise ask which scope.
 
-## Finding schema (Agents 1–6 emit JSON)
+## Finding schema
+
+Each of Agents 1–6 returns a JSON object with a `findings` array. `{"findings": []}` means the reviewer ran and found nothing; a missing or malformed response means the reviewer failed.
 
 ```json
 {
-  "file": "path/to/file",
-  "lines": "L42 or L88-140",
-  "severity": "critical | suggestion | nit",
-  "category": "correctness | security | design | maintainability",
-  "claim": "what's wrong",
-  "code_evidence": "quoted snippet from the diff",
-  "confidence": "high | medium | low"
+  "findings": [
+    {
+      "file": "path/to/file",
+      "lines": "L42 or L88-140",
+      "code_evidence": "verbatim + or - line from the diff (or surrounding unchanged context only when the bug is missing code)",
+      "claim": "what the code does and what it should do instead",
+      "impact": "what breaks; who feels it",
+      "severity": "critical | suggestion | nit",
+      "category": "correctness | security | design | maintainability",
+      "confidence": "high | medium | low",
+      "suggested_fix": "optional — one line or small diff snippet; omit when no small fix exists"
+    }
+  ]
 }
 ```
 
