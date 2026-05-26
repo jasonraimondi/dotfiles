@@ -45,11 +45,7 @@ The script also wires the shared `AGENT.md` from this repo into the rule/memory 
 | [`best-practices-svelte5`](./skills/best-practices-svelte5) | Authoring Svelte 5 components and SvelteKit apps |
 | [`frontend-oklch`](./skills/frontend-oklch) | OKLCH conversions, palettes, contrast, gamut handling |
 | [`pr-description-template`](./skills/pr-description-template) | Rewriting PR titles/bodies to a conventional-commits + JIRA template |
-| [`review-architecture`](./skills/review-architecture) | Single-pass architecture/design review — module depth, coupling, boundaries |
-| [`review-full`](./skills/review-full) | Single-pass review for correctness, security, and quality |
-| [`review-merge-risk`](./skills/review-merge-risk) | Verdict-style merge-risk analysis with reversibility scoring |
-| [`review-multi-agent`](./skills/review-multi-agent) | Six-agent orchestrated deep review (5 reviewers + verifier) |
-| [`review-security`](./skills/review-security) | OWASP-style security review with confidence-based reporting |
+| [`review-code`](./skills/review-code) | Unified code review with seven modes — `full`, `security`, `architecture`, `merge-risk`, `adversarial`, `caveman`, `multi` (seven-reviewer parallel + verifier). Invoke as `/review-code <mode> [<scope>]` |
 
 ## Vendored
 
