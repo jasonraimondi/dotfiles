@@ -1,6 +1,6 @@
 ---
 name: best-practices-oidc
-description: Best practices for OpenID Connect (OIDC) and OAuth 2.0 — flow selection, token validation, endpoints, discovery, and security hardening. Use when building, integrating, or reviewing authentication code: OIDC/OAuth clients (RP), authorization servers (OP), an OIDC library, ID token / JWT validation, PKCE, refresh tokens, DPoP, or logout. Triggers on OpenID Connect, OAuth, SSO, ID token, access token, auth flow, JWKS, client_secret, PKCE, or "log in with".
+description: 'Best practices for OpenID Connect (OIDC) and OAuth 2.0 — flow selection, token validation, endpoints, discovery, and security hardening. Use when building, integrating, or reviewing authentication code: OIDC/OAuth clients (RP), authorization servers (OP), an OIDC library, ID token / JWT validation, PKCE, refresh tokens, DPoP, or logout. Triggers on OpenID Connect, OAuth, SSO, ID token, access token, auth flow, JWKS, client_secret, PKCE, or "log in with".'
 ---
 
 # OIDC & OAuth 2.0 Best Practices
