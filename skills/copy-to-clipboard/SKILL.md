@@ -9,13 +9,19 @@ The final user-facing prose for this turn — what the user would otherwise read
 
 ## How
 
-Write the content to `/tmp/clip.txt` via the Write tool, then:
+One Bash call. Single-quoted heredoc with a random 6-char sentinel:
 
 ```bash
-pbcopy < /tmp/clip.txt && rm /tmp/clip.txt
+pbcopy <<'CLIP_a93b2f'
+…content…
+CLIP_a93b2f
 ```
 
-Going through a file avoids heredoc-delimiter collisions and quoting hazards with `$`, backticks, and embedded newlines. For a short single-line string, `printf '%s' '<text>' | pbcopy` is fine.
+The single quotes disable expansion, so `$`, backticks, backslashes, and newlines pass through literally — the quoting hazards the previous file-based approach worried about don't apply. Pick a fresh sentinel each call; collision with content is the only failure mode and is negligible for normal prose.
+
+Fallback (only if content might literally contain your sentinel — e.g. you're copying a doc *about* heredocs): Write to `/tmp/clip.txt`, then `pbcopy < /tmp/clip.txt`. No `rm` — `/tmp` cleans itself and the chained command can trip the harness into backgrounding.
+
+For a short single-line string, `printf '%s' '<text>' | pbcopy` is fine.
 
 ## After
 
