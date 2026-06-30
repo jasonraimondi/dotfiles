@@ -21,7 +21,7 @@ Follow these steps in order. Don't skip the confirmation step at the end — the
 4. **Extract the ticket ID.** A ticket may be provided by {argument}, if not search the PR body and each commit message for a `[A-Z]{2,}-\d+` pattern (e.g., `PROJ-456`, `JIRA-1234`). If found, read each one.
 5. **Build the title** following the format below.
 6. **Build the description** following the section rules below.
-7. **Show the draft to the user.** Display the proposed title and body in a code block. State clearly which sections were omitted and why (e.g., "no breaking changes detected, omitting that section").
+7. **Show the draft to the user.** Display the proposed title and body in a code block. State clearly which sections were omitted and why (e.g., "no breaking changes detected, omitting that section"), and raise any unsatisfied diff-verifiable concerns found while building the checklist (e.g., "new logic in `auth/pkce.ts` has no accompanying test changes — gap, or covered elsewhere?").
 8. **Ask for confirmation.** Ask the user something like: "Apply this to PR #123 now? (yes / edit / no)". Wait for an affirmative response. **Assignees:** the current logged-in GitHub user is assigned automatically and needs no confirmation. If you would assign anyone else (a name pulled from the original body or the user's request), name those users in this same prompt and get explicit approval before assigning them — see "Assigning the PR."
 9. **Apply on confirmation.** Pipe the body to `gh pr edit --body-file -` via a heredoc (see "Applying the edit" below). Do **not** use `mktemp` + `cat >` — zsh's `noclobber` makes that redirect fail silently and you'll push an empty body.
 10. **Verify the apply.** Immediately after `gh pr edit`, run `gh pr view <ref> --json title,body` and confirm the body is non-empty and starts with `## Summary` (or `## Stack` for a stacked PR). If it doesn't match, the apply failed — retry and surface the failure to the user. Never claim success without this check.
@@ -45,7 +45,7 @@ Where:
 
 ## Description format
 
-Use Markdown. Include sections **only if they have substantive content**. Omit entirely otherwise — don't write "None" or "N/A". The `## Pre-Merge Checklist` section is the one exception: it always appears, but every item in it is derived from the diff (see the rules below) — there are no fixed items.
+Use Markdown. Include sections **only if they have substantive content**. Omit entirely otherwise — don't write "None" or "N/A".
 
 ### Section rules
 
@@ -65,67 +65,57 @@ Preserve any stack notes already in the body. If the PR targets the default bran
 
 **`## Screenshots / Recordings`** — Include **only if** UI/asset files changed. Signals: changes under `components/`, `pages/`, `views/`, `*.tsx`, `*.vue`, `*.svelte`, `*.css`, `*.scss`, `assets/`, `public/`, or image files. If the original body already contains images, preserve them. Otherwise leave a placeholder like `_Attach recording before merge._` so the author remembers.
 
-**`## Pre-Merge Checklist`** — Always include. See the next section.
+**`## Pre-Merge Checklist`** — Include **only if** verification leaves items worth tracking (see the next section). Omit when nothing requires human action.
 
 > Reviewers/collaborators are **not** named in the body — assign the PR to them instead (see "Assigning the PR").
 
 ### Pre-merge checklist
 
-Render as a GitHub-style task list using `- [ ]`. Every item is derived from the diff — there are no fixed items. Walk the rules below and add an item for each signal present:
+Render as a GitHub-style task list. Every item is derived from the diff — there are no fixed items.
 
-| Signal in diff / changed files                                  | Add checklist item                                                                 |
-| --------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| New or modified files under `migrations/`, `db/migrate/`, `schema/`, `*.sql` | Migrations applied                                                    |
-| New files under `migrations/`, `db/migrate/`, `schema/`, `*.sql`| Migration tested against production-sized dataset; rollback path verified          |
-| Changed public API signatures, exported symbols, DB schema, serialized/wire formats, or removed CLI flags | Backward compatibility verified                          |
-| Changed public API routes, OpenAPI specs, or exported handlers  | API docs updated to reflect changes                                                |
-| New non-trivial logic without matching test file changes        | Tests added for the new logic paths                                                |
-| Changes touching auth, crypto, permissions, secrets handling    | Security review requested                                                          |
-| Dependency manifest changes (`package.json`, `Cargo.toml`, etc.)| Verify dependency licenses and supply-chain provenance                             |
-| Config or env var additions                                     | Deployment configs updated for staging and production                              |
-| Feature flag references introduced                              | Feature flag default and rollout plan documented                                   |
-| Performance-sensitive paths (queries, hot loops, render code)   | Benchmark or load test results captured                                            |
+**Verify before you ask.** The full diff is already in hand from step 3. Any concern the diff itself can answer must be settled during generation, never handed to the author as a chore. Classify each signal into one of two groups:
 
-Each item should be specific to the PR — paraphrase the rule to mention the actual change. For example, if a new `/oauth/authorize` route appears, write "Tests added for new PKCE validation paths" rather than the generic "Tests added for the new logic paths."
+**Diff-verifiable — check it yourself:**
 
-Aim for a total checklist of 2–6 items. If the rules would produce more than 6, keep the most relevant ones for this PR's risk profile and drop the rest. If no rule matches at all, include "Backward compatibility verified" as the single baseline item.
+| Signal in diff                                                   | What to verify in the diff                          |
+| ---------------------------------------------------------------- | --------------------------------------------------- |
+| New non-trivial logic                                             | Matching test changes accompany it                  |
+| Changed public API signatures, exported symbols, or removed CLI flags | All in-repo callers updated                     |
+| Changed public API routes or exported handlers                    | Docs / OpenAPI spec updated in the same diff        |
+
+- **Satisfied:** render it checked with one line of evidence — `- [x] Tests added — auth/pkce.test.ts covers the new validation paths` — or drop it if unremarkable. Never emit a diff-verifiable item unchecked.
+- **Not satisfied:** that's a finding, not a checkbox. Raise it in the step-7 draft message and only add an unchecked item if the user wants it tracked.
+
+**Environment and process — the real checklist.** Unchecked `- [ ]` boxes are reserved for actions the diff cannot prove:
+
+| Signal in diff / changed files                                   | Add checklist item                                                        |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| New or modified files under `migrations/`, `db/migrate/`, `schema/`, `*.sql` | Migration run against a production-sized dataset; rollback path verified |
+| Config or env var additions                                       | Deployment configs updated for staging and production                     |
+| Feature flag references introduced                                 | Feature flag default and rollout plan documented                           |
+| Performance-sensitive paths (queries, hot loops, render code)      | Benchmark or load test results captured                                    |
+| Changes touching auth, crypto, permissions, secrets handling       | Security review requested                                                  |
+| Dependency manifest changes (`package.json`, `Cargo.toml`, etc.)   | Dependency licenses and supply-chain provenance reviewed                   |
+| Schema or wire-format changes whose consumers live outside this repo | Backward compatibility verified with downstream consumers              |
+
+Each item should be specific to the PR — paraphrase the rule to mention the actual change. For example, for a new index migration write "Migration tested against a production-sized dataset (drop index is a safe rollback)" rather than the generic wording.
+
+Keep the section short — 1–4 unchecked items is typical; if the rules would produce more, keep the ones most relevant to this PR's risk profile. If no rule produces an item and no verified item is worth reporting, **omit the section entirely**. Never pad it with a generic baseline item like "Backward compatibility verified."
 
 ## Worked examples
 
 ### Example 1 — feature with breaking change
 
-**Input:** Branch `feature/oauth-pkce`, commits reference `PROJ-456`, diff adds new auth code path, modifies `/oauth/authorize` handler, touches mobile SDK files. No UI files. Removes ability to call `/oauth/authorize` without a code challenge.
+**Input:** Branch `feature/oauth-pkce`, commits reference `PROJ-456`, diff adds new auth code path with tests in `auth/pkce.test.ts`, modifies `/oauth/authorize` handler, touches mobile SDK files. No UI files, no docs changes. Removes ability to call `/oauth/authorize` without a code challenge.
 
 **Output title:** `feat(auth): PROJ-456 add OAuth2 PKCE flow`
 
 **Output body:**
 ```markdown
-## Summary
-Adds PKCE support to the OAuth2 authorization flow to harden mobile
-clients against authorization code interception.
 
-## What Changed
-- New `PKCEChallenge` generator with SHA-256 verifier hashing
-- `/oauth/authorize` now validates `code_challenge` and `code_challenge_method`
-- Mobile SDK attaches a challenge on every authorization request
-
-## How to Test
-1. Run `pnpm test auth/pkce`
-2. Trigger login from iOS sim, verify `code_challenge` appears in the auth URL
-3. Confirm token exchange fails with a mismatched `code_verifier`
-
-## Breaking Changes
-Public clients must now supply `code_challenge`. Existing integrations
-without it will receive `400 invalid_request`.
-
-## Pre-Merge Checklist
-- [ ] Backward compatibility verified
-- [ ] Tests added for new PKCE validation paths
-- [ ] API docs updated for the new required parameter
-- [ ] Security review requested
 ```
 
-Note: no `Screenshots` section because no UI files changed; no "Migrations applied" item because no migration files are touched.
+Note: no `Screenshots` section because no UI files changed; no migration item because no migration files are touched. The tests item is rendered checked because the diff contains the matching test file. The diff does *not* update API docs for the new required parameter — that gap is raised in the step-7 draft message ("docs not updated for `code_challenge` — gap, or maintained elsewhere?") rather than emitted as an unchecked box. No generic "Backward compatibility verified" item: the compatibility break is intentional and documented in `## Breaking Changes`.
 
 ### Example 2 — backend fix, no UI, no breaking changes
 
@@ -150,14 +140,11 @@ composite index on `events(workspace_id, created_at)` to bring p95 under 300ms.
 3. Hit `/api/reports/overview` and confirm response under 300ms
 
 ## Pre-Merge Checklist
-- [ ] Migrations applied
-- [ ] Backward compatibility verified
-- [ ] Migration tested against production-sized dataset
-- [ ] Rollback path verified (drop index is safe)
+- [ ] Migration tested against a production-sized dataset; rollback verified (drop index is safe)
 - [ ] Benchmark results captured for the new query
 ```
 
-Note: no `Breaking Changes` section (none detected), no `Screenshots` section (no UI changes).
+Note: no `Breaking Changes` section (none detected), no `Screenshots` section (no UI changes). Both checklist items are environmental — nothing the diff can prove. No "Backward compatibility verified" filler: adding an index changes no contract.
 
 ### Example 3 — stacked PR
 
@@ -192,7 +179,7 @@ connection through launching their first experience, driven by a pure view state
 _Attach a recording of the Get Started page before merge._
 
 ## Pre-Merge Checklist
-- [ ] Backward compatibility verified — every `useGetScriptStatus` caller passes the new `mode` argument
+- [x] Every `useGetScriptStatus` caller updated to pass the new `mode` argument
 - [ ] Confirm the first-launch celebration fires only on the org's first-ever started experience
 ```
 
@@ -219,7 +206,6 @@ Once verified, confirm success to the user and link to the PR.
 Reviewers and collaborators are set as **assignees** via `gh pr edit`, never named in the body.
 
 - **Self — no confirmation needed:** `gh pr edit <ref> --add-assignee @me`. Always safe; do this by default.
-- **Anyone else — ask first:** gather candidates from the original body (former `cc @` mentions, names the author called out) or the user's instruction, list them in the confirmation step (step 8), and only run `gh pr edit <ref> --add-assignee <login>` for the users the user approves. Do not assign a non-self user without explicit approval.
 
 If you need to compare a candidate against the logged-in account, resolve it with `gh api user --jq .login`. Prefer `@me` for self-assignment so the login isn't hardcoded. If a `--add-assignee` call fails because the user isn't a collaborator on the repo, surface that to the user rather than silently dropping it.
 
