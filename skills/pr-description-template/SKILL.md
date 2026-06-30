@@ -36,6 +36,7 @@ Where:
 - `<scope>` is a short module/area name inferred from the file paths (e.g., `auth`, `api`, `reports`, `ui`). If changes span many areas, pick the dominant one or omit the scope.
 - `<TICKET-ID>` is the ticket extracted in step 4. If unavailable, ask the user — don't proceed without it.
 - `<short description>` is 5–10 words, lowercase, imperative mood, no trailing period.
+- **Breaking change?** If the diff warrants a `## Breaking Changes` section, append `!` before the colon — `feat(auth)!: PROJ-456 ...`. The title is reused as the squash-merge commit message, so the marker has to live there too, not only in the body.
 
 **Examples:**
 
@@ -45,7 +46,15 @@ Where:
 
 ## Description format
 
-Use Markdown. Include sections **only if they have substantive content**. Omit entirely otherwise — don't write "None" or "N/A".
+Use Markdown. Include sections **only if they have substantive content**. Omit entirely otherwise — don't write "None" or "N/A". The diff already shows *what changed* mechanically; the body's job is to supply what the diff can't — **intent, context, tradeoffs, and risk**.
+
+### Size the body to the change
+
+Match the body to the change's size, risk, and surprise — a maximal template on a one-line fix trains reviewers to stop reading bodies.
+
+- **Trivial / mechanical** (dependency bump, typo, rename, one-line config, pure formatting): the title plus a one-sentence `## Summary` is often the whole body. Drop `## What Changed` and `## How to Test` when there's nothing non-obvious to itemize or verify.
+- **Standard** (most features and bug fixes): the `## Summary` + `## What Changed` + `## How to Test` core below.
+- **High-risk / large / surprising** (migrations, breaking changes, security- or infra-touching, coordinated multi-repo releases): the standard core plus explicit tradeoffs and known limitations (in `## Summary` or a short `## Tradeoffs` section), migration steps in `## Breaking Changes`, and deployment/runbook notes for any manual steps or new env vars.
 
 ### Section rules
 
@@ -55,11 +64,13 @@ Use Markdown. Include sections **only if they have substantive content**. Omit e
 
 Preserve any stack notes already in the body. If the PR targets the default branch and nothing references another PR, omit this section entirely.
 
-**`## Summary`** — Always include. 1–2 sentences explaining what the PR does and why it matters. No fluff, no restating the title.
+**`## Summary`** — Include on every PR (one sentence is enough for a trivial one). Lead with the **problem and the why** — that's what the diff can't show and what future readers most need. 1–3 sentences. If the approach is non-obvious, name the main alternative you considered and rejected. No fluff, no restating the title.
 
-**`## What Changed`** — Always include. Bullet list of the meaningful changes (3–6 bullets typical). Group related changes into one bullet rather than listing every file. Skip purely mechanical changes (formatting, import sorting) unless they're the point of the PR.
+**`## What Changed`** — Include for standard and high-risk PRs; omit for trivial ones. Bullet list of the meaningful changes (3–6 bullets typical), grouped by intent rather than listed file-by-file. Explain anything non-obvious about *how*; skip what the diff already makes plain, and skip purely mechanical changes (formatting, import sorting) unless they're the point of the PR.
 
-**`## How to Test`** — Always include. Numbered list of concrete verification steps. Prefer commands and observable outcomes over vague directions. If the original PR body has test instructions, integrate them; don't discard the author's domain knowledge.
+**`## How to Test`** — Include whenever there's something to verify; omit for trivial PRs with nothing to run. Numbered list of concrete verification steps. Prefer commands and observable outcomes over vague directions. If the original PR body has test instructions, integrate them; don't discard the author's domain knowledge.
+
+**`## Tradeoffs`** — Include **only if** the change embeds a non-obvious decision worth recording: an approach chosen over a viable alternative, a known limitation, or a deliberate scope cut. 1–3 bullets. Stating these upfront preempts review questions and reads as technical honesty rather than something the reviewer has to dig out.
 
 **`## Breaking Changes`** — Include **only if** the diff suggests breaking changes. Signals: removed public exports, changed function signatures in public modules, renamed/removed API endpoints, removed CLI flags, schema removals, version bumps marked as major in commit messages, or explicit "BREAKING:" markers in commits/body. When present, describe what breaks and the migration path in 1–3 sentences.
 
@@ -108,14 +119,35 @@ Keep the section short — 1–4 unchecked items is typical; if the rules would 
 
 **Input:** Branch `feature/oauth-pkce`, commits reference `PROJ-456`, diff adds new auth code path with tests in `auth/pkce.test.ts`, modifies `/oauth/authorize` handler, touches mobile SDK files. No UI files, no docs changes. Removes ability to call `/oauth/authorize` without a code challenge.
 
-**Output title:** `feat(auth): PROJ-456 add OAuth2 PKCE flow`
+**Output title:** `feat(auth)!: PROJ-456 add OAuth2 PKCE flow`
 
 **Output body:**
 ```markdown
+## Summary
+Public OAuth2 clients can have their authorization code intercepted on the
+return redirect. Adds PKCE so `/oauth/authorize` binds each code to a
+per-request secret, closing that window for mobile clients.
 
+## What Changed
+- `/oauth/authorize` now requires and validates `code_challenge` + `code_challenge_method`
+- Token exchange verifies the `code_verifier` against the stored challenge
+- Mobile SDK generates and attaches a challenge on every authorization request
+
+## How to Test
+1. `pnpm test auth/pkce`
+2. Start a login from the mobile SDK and confirm `code_challenge` appears on the authorize URL
+3. Confirm the token exchange rejects a mismatched `code_verifier`
+
+## Breaking Changes
+`/oauth/authorize` now rejects requests without a `code_challenge`. Public
+clients must send one before this ships; without it they get `400 invalid_request`.
+
+## Pre-Merge Checklist
+- [x] Tests added — `auth/pkce.test.ts` covers challenge validation and verifier mismatch
+- [ ] Security review requested for the new auth code path
 ```
 
-Note: no `Screenshots` section because no UI files changed; no migration item because no migration files are touched. The tests item is rendered checked because the diff contains the matching test file. The diff does *not* update API docs for the new required parameter — that gap is raised in the step-7 draft message ("docs not updated for `code_challenge` — gap, or maintained elsewhere?") rather than emitted as an unchecked box. No generic "Backward compatibility verified" item: the compatibility break is intentional and documented in `## Breaking Changes`.
+Note: the title carries `!` (`feat(auth)!:`) because the diff has breaking changes. No `Screenshots` section because no UI files changed; no migration item because no migration files are touched. The tests item is rendered checked because the diff contains the matching test file. The diff does *not* update API docs for the new required parameter — that gap is raised in the step-7 draft message ("docs not updated for `code_challenge` — gap, or maintained elsewhere?") rather than emitted as an unchecked box. No generic "Backward compatibility verified" item: the compatibility break is intentional and documented in `## Breaking Changes`.
 
 ### Example 2 — backend fix, no UI, no breaking changes
 
@@ -206,6 +238,7 @@ Once verified, confirm success to the user and link to the PR.
 Reviewers and collaborators are set as **assignees** via `gh pr edit`, never named in the body.
 
 - **Self — no confirmation needed:** `gh pr edit <ref> --add-assignee @me`. Always safe; do this by default.
+- **Anyone else — ask first:** gather candidates from the original body (former `cc @` mentions, names the author called out) or the user's instruction, list them in the confirmation step (step 8), and only run `gh pr edit <ref> --add-assignee <login>` for the users the user approves. Do not assign a non-self user without explicit approval.
 
 If you need to compare a candidate against the logged-in account, resolve it with `gh api user --jq .login`. Prefer `@me` for self-assignment so the login isn't hardcoded. If a `--add-assignee` call fails because the user isn't a collaborator on the repo, surface that to the user rather than silently dropping it.
 
