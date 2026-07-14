@@ -238,7 +238,7 @@ Once verified, confirm success to the user and link to the PR.
 Reviewers and collaborators are set as **assignees** via `gh pr edit`, never named in the body.
 
 - **Self — no confirmation needed:** `gh pr edit <ref> --add-assignee @me`. Always safe; do this by default.
-- **Anyone else — ask first:** gather candidates from the original body (former `cc @` mentions, names the author called out) or the user's instruction, list them in the confirmation step (step 8), and only run `gh pr edit <ref> --add-assignee <login>` for the users the user approves. Do not assign a non-self user without explicit approval.
+- **Anyone else — ask first:** gather candidates from the original body or the user's instruction, list them in the confirmation step (step 8), and only run `gh pr edit <ref> --add-assignee <login>` for the users the user approves. Do not assign a non-self user without explicit approval.
 
 If you need to compare a candidate against the logged-in account, resolve it with `gh api user --jq .login`. Prefer `@me` for self-assignment so the login isn't hardcoded. If a `--add-assignee` call fails because the user isn't a collaborator on the repo, surface that to the user rather than silently dropping it.
 
