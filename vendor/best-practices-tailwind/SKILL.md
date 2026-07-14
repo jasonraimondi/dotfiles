@@ -1,6 +1,7 @@
 ---
 name: best-practices-tailwind
 description: Produce idiomatic Tailwind CSS with utility-first composition, theme/token alignment, and minimal `@apply` usage. Use for utility class authoring, Tailwind theme/config work, refactoring class soup, mapping vanilla CSS to Tailwind utilities, and aligning Tailwind output with the project's design tokens. Do not use for non-Tailwind CSS work — defer to `best-practices-css` for cascade, accessibility, and motion concepts.
+disable-model-invocation: true
 ---
 
 # Tailwind Best Practices
