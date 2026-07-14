@@ -60,9 +60,7 @@ NEVER WRITE coauthored by agent, or written by agent
 
 ## Git Worktrees
 
-cmux doesn't manage worktrees — use `git worktree`. `scripts/symlink-worktree.sh` does
-setup; cmux just opens the dir as a workspace. cmux must be running, and `--cwd` wants an
-absolute path (agents may run from elsewhere).
+cmux doesn't manage worktrees — use `git worktree`. `scripts/symlink-worktree.sh` does setup; cmux just opens the dir as a workspace. cmux must be running, and `--cwd` wants an absolute path (agents may run from elsewhere).
 
 ```bash
 # create + open
