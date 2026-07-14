@@ -17,7 +17,7 @@ fi
 export PROTO_HOME="$HOME/.proto"
 
 if command -v mise > /dev/null; then
-  eval "$(mise activate zsh)"
+  eval "$(mise completion zsh)"
 fi
 
 if command -v fnox > /dev/null; then
@@ -25,6 +25,6 @@ if command -v fnox > /dev/null; then
   eval "$(fnox activate bash)"
 fi
 
-if command -v plan-bender > /dev/null; then
-  eval "$(plan-bender completion zsh)"
-fi
+# if command -v plan-bender > /dev/null; then
+#   eval "$(plan-bender completion zsh)"
+# fi
