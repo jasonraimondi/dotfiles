@@ -1,8 +1,8 @@
 ---
 name: best-practices-oauth2-server
 description: OAuth2.0
+disable-model-invocation: true
 ---
-
 
 ./rfcs/rfc6750.txt
 ./rfcs/rfc7662.txt
