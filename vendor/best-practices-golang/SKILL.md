@@ -11,6 +11,7 @@ metadata:
   scope: implementation
   output-format: code
   related-skills: devops-engineer, microservices-architect, test-master
+disable-model-invocation: true
 ---
 
 # Golang Pro
