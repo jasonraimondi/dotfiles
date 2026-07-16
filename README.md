@@ -4,15 +4,18 @@ A personal collection of [Agent Skills](https://www.anthropic.com/news/skills) �
 
 Each skill is a single folder containing a `SKILL.md` (YAML frontmatter + body) and optional `references/`. Agents discover skills by name and load the body on demand, so adding a new skill is just dropping a new folder in.
 
-The repo splits skills into two roots:
+The repo splits skills into three roots:
 
 - [`skills/`](./skills) — skills I wrote and maintain
-- [`vendor/`](./vendor) — skills downloaded from other public repos via [`add-skill.sh`](./add-skill.sh)
+- [`vendor/`](./vendor) — downloaded skills, user-invoked only
+- [`vendor-auto/`](./vendor-auto) — downloaded skills the agent may invoke on its own
 
-Both roots are agent-equivalent. The split is purely about provenance: `vendor/` content can be re-synced or replaced wholesale, `skills/` content is mine to edit.
+`skills/` vs. the `vendor*/` roots is about provenance: vendored content can be re-synced or replaced wholesale via [`add-skill.sh`](./add-skill.sh), `skills/` content is mine to edit.
+
+The `vendor/` vs. `vendor-auto/` split is about invocation, and `setup.sh` enforces it by rewriting frontmatter in place: everything under `vendor/` gets `disable-model-invocation: true`, and everything under `vendor-auto/` gets that key stripped. Moving a skill between the two directories is the whole operation — the next `setup.sh` run fixes up its frontmatter.
 
 > [!NOTE]
-> Skills are model-invoked, not human-invoked. An agent loads a skill when its `description` matches the task at hand — write the description so future-you (or a model) can tell when it applies.
+> The tradeoff is context load against recall. A model-invoked skill's `description` sits in the context window every turn but fires on its own; a user-invoked skill costs nothing until you type its name, but only fires if you remember it exists. Reserve `vendor-auto/` for skills that trigger on a symptom or a file type rather than on an intention you'd think to name.
 
 ## Install
 
@@ -26,7 +29,7 @@ cd ~/Code/skills
 ./setup.sh --delete    # remove the symlinks this script created
 ```
 
-`setup.sh` walks both `./skills/` and `./vendor/` and links each individual skill into `~/.claude/skills/` and `~/.pi/agent/skills/`. On name collision, personal wins.
+`setup.sh` walks `./skills/`, `./vendor/`, and `./vendor-auto/`, links each individual skill into `~/.claude/skills/` and `~/.pi/agent/skills/`, and normalizes the `disable-model-invocation` frontmatter key for the two vendor roots. On name collision, personal wins. Because skills are symlinked rather than copied, those frontmatter edits land in this repo's working tree — expect them in `git status` after a run.
 
 > [!TIP]
 > Drop the repo into any directory you frequently open with an agent and the skills come along with it. No package install, no build step.
@@ -58,18 +61,18 @@ Skills sourced from other public repos. Re-sync with [`add-skill.sh`](./add-skil
 | [`best-practices-better-auth`](./vendor/best-practices-better-auth) | Integrating the Better Auth TypeScript framework |
 | [`best-practices-golang`](./vendor/best-practices-golang) | Concurrent Go, microservices, generics, table-driven tests |
 | [`best-practices-rust`](./vendor/best-practices-rust) | Idiomatic Rust based on Apollo's handbook |
-| [`best-practices-stripe`](./vendor/best-practices-stripe) | Stripe integration decisions across Checkout, Connect, Billing, Treasury |
+| [`best-practices-stripe`](./vendor-auto/best-practices-stripe) | Stripe integration decisions across Checkout, Connect, Billing, Treasury |
 | [`best-practices-tailwind`](./vendor/best-practices-tailwind) | Utility-first Tailwind composition aligned to design tokens |
 
 ### Design & frontend
 
 | Skill | Use for |
 | --- | --- |
-| [`css-motion-systems`](./vendor/css-motion-systems) | CSS motion design, `linear()` easing, View Transitions, Disney principles |
+| [`css-motion-systems`](./vendor-auto/css-motion-systems) | CSS motion design, `linear()` easing, View Transitions, Disney principles |
 | [`design-interface`](./vendor/design-interface) | Generating multiple radically different API/module shapes in parallel |
-| [`design-state-machine`](./vendor/design-state-machine) | Statechart and state-machine lifecycle modeling |
+| [`design-state-machine`](./vendor-auto/design-state-machine) | Statechart and state-machine lifecycle modeling |
 | [`impeccable`](./vendor/impeccable) | UX/UI critique, polish, and ambitious frontend redesign |
-| [`prototype`](./vendor/prototype) | Throwaway prototypes for state machines or UI variations |
+| [`prototype`](./vendor-auto/prototype) | Throwaway prototypes for state machines or UI variations |
 
 ### Git & commits
 
@@ -86,7 +89,7 @@ Skills sourced from other public repos. Re-sync with [`add-skill.sh`](./add-skil
 | --- | --- |
 | [`diagnose`](./vendor/diagnose) | Disciplined reproduce → minimise → hypothesise → fix loop for hard bugs and perf regressions |
 | [`testing-tdd`](./vendor/testing-tdd) | Red-green-refactor TDD loop, integration-test-first |
-| [`testing-vitest`](./vendor/testing-vitest) | Vitest setup, mocking, coverage, filtering |
+| [`testing-vitest`](./vendor-auto/testing-vitest) | Vitest setup, mocking, coverage, filtering |
 
 ### Tooling
 
@@ -102,19 +105,19 @@ Skills sourced from other public repos. Re-sync with [`add-skill.sh`](./add-skil
 
 | Skill | Use for |
 | --- | --- |
-| [`typescript-advanced-types`](./vendor/typescript-advanced-types) | Generics, conditional/mapped types, template literals, utilities |
+| [`typescript-advanced-types`](./vendor-auto/typescript-advanced-types) | Generics, conditional/mapped types, template literals, utilities |
 
 ### Writing & meta
 
 | Skill | Use for |
 | --- | --- |
-| [`code-simplifier`](./vendor/code-simplifier) | Refining code for clarity while preserving behavior |
+| [`code-simplifier`](./vendor-auto/code-simplifier) | Refining code for clarity while preserving behavior |
 | [`handoff`](./vendor/handoff) | Compacting the current conversation into a handoff doc for another agent |
-| [`karpathy-guidelines`](./vendor/karpathy-guidelines) | Behavioral guardrails to reduce common LLM coding mistakes |
+| [`karpathy-guidelines`](./vendor-auto/karpathy-guidelines) | Behavioral guardrails to reduce common LLM coding mistakes |
 | [`meta-write-a-skill`](./vendor/meta-write-a-skill) | Authoring new skills with progressive disclosure |
 | [`writing-copy`](./vendor/writing-copy) | Marketing/landing/feature page copy |
 | [`writing-readme`](./vendor/writing-readme) | Authoring project READMEs (this one was built with it) |
-| [`writing-strip-ai`](./vendor/writing-strip-ai) | Strip AI-sounding patterns from a draft |
+| [`writing-strip-ai`](./vendor-auto/writing-strip-ai) | Strip AI-sounding patterns from a draft |
 
 ## Anatomy of a skill
 

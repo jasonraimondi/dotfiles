@@ -2,6 +2,7 @@
 name: tooling-linear-cli
 description: Manage Linear issues from the command line using the linear cli. This skill allows automating linear management.
 allowed-tools: Bash(linear:*), Bash(curl:*)
+disable-model-invocation: true
 ---
 
 # Linear CLI

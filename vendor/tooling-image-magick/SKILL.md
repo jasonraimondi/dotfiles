@@ -2,6 +2,7 @@
 name: tooling-image-magick
 description: Process and manipulate images using ImageMagick. Supports resizing, format conversion, batch processing, and retrieving image metadata. Use when working with images, creating thumbnails, resizing wallpapers, or performing batch image operations.
 compatibility: Requires ImageMagick installed and available as `magick` on PATH. Cross-platform examples provided for PowerShell (Windows) and Bash (Linux/macOS).
+disable-model-invocation: true
 ---
 
 # Image Manipulation with ImageMagick
