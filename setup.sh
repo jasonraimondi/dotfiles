@@ -12,11 +12,13 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 
 # --- sources -----------------------------------------------------------------
 # Personal skills live under ./skills/, vendored (downloaded) skills under
-# ./vendor/. Both get linked into the agent skill directories. On name
-# collision, personal wins (vendor entry is skipped with a warning).
+# ./vendor/ and ./vendor-auto/. All get linked into the agent skill
+# directories. On name collision, the earlier source wins (the later entry is
+# skipped with a warning).
 SKILLS_SOURCES=(
   "$SCRIPT_DIR/skills"
   "$SCRIPT_DIR/vendor"
+  "$SCRIPT_DIR/vendor-auto"
 )
 SKILL_MARKER="SKILL.md"                       # a dir is a skill iff it has this
 AGENT_MD_SOURCE="$SCRIPT_DIR/AGENT.md"
@@ -101,6 +103,59 @@ link_path() {
   mkdir -p "$(dirname "$destination")"
   ln -sfn "$source" "$destination"
   log "linked $destination -> $source"
+}
+
+# How a source's skills should be exposed to the agent:
+#   disable — user-invoked only (frontmatter gets disable-model-invocation: true)
+#   auto    — model-invoked (the key is stripped so the agent can fire it)
+#   none    — leave the frontmatter alone
+invocation_policy_for() {
+  case "$1" in
+    "$SCRIPT_DIR/vendor")      printf 'disable' ;;
+    "$SCRIPT_DIR/vendor-auto") printf 'auto' ;;
+    *)                         printf 'none' ;;
+  esac
+}
+
+# Enforce a source's invocation policy on a skill. Skills are symlinked rather
+# than copied, so the only place to set this is the SKILL.md in this repo —
+# expect these edits to show up in `git status`.
+apply_invocation_policy() {
+  local skill_dir="$1" policy="$2" file tmp
+  [[ "$policy" == "none" ]] && return 0
+  file="$skill_dir/$SKILL_MARKER"
+  if [[ "$(head -n 1 "$file")" != "---" ]]; then
+    warn "no frontmatter, skipping invocation policy: $file"
+    return 0
+  fi
+
+  tmp="$(mktemp "${TMPDIR:-/tmp}/skill-frontmatter.XXXXXX")"
+  awk -v policy="$policy" '
+    NR == 1 && $0 == "---" { in_fm = 1; print; next }
+    in_fm && $0 == "---" {
+      if (policy == "disable" && !seen) print "disable-model-invocation: true"
+      in_fm = 0; print; next
+    }
+    in_fm && /^disable-model-invocation:/ {
+      seen = 1
+      if (policy == "disable") print "disable-model-invocation: true"
+      next
+    }
+    { print }
+  ' "$file" > "$tmp"
+
+  if cmp -s "$file" "$tmp"; then
+    rm -f "$tmp"
+    return 0
+  fi
+  if [[ "$DRY_RUN" == true ]]; then
+    rm -f "$tmp"
+    log "set invocation policy '$policy' in $file"
+    return 0
+  fi
+  cat "$tmp" > "$file"
+  rm -f "$tmp"
+  log "set invocation policy '$policy' in $file"
 }
 
 # Print "<name>|<source_dir>" for each skill directory across all sources
@@ -213,6 +268,7 @@ sync_skills() {
     [[ -z "$entry" ]] && continue
     name="${entry%%|*}"
     src="${entry#*|}"
+    apply_invocation_policy "$src/$name" "$(invocation_policy_for "$src")"
     for dir in "${SKILLS_TARGETS[@]}"; do
       link_path "$src/$name" "$dir/$name"
     done
