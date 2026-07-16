@@ -1,6 +1,7 @@
 ---
 name: pr-description-template
 description: Read an open GitHub pull request via the `gh` CLI and rewrite its title and description to follow a conventional-commits + JIRA-ticket format with a concise structured body and a smart pre-merge checklist derived from the diff. Use this skill whenever the user wants to clean up, format, normalize, standardize, or apply a template to a pull request — including phrases like "fix my PR description" or "update PR".
+disable-model-invocation: true
 ---
 
 # PR Template Applier
