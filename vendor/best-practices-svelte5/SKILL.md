@@ -5,6 +5,7 @@ license: MIT
 metadata:
   author: ejirocodes
   version: '2.1.0'
+disable-model-invocation: true
 ---
 
 # Svelte 5 Best Practices
