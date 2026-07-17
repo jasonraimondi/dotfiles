@@ -2,7 +2,6 @@
 name: review-code
 description: "Code-review skill with mode routing. Default lens is `standard` (alias `quick`) — correctness, security, quality in one pass with a verdict. Other modes: `security` (OWASP, high-confidence only), `architecture` (module depth, coupling, boundaries), `merge-risk` (shippability + reversibility), `intent` (alias `adversarial`) — does the diff deliver what was promised, `multi` (alias `full`) — six parallel reviewers plus a verifier. Invoke as /review-code [<mode>] [<scope>]. Use for any code-review or PR-audit task."
 argument-hint: "[standard|quick|security|architecture|merge-risk|intent|adversarial|multi|full] [<scope>]"
-license: LICENSE
 disable-model-invocation: true
 ---
 
