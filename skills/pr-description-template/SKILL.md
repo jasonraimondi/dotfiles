@@ -78,7 +78,7 @@ Preserve any stack notes already in the body. If the PR targets the default bran
 
 **`## Pre-Merge Checklist`** — Include **only if** verification leaves items worth tracking (see the next section). Omit when nothing requires human action.
 
-> Reviewers/collaborators are **not** named in the body — assign the PR to them instead (see "Assigning the PR").
+> Reviewers/collaborators are **not** named in the body — assign the PR to them instead (see "Assigning the PR"). Never `@`-mention any user (`@me`, `@<login>`) in the title or body — GitHub notifies mentioned users and re-notifies on every edit. If the original body contains `@`-mentions, rewrite them as plain text without the `@` (or move the person to assignees with approval).
 
 ### Pre-merge checklist
 
@@ -235,7 +235,7 @@ Once verified, confirm success to the user and link to the PR.
 
 ## Assigning the PR
 
-Reviewers and collaborators are set as **assignees** via `gh pr edit`, never named in the body.
+Reviewers and collaborators are set as **assignees** via `gh pr edit`, never named or `@`-mentioned in the body. `@me` belongs only in the `--add-assignee @me` CLI flag — never in body text.
 
 - **Self — no confirmation needed:** `gh pr edit <ref> --add-assignee @me`. Always safe; do this by default.
 - **Anyone else — ask first:** gather candidates from the original body or the user's instruction, list them in the confirmation step (step 8), and only run `gh pr edit <ref> --add-assignee <login>` for the users the user approves. Do not assign a non-self user without explicit approval.
