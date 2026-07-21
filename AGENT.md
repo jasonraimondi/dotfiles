@@ -58,26 +58,3 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 NEVER WRITE coauthored by agent, or written by agent
 
-## Git Worktrees
-
-cmux doesn't manage worktrees — use `git worktree`. `scripts/symlink-worktree.sh` does setup; cmux just opens the dir as a workspace. cmux must be running, and `--cwd` wants an absolute path (agents may run from elsewhere).
-
-```bash
-# create + open
-git worktree add ../app-<name> -b <branch>
-cmux new-workspace --cwd "$(realpath ../app-<name>)" \
-  --command "scripts/symlink-worktree.sh && direnv allow"
-# prints: OK workspace:N  ← keep this ref for close
-
-# switch / list
-cmux select-workspace --workspace workspace:N
-cmux list-workspaces            # --json for scripting
-
-# remove (no cmux merge — squash by hand)
-git switch main && git merge --squash <branch> && git commit
-git worktree remove ../app-<name>
-cmux close-workspace --workspace workspace:N
-```
-
-`symlink-worktree.sh` links envs, `.serena`, `*.local.md`, Procfiles, then runs
-`moon run cli:build` + `pb setup`.

@@ -1,6 +1,6 @@
 ---
 name: best-practices-html
-description: Use when writing or refactoring HTML or template markup (including Svelte), choosing between div/section/article/ul/li, cleaning up div soup, fixing heading or landmark structure, labeling forms, deciding between buttons and links, or replacing custom controls with native HTML.
+description: Use when writing or refactoring HTML or template markup (including Svelte), choosing between div/section/article/ul/li, cleaning up div soup, fixing heading or landmark structure, labeling forms, deciding between buttons and links, embedding images or media, adding ARIA, or replacing custom controls with native HTML.
 ---
 
 # HTML Best Practices
@@ -45,6 +45,7 @@ Repetition is not list semantics. Wrapping card grids in `<ul>`/`<li>` by defaul
 - Use the right `type` (`email`, `tel`, `number`, `url`, `password`, `search`, `date`).
 - Group related inputs in `<fieldset>` with a `<legend>`.
 - Mark required fields with the `required` attribute, not just text.
+- Use native validation attributes (`required`, `pattern`, `min`, `max`, `maxlength`) before reaching for JS validation.
 
 ### Links vs buttons
 
@@ -58,6 +59,20 @@ Repetition is not list semantics. Wrapping card grids in `<ul>`/`<li>` by defaul
 - Descriptive `alt` for informative ones — describe meaning, not file content.
 - Provide `width` and `height` to reduce layout shift.
 - `<figure>` + `<figcaption>` when the caption is part of the content.
+- `srcset`/`sizes` when meaningfully different sizes are actually served.
+- `loading="lazy"` for below-the-fold images — never for the hero/LCP image.
+
+### Video and audio
+
+- Provide captions (`<track kind="captions">`) for video with speech; link a transcript when practical.
+- Use `poster` so video has a meaningful thumbnail before playback.
+- Do not autoplay with sound. If a video must autoplay, mute it and give the user a way to stop it.
+
+### Text emphasis
+
+- `<em>`/`<strong>` when the emphasis changes meaning.
+- `<b>`/`<i>` are valid for conventions (keywords, terms, titles, foreign phrases) — not for looks.
+- Purely visual styling belongs in CSS, not in element choice.
 
 ### Headings
 
@@ -74,9 +89,22 @@ Repetition is not list semantics. Wrapping card grids in `<ul>`/`<li>` by defaul
 
 `<button>`, `<details>`/`<summary>`, `<dialog>`, `<input>`, `<select>`, `<fieldset>`, `<table>` are almost always better than rebuilding them from `<div>`s and JS.
 
+### ARIA (when native HTML falls short)
+
+Most ARIA is a sign a native element exists that you didn't use. When native HTML genuinely can't express it:
+
+- `aria-label` / `aria-labelledby` for accessible names (icon-only buttons, landmark disambiguation).
+- `aria-expanded` on toggles that show/hide content.
+- `aria-hidden="true"` on decorative icons and duplicated visuals.
+- `aria-live` for content that updates without user action.
+
+An ARIA attribute is a promise about behavior: `aria-expanded` that never changes is worse than nothing.
+
 ### Document metadata (full documents only)
 
 For standalone documents include: `<!doctype html>`, `lang` on `<html>`, `<meta charset="utf-8">`, `<meta name="viewport" content="width=device-width, initial-scale=1">`, a meaningful `<title>`.
+
+Load scripts with `defer` (or `type="module"`, which defers by default) instead of blocking parsing at the bottom of `<body>`.
 
 ## Anti-patterns
 
@@ -91,6 +119,8 @@ For standalone documents include: `<!doctype html>`, `lang` on `<html>`, `<meta 
 - `<ul>`/`<li>` around card grids by default.
 - `<section>` or `<article>` forced onto layout-only structures.
 - Extra landmarks with no navigational purpose.
+- ARIA state attributes that don't track real state (`aria-expanded` that never updates).
+- Autoplaying media with sound.
 - Class names that describe appearance (`box1`, `red_text`, `left_side`).
 
 ## Heuristics

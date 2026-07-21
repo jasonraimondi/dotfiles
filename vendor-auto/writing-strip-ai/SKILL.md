@@ -28,7 +28,7 @@ Good writing sounds like a person talking, not a chatbot performing. The goal is
 
 ## Audiences and tone shifts
 
-- Internal Slack: terse, lowercase, assumes context, no setup
+- Internal Slack: terse, concise, assumes context, no setup
 - LinkedIn / external: more framing allowed, but no thought-leader cosplay
 - Long-form (essays, case studies): more range allowed, every sentence still earns its place
 

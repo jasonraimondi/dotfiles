@@ -5,7 +5,7 @@ argument-hint: "What will the next session be used for?"
 disable-model-invocation: true
 ---
 
-Write a handoff document summarising the current conversation so a fresh agent can continue the work. Save it to a path produced by `mktemp -t handoff-{relevant_description}.md`
+Write a handoff document summarising the current conversation so a fresh agent can continue the work. Save it to a path produced by `mktemp -t handoff-{relevant_description}.md`. Claude must read the file before attempting to write to it.
 
 Include a "suggested skills" section in the document, which suggests skills that the agent should invoke.
 
