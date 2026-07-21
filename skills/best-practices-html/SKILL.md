@@ -1,6 +1,6 @@
 ---
 name: best-practices-html
-description: Use when writing or refactoring HTML or template markup (including Svelte), choosing between div/section/article/ul/li, cleaning up div soup, fixing heading or landmark structure, labeling forms, deciding between buttons and links, embedding images or media, adding ARIA, or replacing custom controls with native HTML.
+description: Use when writing or refactoring HTML or template markup (including Svelte), choosing between div/section/article/ul/li, cleaning up div soup, fixing heading or landmark structure, labeling forms, deciding between buttons and links, embedding images or media, adding ARIA, or replacing custom controls with native HTML. Also use when asked to "review my UI", "check accessibility", "audit design", "review UX", or check UI code against best practices.
 ---
 
 # HTML Best Practices
@@ -122,6 +122,15 @@ Load scripts with `defer` (or `type="module"`, which defers by default) instead 
 - ARIA state attributes that don't track real state (`aria-expanded` that never updates).
 - Autoplaying media with sound.
 - Class names that describe appearance (`box1`, `red_text`, `left_side`).
+
+## UI review mode
+
+When asked to review or audit existing UI code ("review my UI", "check accessibility", "audit design", "review UX"), check the files against the Web Interface Guidelines in addition to the rules above:
+
+1. Read [references/web-interface-guidelines.md](references/web-interface-guidelines.md) — a vendored copy of Vercel's [web-interface-guidelines](https://raw.githubusercontent.com/vercel-labs/web-interface-guidelines/main/command.md) `command.md`.
+2. Read the files under review (ask which files if none were given).
+3. Apply all rules from the guidelines plus this skill's anti-patterns.
+4. Output findings grouped by file in the terse `file:line` format specified in the guidelines.
 
 ## Heuristics
 
