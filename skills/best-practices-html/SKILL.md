@@ -19,12 +19,9 @@ Write semantic, accessible, low-noise HTML. Pick the element that matches the co
 
 ## Template safety
 
-When the file is a Svelte component or other template (not a standalone document):
+When the file is a framework component or template (not a standalone document), read the matching framework reference before editing:
 
-- Preserve framework syntax: `{#if}`, `{#each}`, `{:else}`, `{@html}`, `bind:`, `class:`, `style:`, event attributes, `<svelte:head>`.
-- Do not replace components or capitalized tags with native elements unless the task asks for it.
-- Do not add `<!doctype html>`, `<html>`, `<head>`, or `<body>` inside component files. Document metadata in Svelte goes through `<svelte:head>`.
-- Treat compiler accessibility warnings as guardrails. Do not silence them with `svelte-ignore` casually.
+- Svelte: [references/svelte.md](references/svelte.md)
 
 ## Element choice
 
@@ -115,7 +112,6 @@ Load scripts with `defer` (or `type="module"`, which defers by default) instead 
 - Deeply nested wrappers that exist only because they were there before.
 - Tables used for layout.
 - `onclick="..."` strings in raw HTML (different from framework event attributes).
-- `<html>`, `<head>`, or `<body>` inside component files.
 - `<ul>`/`<li>` around card grids by default.
 - `<section>` or `<article>` forced onto layout-only structures.
 - Extra landmarks with no navigational purpose.
@@ -140,5 +136,4 @@ When in doubt, ask:
 - Would this still make sense without CSS?
 - Is this truly a list, or just repeated content?
 - Could each repeated item stand alone as an `<article>`?
-- Am I editing a document or a component? Would this break a directive, binding, or component boundary?
 - Am I choosing this element because it's accurate, or because it's a rule I memorized?
