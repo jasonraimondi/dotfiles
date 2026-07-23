@@ -1,6 +1,6 @@
 ---
 name: best-practices-comments
-description: Audit code comments — flag and propose removal of journal, noise, redundant, mumbling, or nonlocal comments, and surface refactoring opportunities that would make a comment unnecessary. Use when the user asks to "review comments", "audit comments", "clean up comments", or check comment quality.
+description: Audit code comments — flag and propose removal of low-value comments, and surface refactoring opportunities that would make a comment unnecessary. Use when the user asks to "review comments", "audit comments", "clean up comments", or check comment quality.
 ---
 
 ## Scope
@@ -17,7 +17,7 @@ Determine what to audit based on how the skill was invoked:
    - Audit comments in the named files, or `git diff` for unstaged/staged changes.
 4. **Unscoped** — if scope is unclear, ask the user which of the above they want before auditing.
 
-Never audit comments outside the resolved scope. A noisy comment on line 200 of a file is not your concern if only line 42 was touched in the PR.
+A noisy comment on line 200 of a file is not your concern if only line 42 was touched in the PR.
 
 ## Rules — what to flag
 
@@ -41,11 +41,11 @@ For each surviving comment, ask: could the code be made self-explanatory instead
 - Introduce an explaining variable for a magic value or condition.
 - Replace a magic number with a named constant.
 
-If a refactor would let you delete the comment, **propose it — do not apply it yet**.
+If a refactor would let you delete the comment, **propose it**.
 
 ## Output — propose, do not apply
 
-Emit a single grouped report. Do **not** edit files in this step. For each finding include:
+Emit a single grouped report. Account for every added comment line in scope: each is either flagged here or silently kept. Do **not** edit files in this step. For each finding include:
 
 - `file:line` of the added comment.
 - The comment text (verbatim, trimmed).
