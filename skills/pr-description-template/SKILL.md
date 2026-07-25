@@ -48,6 +48,8 @@ Where:
 
 Use Markdown. Include sections **only if they have substantive content**. Omit entirely otherwise — don't write "None" or "N/A". The diff already shows *what changed* mechanically; the body's job is to supply what the diff can't — **intent, context, tradeoffs, and risk**.
 
+**Never hard-wrap prose.** Write each paragraph and each bullet as a single unbroken line and let GitHub soft-wrap naturally — no manual line breaks at ~80 columns (that's a commit-message convention, and in a PR body it renders ragged at every other viewport width). Newlines belong only between paragraphs, bullets, list items, and headings. (Worked-example bodies elsewhere in this file are wrapped only to keep this file readable — do not imitate that in generated output.)
+
 ### Size the body to the change
 
 Match the body to the change's size, risk, and surprise — a maximal template on a one-line fix trains reviewers to stop reading bodies.
