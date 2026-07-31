@@ -58,19 +58,18 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 **Comments are a necessary evil. Default to none.**
 
-- Prefer self-documenting code — a better name, an extraction, an explaining
-  variable, a named constant — over a comment.
-- If a comment survives, it explains **why** — intent, a non-obvious
-  consequence, the reason for an obscure choice. The code already shows *what*.
-- Make it stand alone for a reader who sees only the code: no pointers to
-  tickets, Slack, PRs, or planning docs.
-- No journaling: no change logs, dates, TODO-to-self, "per Alice", authorship
-  marks, or AI tags.
-- Keep legally required notices (license/SPDX/attribution).
-
-The test: delete the comment — is anything real lost? If not, don't write it.
+- Prefer self-documenting code — a better name, an extraction, an explaining variable, a named constant — over a comment.
+- If a comment survives, it explains **why** — intent, a non-obvious consequence, the reason for an obscure choice. The code already shows *what*.
+- Make it stand alone for a reader who sees only the code: no pointers to tickets, Slack, PRs, or planning docs.
+- No journaling: no change logs, dates, TODO-to-self, "per Alice", authorship marks, or AI tags.
 
 ## Git
 
-NEVER WRITE coauthored by agent, or written by agent
+- NEVER WRITE coauthored by agent, or written by agent
 
+### GitHub
+- **IMPORTANT**: When creating a PR always assign to me
+- **IMPORTANT**: Use the Skill(gh-stack) whenever creating, rebasing, or reordering 2+ dependent branches/PRs in one task. Avoid rebasing stacked branches manually
+
+## Info
+- When reporting information to me be extremely concise and sacrifice grammar for concision
