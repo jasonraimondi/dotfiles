@@ -26,6 +26,7 @@ Treat comments as a necessary evil. Flag any comment that falls into these categ
 - **Journal comments** — running logs of decisions made over the PR's lifetime ("changed this from X to Y because…", "removed old impl", dates, TODOs from the author to themselves).
 - **Noise comments** — restate what the code obviously does (`// increment i`, `# return the user`).
 - **Nonlocal information** — point to gitignored planning docs, internal tickets, Slack threads, or context a future reader cannot see from the code alone. (A bare ticket ID with no explanation also counts.)
+- **Rot-prone citations** — parenthetical references to ADR/design-doc numbers (e.g. `(ADR 0002: ...)`), even when the doc lives in-repo and is currently valid. Nothing enforces the reference as the doc gets renumbered, superseded, or deleted, so it silently rots. If the comment's own explanation stands without the citation, `REFACTOR + DELETE`: strip the citation, keep the rationale. If the comment leans on the citation instead of explaining itself, `DELETE` and require the explanation be written inline instead.
 - **Redundant comments** — repeat what the function or variable name already says.
 - **Mumbling and attributions** — half-thoughts, "I tried X then Y", "per Alice's suggestion", authorship marks, AI tool tags.
 - **Stale comments** — describe behavior the code no longer does.
