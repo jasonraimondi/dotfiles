@@ -1,11 +1,6 @@
 ---
-name: best-practices-svelte5
+name: svelte
 description: "Use when creating, editing, reviewing, or refactoring .svelte components, .svelte.ts/.svelte.js modules, or SvelteKit applications"
-license: MIT
-metadata:
-  author: ejirocodes
-  version: '2.1.0'
-disable-model-invocation: true
 ---
 
 # Svelte 5 Best Practices

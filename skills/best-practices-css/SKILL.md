@@ -1,6 +1,6 @@
 ---
 name: best-practices-css
-description: Produce idiomatic, browser-aware modern CSS with progressive-enhancement fallbacks for vanilla CSS and Svelte styling tasks. Use for layout, spacing, typography, color/theming, responsive/container-query work, selector/specificity cleanup, and interactive UI styling, plus feature-compatibility lookups (tier, `bcd_id`, `@supports` fallbacks) for individual motion features. For motion *design* — easing systems, transform strategy, View Transitions choreography, Disney principles — defer to `css-motion-systems`. Do not use for non-styling business logic, or design critique without code edits.
+description: Produce idiomatic, browser-aware modern CSS with progressive-enhancement fallbacks for vanilla CSS and Svelte styling tasks. Use for layout, spacing, typography, color/theming, responsive/container-query work, selector/specificity cleanup, and interactive UI styling, plus feature-compatibility lookups (tier, `bcd_id`, `@supports` fallbacks) for individual motion features. 
 ---
 
 # CSS Best Practices
