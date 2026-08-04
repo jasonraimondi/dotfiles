@@ -27,7 +27,7 @@ PI_EXTENSIONS_SOURCE="$SCRIPT_DIR/pi/extensions"
 # --- targets -----------------------------------------------------------------
 SKILLS_TARGETS=(
   "$HOME/.claude/skills"
-  "$HOME/.pi/agent/skills"
+  "$HOME/.agents/skills"
 )
 
 # "source|destination" pairs for the shared AI editor config.
