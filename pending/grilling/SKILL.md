@@ -33,7 +33,7 @@ Finding _facts_ is your job, never the user's. When a frontier question needs a 
 
 ## Keep a decision log
 
-Start a **decision log** once the first decision lands and append to it every round — decisions and their reasons, rejected alternatives and why not, open questions, assumptions to validate, research findings, and captured ideas. Follow [`references/decision-log.md`](references/decision-log.md). Keep it tight enough to paste into a future session as context.
+Start a **decision log** once the first decision lands and append to it every round — decisions and their reasons, rejected alternatives and why not, open questions, assumptions to validate, research findings, and captured ideas. Follow [`references/decision-log.md`](references/decision-log.md). It lives outside the repo — never commit it. Keep it tight enough to paste into a future session as context.
 
 When a round surfaces something valuable but out of scope, capture it in the log — motivation, constraints, open questions, enough to start a future grill cold — and return to the frontier. Don't let it annex the session.
 
