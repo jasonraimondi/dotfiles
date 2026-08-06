@@ -1,17 +1,28 @@
 ---
 name: report-for-standup
-description: Output a short, bullet point style list for a reader who is presenting a standup update.
+description: Turn recent work into standup bullets.
 disable-model-invocation: true
 ---
 
-Output a short, bullet point style list for a reader who is presenting a standup update.
+# Report for standup
 
-Talk in ASD-STE100 Simplified Technical English, and use the ubiquitous language from `CONTEXT.md`.
+Jason reads this aloud at standup. Write for the listeners, not for Jason — non-technical readers must follow it without asking what a word means.
 
-Be brief, concise, and informative on the key points of the standup update.
+Source: the work in this conversation. If the conversation carries none, use `git log --author=jason --since=yesterday` across the repo.
 
-Sacrifice grammer for concision.
+Talk in ASD-STE100 Simplified Technical English. Use the ubiquitous language from `CONTEXT.md` if it exists.
 
-## Topic (~65ch)
-- max 3 bullet points
-- informative for non-technical readers
+Sacrifice grammar for concision.
+
+## Format
+
+One block per topic, max 3 topics. Heading ~65ch, max 3 bullets each.
+
+```
+Checkout discount stacking (~65ch)
+- Race found. Two discounts applied together.
+- Fix written. In review.
+- Ships tomorrow.
+```
+
+Done when every topic touched today has a block, or 3 blocks exist.
