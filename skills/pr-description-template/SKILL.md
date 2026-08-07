@@ -1,227 +1,252 @@
 ---
 name: pr-description-template
-description: Read an open GitHub pull request via the `gh` CLI and rewrite its title and description to follow a conventional-commits + JIRA-ticket format with a concise structured body and a smart pre-merge checklist derived from the diff. Use this skill whenever the user wants to clean up, format, normalize, standardize, or apply a template to a pull request — including phrases like "fix my PR description" or "update PR".
+description: Rewrite a GitHub pull request's title and description into a conventional-commits + ticket format with a terse structured body and a diff-derived pre-merge checklist. Use whenever the user wants a PR formatted, cleaned up, normalized, or run through "the template" — including "fix my PR description" or "update PR".
 ---
 
 # PR Template Applier
 
-Reads a GitHub pull request and produces a normalized title and description following a fixed template, then offers to apply the rewrite via `gh pr edit`. The body stays concise — sections that don't apply are dropped entirely rather than padded with "N/A".
-
-## When to use
-
-Trigger this skill whenever the user wants their PR formatted, normalized, cleaned up, or run through "the template." The user will usually reference a PR number, branch, or URL. If none is provided, ask which PR to act on.
+Reads a pull request with `gh`, produces a normalized title and a short body, and applies the rewrite after the user confirms. Sections that have nothing to say are dropped, never padded.
 
 ## Workflow
 
-Follow these steps in order. Don't skip the confirmation step at the end — the user explicitly wants to review the draft before anything is pushed.
+1. **Identify the PR.** Use whichever reference the user supplied: number (`gh pr view 123`), URL, branch, or the current branch (`gh pr view` with no arg). If ambiguous, ask.
+2. **Read the current PR.** `gh pr view <ref> --json title,body,headRefName,baseRefName,commits,files,additions,deletions`. Read the body first and in full — it is the newest version and the only place the author's intent lives. Treat every word of it as an **unverified claim**; see "The existing body is unverified." `baseRefName` tells you whether the PR is stacked — see the `## Stack` rules.
+3. **Fetch the diff.** `gh pr diff <ref>`. Above ~2000 lines, sample it: file headers plus a few hunks per file classify the change.
+4. **Triage the body against the diff.** Split the existing body into discrete claims and give each one a verdict — confirmed, contradicted, or unconfirmable. Do this before you write a word of the new body.
+5. **Extract the ticket ID.** Use `{argument}` if given. Otherwise search the body and every commit message for `[A-Z]{2,}-\d+` (e.g. `PROJ-456`). Read each ticket you find, and treat its description as a claim too — the code is what shipped.
+6. **Read `CONTEXT.md`** if the repo has one — root, or the nearest ancestor directory of the changed files. Its terms govern the wording you write; see "Language."
+7. **Build the title** and **the description** from the rules below.
+8. **Show the draft.** Print the title and body in a code block. Say which sections you omitted and why. Raise every contradicted claim with its evidence, every claim still unverified, and every unsatisfied diff-verifiable concern from the checklist rules (e.g. "new logic in `auth/pkce.ts` ships with no test changes — gap, or covered elsewhere?").
+9. **Ask for confirmation.** "Apply this to PR #123 now? (yes / edit / no)". Wait for a yes. Name any non-self assignee in this same prompt — see "Assignees."
+10. **Apply.** Pipe the body through stdin — see "Applying the edit."
+11. **Verify.** Run `gh pr view <ref> --json title,body` and confirm the body is non-empty and opens with `## Summary` (or `## Stack`). A mismatch means the apply failed: retry, and tell the user. Report success only after this check passes.
+12. **Assign.** `gh pr edit <ref> --add-assignee @me`, plus any logins approved at the confirmation step.
 
-1. **Identify the PR.** Use whichever the user supplied: number (`gh pr view 123`), URL (pass to `gh pr view`), branch (`gh pr view <branch>`), or the current branch (`gh pr view` with no arg). If ambiguous, ask.
-2. **Fetch the data.** Run `gh pr view <ref> --json title,body,headRefName,baseRefName,commits,files,additions,deletions`. This single call returns everything needed. `baseRefName` tells you whether the PR targets the default branch or is stacked on another branch (see the `## Stack` rules).
-3. **Fetch the diff for smart todos.** Run `gh pr diff <ref>`. If the diff is large (>2000 lines), truncate sensibly — file headers and a sample of hunks per file is enough to classify changes.
-4. **Extract the ticket ID.** A ticket may be provided by {argument}, if not search the PR body and each commit message for a `[A-Z]{2,}-\d+` pattern (e.g., `PROJ-456`, `JIRA-1234`). If found, read each one.
-5. **Build the title** following the format below.
-6. **Build the description** following the section rules below.
-7. **Show the draft to the user.** Display the proposed title and body in a code block. State clearly which sections were omitted and why (e.g., "no breaking changes detected, omitting that section"), and raise any unsatisfied diff-verifiable concerns found while building the checklist (e.g., "new logic in `auth/pkce.ts` has no accompanying test changes — gap, or covered elsewhere?").
-8. **Ask for confirmation.** Ask the user something like: "Apply this to PR #123 now? (yes / edit / no)". Wait for an affirmative response. **Assignees:** the current logged-in GitHub user is assigned automatically and needs no confirmation. If you would assign anyone else (a name pulled from the original body or the user's request), name those users in this same prompt and get explicit approval before assigning them — see "Assigning the PR."
-9. **Apply on confirmation.** Pipe the body to `gh pr edit --body-file -` via a heredoc (see "Applying the edit" below). Do **not** use `mktemp` + `cat >` — zsh's `noclobber` makes that redirect fail silently and you'll push an empty body.
-10. **Verify the apply.** Immediately after `gh pr edit`, run `gh pr view <ref> --json title,body` and confirm the body is non-empty and starts with `## Summary` (or `## Stack` for a stacked PR). If it doesn't match, the apply failed — retry and surface the failure to the user. Never claim success without this check.
-11. **Assign the PR.** Assign the current user with `gh pr edit <ref> --add-assignee @me`. Assign any *other* users only after the explicit approval from step 8: `gh pr edit <ref> --add-assignee <login>`. Never assign a user other than the logged-in one without asking first. See "Assigning the PR."
+## The existing body is unverified
+
+The body describes what the author meant to build, written at some point before the last few commits. The diff is what the code does. Where they disagree, the diff wins — and the disagreement is worth reporting, because it usually means the PR drifted from its plan.
+
+Claims worth triaging: the problem it states, the behavior it describes, the test steps, the ticket reference, the stack notes, any performance or compatibility assertion. Each gets one verdict:
+
+- **Confirmed** — the diff shows it. Carry it forward. The author's framing is usually better than one reconstructed from hunks.
+- **Contradicted** — the diff shows otherwise. Drop it from the new body and raise it in the draft with the evidence: "the body says the retry backs off exponentially; `client.ts:44` retries at a fixed 5s." A contradicted claim never survives into the rewrite, however well written.
+- **Unconfirmable** — no diff answers it: why an alternative was rejected, a manual test step, a rollout plan, a downstream consumer, a benchmark result. Keep it in the author's own words, and list it in the draft as unverified so the author can confirm it.
+
+Never restate a claim as fact because the body sounded confident. A rewrite that launders a stale claim into cleaner prose is worse than the original — it reads more credible and is equally wrong.
 
 ## Title format
 
-Always use: `<type>(<scope>): <TICKET-ID> <short description>`
+`<type>(<scope>): <TICKET-ID> <short description>`
 
-Where:
-- `<type>` is one of: `feat`, `fix`, `refactor`, `perf`, `chore`, `docs`, `test`, `build`, `ci`, `style`, `revert`. Infer from the diff: new feature code → `feat`, bug fix language in commits/body → `fix`, doc-only changes → `docs`, test-only → `test`, and so on.
-- `<scope>` is a short module/area name inferred from the file paths (e.g., `auth`, `api`, `reports`, `ui`). If changes span many areas, pick the dominant one or omit the scope.
-- `<TICKET-ID>` is the ticket extracted in step 4. If unavailable, ask the user — don't proceed without it.
-- `<short description>` is 5–10 words, lowercase, imperative mood, no trailing period.
-- **Breaking change?** If the diff warrants a `## Breaking Changes` section, append `!` before the colon — `feat(auth)!: PROJ-456 ...`. The title is reused as the squash-merge commit message, so the marker has to live there too, not only in the body.
+- `<type>` — one of `feat`, `fix`, `refactor`, `perf`, `chore`, `docs`, `test`, `build`, `ci`, `style`, `revert`. Infer from the diff: new feature code → `feat`, bug-fix language in commits → `fix`, doc-only → `docs`, test-only → `test`.
+- `<scope>` — a short module or area name from the file paths (`auth`, `api`, `reports`, `ui`). If the change spans many areas, use the dominant one or omit the scope.
+- `<TICKET-ID>` — from the ticket step. If there is none, ask the user before writing the title.
+- `<short description>` — 5–10 words, lowercase, imperative, no trailing period.
+- **Breaking change?** Append `!` before the colon: `feat(auth)!: PROJ-456 ...`. The title becomes the squash-merge commit message, so the marker belongs there as well as in the body.
 
 **Examples:**
 
-- Input branch `feature/oauth-pkce`, commits mention `PROJ-456`, changes add new auth flow → `feat(auth): PROJ-456 add OAuth2 PKCE flow`
-- Input body mentions `PROJ-892`, single migration + query rewrite → `fix(reports): PROJ-892 add index to resolve dashboard timeouts`
+- Branch `feature/oauth-pkce`, commits mention `PROJ-456`, diff adds an auth flow → `feat(auth): PROJ-456 add OAuth2 PKCE flow`
+- Body mentions `PROJ-892`, one migration plus a query rewrite → `fix(reports): PROJ-892 add index to resolve dashboard timeouts`
 - Doc-only edit referencing `DOC-12` → `docs(readme): DOC-12 clarify install steps for Windows`
 
 ## Description format
 
-Use Markdown. Include sections **only if they have substantive content**. Omit entirely otherwise — don't write "None" or "N/A". The diff already shows *what changed* mechanically; the body's job is to supply what the diff can't — **intent, context, tradeoffs, and risk**.
+The diff already shows *what changed*. The body supplies what the diff cannot: **intent, context, tradeoffs, risk**.
 
-**Never hard-wrap prose.** Write each paragraph and each bullet as a single unbroken line and let GitHub soft-wrap naturally — no manual line breaks at ~80 columns (that's a commit-message convention, and in a PR body it renders ragged at every other viewport width). Newlines belong only between paragraphs, bullets, list items, and headings. (Worked-example bodies elsewhere in this file are wrapped only to keep this file readable — do not imitate that in generated output.)
+### Language
 
-### Size the body to the change
+Write the title and body in ASD-STE100 Simplified Technical English:
 
-Match the body to the change's size, risk, and surprise — a maximal template on a one-line fix trains reviewers to stop reading bodies.
+- One idea per sentence, 20 words or fewer.
+- Active voice, present tense.
+- One term per concept — repeat that term every time the concept appears.
+- Plain verbs: `use`, `add`, `remove`, `run`.
+- Adjectives that carry information; delete the rest.
 
-- **Trivial / mechanical** (dependency bump, typo, rename, one-line config, pure formatting): the title plus a one-sentence `## Summary` is often the whole body. Drop `## What Changed` and `## How to Test` when there's nothing non-obvious to itemize or verify.
-- **Standard** (most features and bug fixes): the `## Summary` + `## What Changed` + `## How to Test` core below.
-- **High-risk / large / surprising** (migrations, breaking changes, security- or infra-touching, coordinated multi-repo releases): the standard core plus explicit tradeoffs and known limitations (in `## Summary` or a short `## Tradeoffs` section), migration steps in `## Breaking Changes`, and deployment/runbook notes for any manual steps or new env vars.
+When `CONTEXT.md` exists, its ubiquitous language wins. Name each domain concept with that file's term, spelled exactly as that file spells it.
+
+Write each paragraph and each bullet as one unbroken line and let GitHub soft-wrap it. Newlines separate paragraphs, bullets, and headings.
+
+### Budget
+
+Hard caps. Content that overflows its cap has not earned the space.
+
+| Section                     | Cap                            |
+| --------------------------- | ------------------------------ |
+| `## Stack`                  | 1 sentence + 2 bullets         |
+| `## Summary`                | 2 sentences                    |
+| `## What Changed`           | 4 bullets, 15 words each       |
+| `## How to Test`            | 3 steps                        |
+| `## Tradeoffs`              | 2 bullets                      |
+| `## Breaking Changes`       | 2 sentences                    |
+| `## Screenshots / Recordings` | 1 line                       |
+| `## Pre-Merge Checklist`    | 3 items                        |
+
+A standard PR body lands under 150 words total. Scale down from there:
+
+- **Trivial** (dependency bump, typo, rename, one-line config, formatting): the title plus a one-sentence `## Summary` is the whole body.
+- **Standard** (most features and fixes): `## Summary` + `## What Changed` + `## How to Test`.
+- **High-risk** (migrations, breaking changes, security or infra, multi-repo releases): the standard core plus `## Tradeoffs`, `## Breaking Changes`, and any manual deploy step or new env var.
+
+A maximal body on a small change trains reviewers to skip bodies.
 
 ### Section rules
 
-**`## Stack`** — Include **only if** the PR is part of a stack: it targets a non-default base branch (`baseRefName` is not `main`/`master`), or the body/commits reference other PRs with stacking language ("stacked on", "depends on", "split out of"). Place it **first**, above `## Summary` — merge order is the reviewer's most urgent context. Write one short framing sentence (what this PR is relative to the larger effort), then a bullet per relationship:
-- What it's **stacked on** — the dependency PR (`#1234`), the contract/change it relies on, and the merge order ("merge #1234 first"). Note that GitHub auto-retargets this PR to the default branch once the parent merges.
-- **Sibling PRs** split from the same branch that are now independent.
+Include a section only when it has substantive content. Omit it otherwise.
 
-Preserve any stack notes already in the body. If the PR targets the default branch and nothing references another PR, omit this section entirely.
+**`## Stack`** — Only for a stacked PR: `baseRefName` is not `main`/`master`, or the body or commits say "stacked on", "depends on", "split out of". Place it **first** — merge order is the reviewer's most urgent context. One framing sentence, then a bullet per relationship: what it is **stacked on** (the PR number, the contract it relies on, the merge order) and any **sibling PR** split from the same branch. Note that GitHub retargets this PR to the default branch once the parent merges. Carry forward the body's stack notes once the base branch and the referenced PR numbers confirm them.
 
-**`## Summary`** — Include on every PR (one sentence is enough for a trivial one). Lead with the **problem and the why** — that's what the diff can't show and what future readers most need. 1–3 sentences. If the approach is non-obvious, name the main alternative you considered and rejected. No fluff, no restating the title.
+**`## Summary`** — Every PR. Lead with the problem and the why. Name the main rejected alternative when the approach is non-obvious.
 
-**`## What Changed`** — Include for standard and high-risk PRs; omit for trivial ones. Bullet list of the meaningful changes (3–6 bullets typical), grouped by intent rather than listed file-by-file. Explain anything non-obvious about *how*; skip what the diff already makes plain, and skip purely mechanical changes (formatting, import sorting) unless they're the point of the PR.
+**`## What Changed`** — Standard and high-risk PRs. Group bullets by intent, not by file. Explain the non-obvious *how*; leave out what the diff makes plain and mechanical churn like formatting.
 
-**`## How to Test`** — Include whenever there's something to verify; omit for trivial PRs with nothing to run. Numbered list of concrete verification steps. Prefer commands and observable outcomes over vague directions. If the original PR body has test instructions, integrate them; don't discard the author's domain knowledge.
+**`## How to Test`** — Whenever something is verifiable. Numbered commands and observable outcomes. Integrate the body's existing test steps after triage; the author knows things the diff does not show. A step naming a command, path, or flag the diff removed is contradicted — drop it and report it.
 
-**`## Tradeoffs`** — Include **only if** the change embeds a non-obvious decision worth recording: an approach chosen over a viable alternative, a known limitation, or a deliberate scope cut. 1–3 bullets. Stating these upfront preempts review questions and reads as technical honesty rather than something the reviewer has to dig out.
+**`## Tradeoffs`** — Only for a non-obvious decision worth recording: an approach chosen over a viable alternative, a known limitation, a deliberate scope cut.
 
-**`## Breaking Changes`** — Include **only if** the diff suggests breaking changes. Signals: removed public exports, changed function signatures in public modules, renamed/removed API endpoints, removed CLI flags, schema removals, version bumps marked as major in commit messages, or explicit "BREAKING:" markers in commits/body. When present, describe what breaks and the migration path in 1–3 sentences.
+**`## Breaking Changes`** — Only when the diff shows one: removed public exports, changed public signatures, renamed or removed endpoints, removed CLI flags, schema removals, a major version bump, or a `BREAKING:` marker. State what breaks and the migration path.
 
-**`## Screenshots / Recordings`** — Include **only if** UI/asset files changed. Signals: changes under `components/`, `pages/`, `views/`, `*.tsx`, `*.vue`, `*.svelte`, `*.css`, `*.scss`, `assets/`, `public/`, or image files. If the original body already contains images, preserve them. Otherwise leave a placeholder like `_Attach recording before merge._` so the author remembers.
+**`## Screenshots / Recordings`** — Only when UI or asset files changed: `components/`, `pages/`, `views/`, `*.tsx`, `*.vue`, `*.svelte`, `*.css`, `*.scss`, `assets/`, `public/`, images. Preserve images already in the body; otherwise leave `_Attach recording before merge._`.
 
-**`## Pre-Merge Checklist`** — Include **only if** verification leaves items worth tracking (see the next section). Omit when nothing requires human action.
+**`## Pre-Merge Checklist`** — Only when verification leaves items worth tracking.
 
-> Reviewers/collaborators are **not** named in the body — assign the PR to them instead (see "Assigning the PR"). Never `@`-mention any user (`@me`, `@<login>`) in the title or body — GitHub notifies mentioned users and re-notifies on every edit. If the original body contains `@`-mentions, rewrite them as plain text without the `@` (or move the person to assignees with approval).
+Name collaborators in assignees, never in the body. Write any `@`-mention from the original body as plain text — GitHub re-notifies mentioned users on every edit.
 
 ### Pre-merge checklist
 
-Render as a GitHub-style task list. Every item is derived from the diff — there are no fixed items.
+A GitHub task list, every item derived from this diff. There are no fixed items.
 
-**Verify before you ask.** The full diff is already in hand from step 3. Any concern the diff itself can answer must be settled during generation, never handed to the author as a chore. Classify each signal into one of two groups:
+**Verify before you ask.** You already hold the full diff. Settle any concern the diff can answer during generation.
 
-**Diff-verifiable — check it yourself:**
+*Diff-verifiable — check it yourself:*
 
-| Signal in diff                                                   | What to verify in the diff                          |
-| ---------------------------------------------------------------- | --------------------------------------------------- |
-| New non-trivial logic                                             | Matching test changes accompany it                  |
-| Changed public API signatures, exported symbols, or removed CLI flags | All in-repo callers updated                     |
-| Changed public API routes or exported handlers                    | Docs / OpenAPI spec updated in the same diff        |
+| Signal in diff                                                        | Verify in the diff                    |
+| --------------------------------------------------------------------- | ------------------------------------- |
+| New non-trivial logic                                                  | Matching test changes accompany it    |
+| Changed public signatures, exported symbols, or removed CLI flags      | All in-repo callers updated           |
+| Changed public routes or exported handlers                             | Docs / OpenAPI updated in this diff   |
 
-- **Satisfied:** render it checked with one line of evidence — `- [x] Tests added — auth/pkce.test.ts covers the new validation paths` — or drop it if unremarkable. Never emit a diff-verifiable item unchecked.
-- **Not satisfied:** that's a finding, not a checkbox. Raise it in the step-7 draft message and only add an unchecked item if the user wants it tracked.
+- **Satisfied:** render it checked with one line of evidence — `- [x] Tests added — auth/pkce.test.ts covers the new validation paths` — or drop it when unremarkable.
+- **Not satisfied:** that is a finding. Raise it in the draft message, and add an unchecked item only if the user wants it tracked.
 
-**Environment and process — the real checklist.** Unchecked `- [ ]` boxes are reserved for actions the diff cannot prove:
+*Environment and process — the real checklist.* Unchecked boxes belong to actions the diff cannot prove:
 
-| Signal in diff / changed files                                   | Add checklist item                                                        |
-| ---------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| New or modified files under `migrations/`, `db/migrate/`, `schema/`, `*.sql` | Migration run against a production-sized dataset; rollback path verified |
-| Config or env var additions                                       | Deployment configs updated for staging and production                     |
-| Feature flag references introduced                                 | Feature flag default and rollout plan documented                           |
-| Performance-sensitive paths (queries, hot loops, render code)      | Benchmark or load test results captured                                    |
-| Changes touching auth, crypto, permissions, secrets handling       | Security review requested                                                  |
-| Dependency manifest changes (`package.json`, `Cargo.toml`, etc.)   | Dependency licenses and supply-chain provenance reviewed                   |
-| Schema or wire-format changes whose consumers live outside this repo | Backward compatibility verified with downstream consumers              |
+| Signal in diff / changed files                                        | Checklist item                                                          |
+| --------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Files under `migrations/`, `db/migrate/`, `schema/`, `*.sql`           | Migration run against a production-sized dataset; rollback path verified |
+| Config or env var additions                                            | Deployment configs updated for staging and production                   |
+| Feature flag references                                                | Flag default and rollout plan documented                                |
+| Performance-sensitive paths (queries, hot loops, render code)          | Benchmark or load test results captured                                 |
+| Auth, crypto, permissions, or secrets handling                         | Security review requested                                               |
+| Dependency manifest changes (`package.json`, `Cargo.toml`)             | Dependency licenses and provenance reviewed                             |
+| Schema or wire-format changes with consumers outside this repo         | Backward compatibility verified with downstream consumers               |
 
-Each item should be specific to the PR — paraphrase the rule to mention the actual change. For example, for a new index migration write "Migration tested against a production-sized dataset (drop index is a safe rollback)" rather than the generic wording.
-
-Keep the section short — 1–4 unchecked items is typical; if the rules would produce more, keep the ones most relevant to this PR's risk profile. If no rule produces an item and no verified item is worth reporting, **omit the section entirely**. Never pad it with a generic baseline item like "Backward compatibility verified."
+Paraphrase each rule to name the actual change: "Migration tested against a production-sized dataset (drop index is a safe rollback)", not the generic wording. Keep the highest-risk items and drop the rest. When no rule fires and no verified item is worth reporting, omit the section.
 
 ## Worked examples
 
-### Example 1 — feature with breaking change
+These bodies show the target length. Match them.
 
-**Input:** Branch `feature/oauth-pkce`, commits reference `PROJ-456`, diff adds new auth code path with tests in `auth/pkce.test.ts`, modifies `/oauth/authorize` handler, touches mobile SDK files. No UI files, no docs changes. Removes ability to call `/oauth/authorize` without a code challenge.
+### Example 1 — feature with a breaking change
+
+**Input:** Branch `feature/oauth-pkce`, commits reference `PROJ-456`. Diff adds an auth code path with tests in `auth/pkce.test.ts`, modifies the `/oauth/authorize` handler, touches mobile SDK files. No UI files, no docs changes. Removes the ability to call `/oauth/authorize` without a code challenge.
 
 **Output title:** `feat(auth)!: PROJ-456 add OAuth2 PKCE flow`
 
 **Output body:**
 ```markdown
 ## Summary
-Public OAuth2 clients can have their authorization code intercepted on the
-return redirect. Adds PKCE so `/oauth/authorize` binds each code to a
-per-request secret, closing that window for mobile clients.
+An intercepted redirect can leak an authorization code from a public OAuth2 client. PKCE binds each code to a per-request secret and closes that window.
 
 ## What Changed
-- `/oauth/authorize` now requires and validates `code_challenge` + `code_challenge_method`
-- Token exchange verifies the `code_verifier` against the stored challenge
-- Mobile SDK generates and attaches a challenge on every authorization request
+- `/oauth/authorize` validates `code_challenge` and `code_challenge_method`
+- Token exchange verifies `code_verifier` against the stored challenge
+- Mobile SDK attaches a challenge to every authorization request
 
 ## How to Test
 1. `pnpm test auth/pkce`
-2. Start a login from the mobile SDK and confirm `code_challenge` appears on the authorize URL
+2. Start a login from the mobile SDK; confirm `code_challenge` is on the authorize URL
 3. Confirm the token exchange rejects a mismatched `code_verifier`
 
 ## Breaking Changes
-`/oauth/authorize` now rejects requests without a `code_challenge`. Public
-clients must send one before this ships; without it they get `400 invalid_request`.
+`/oauth/authorize` rejects requests without a `code_challenge`. Public clients must send one before this ships, or they get `400 invalid_request`.
 
 ## Pre-Merge Checklist
 - [x] Tests added — `auth/pkce.test.ts` covers challenge validation and verifier mismatch
 - [ ] Security review requested for the new auth code path
 ```
 
-Note: the title carries `!` (`feat(auth)!:`) because the diff has breaking changes. No `Screenshots` section because no UI files changed; no migration item because no migration files are touched. The tests item is rendered checked because the diff contains the matching test file. The diff does *not* update API docs for the new required parameter — that gap is raised in the step-7 draft message ("docs not updated for `code_challenge` — gap, or maintained elsewhere?") rather than emitted as an unchecked box. No generic "Backward compatibility verified" item: the compatibility break is intentional and documented in `## Breaking Changes`.
+The title carries `!` because the diff breaks a contract. No `Screenshots` (no UI files), no migration item (no migration files). The tests item is checked because the diff holds the test file. The diff does not update API docs for the new required parameter — that gap goes in the draft message, not into an unchecked box.
 
-### Example 2 — backend fix, no UI, no breaking changes
+### Example 2 — backend fix
 
-**Input:** Body mentions `PROJ-892`. Diff: one new migration file under `migrations/`, one query rewrite in `reports/queries.ts`. No UI files. No public API changes.
+**Input:** Body mentions `PROJ-892`. Diff: one migration under `migrations/`, one query rewrite in `reports/queries.ts`. No UI, no public API change.
 
 **Output title:** `fix(reports): PROJ-892 add index to resolve dashboard timeouts`
 
 **Output body:**
 ```markdown
 ## Summary
-Dashboard load was timing out for workspaces with >50k events. Adds a
-composite index on `events(workspace_id, created_at)` to bring p95 under 300ms.
+The dashboard times out for workspaces above 50k events. A composite index on `events(workspace_id, created_at)` brings p95 under 300ms.
 
 ## What Changed
 - New migration `20260510_add_events_workspace_created_idx.sql`
-- Reports query rewritten to leverage the new index
-- Removed redundant in-memory sort that the index now handles
+- Reports query rewritten to use the index
+- Removed the in-memory sort the index now handles
 
 ## How to Test
-1. Run migration locally: `pnpm db:migrate`
-2. Seed 100k events via `pnpm seed:perf`
-3. Hit `/api/reports/overview` and confirm response under 300ms
+1. `pnpm db:migrate`
+2. Seed 100k events: `pnpm seed:perf`
+3. Hit `/api/reports/overview`; confirm the response is under 300ms
 
 ## Pre-Merge Checklist
-- [ ] Migration tested against a production-sized dataset; rollback verified (drop index is safe)
-- [ ] Benchmark results captured for the new query
+- [ ] Migration tested against a production-sized dataset; drop index is the rollback
+- [ ] Benchmark captured for the new query
 ```
 
-Note: no `Breaking Changes` section (none detected), no `Screenshots` section (no UI changes). Both checklist items are environmental — nothing the diff can prove. No "Backward compatibility verified" filler: adding an index changes no contract.
+Both checklist items are environmental. An index changes no contract, so there is no `Breaking Changes` section and no compatibility filler.
 
 ### Example 3 — stacked PR
 
-**Input:** Branch `feature/get-started`, base branch `feature/get-started-be` (not `main`), commits reference `ENG-1005`. Diff adds a new onboarding page driven by a state machine, touches many `*.tsx` components and side-nav. The body already notes it's stacked on #4666 and that #4667 was split off.
+**Input:** Branch `feature/get-started`, base `feature/get-started-be`, commits reference `ENG-1005`. Diff adds an onboarding page driven by a state machine, touches many `*.tsx` components and the side nav. The body already notes the stack on #4666 and the split-off #4667.
 
 **Output title:** `feat(get-started): ENG-1005 add Get Started onboarding page and flow`
 
 **Output body:**
 ```markdown
 ## Stack
-Frontend half of the get-started onboarding work, split out of the original combined branch.
-- **Stacked on #4666** (backend contract) — depends on its `wasFirstStarted` flag; merge #4666 first. GitHub will retarget this PR to `main` once #4666 merges.
-- Billing/Shopify read-model changes from the same branch are now independent in #4667.
+Frontend half of the get-started onboarding work, split from the combined branch.
+- **Stacked on #4666** (backend contract) — needs its `wasFirstStarted` flag; merge #4666 first, and GitHub retargets this PR to `main`.
+- Billing and Shopify read-model changes are now independent in #4667.
 
 ## Summary
-Adds a Get Started onboarding experience that guides merchants from store
-connection through launching their first experience, driven by a pure view state machine.
+Merchants have no guided path from store connection to their first launched experience. A Get Started page drives that path from a pure view state machine.
 
 ## What Changed
-- New Get Started page (hero, progress card, stepper) rendered from a pure `getStartedMachine`
-- Onboarding flow: welcome, connect-store, billing plan, and a first-launch celebration dialog
-- Script-status checks gain a `quick`/`full` `mode`; all callers updated accordingly
-- Moved Get Started to the top of the side nav; added onboarding routes
+- Get Started page (hero, progress card, stepper) rendered from `getStartedMachine`
+- Onboarding flow: welcome, connect-store, billing plan, first-launch dialog
+- Script-status checks gain a `quick`/`full` mode; all callers updated
+- Get Started moved to the top of the side nav
 
 ## How to Test
-1. From a fresh org, open `/get-started` and confirm the stepper reflects connect → launch progress
-2. Launch a first-ever experience from any surface and confirm the redirect + celebration dialog
-3. Launch a subsequent experience and confirm no redirect and no dialog
-4. Run frontend unit tests: `moon run frontend:test`
+1. From a fresh org, open `/get-started`; confirm the stepper tracks connect → launch
+2. Launch a first-ever experience; confirm the redirect and the celebration dialog
+3. Launch a second experience; confirm no redirect and no dialog
 
 ## Screenshots / Recordings
 _Attach a recording of the Get Started page before merge._
 
 ## Pre-Merge Checklist
-- [x] Every `useGetScriptStatus` caller updated to pass the new `mode` argument
-- [ ] Confirm the first-launch celebration fires only on the org's first-ever started experience
+- [x] Every `useGetScriptStatus` caller passes the new `mode` argument
+- [ ] Confirm the celebration fires only on the org's first-ever started experience
 ```
 
-Note: `## Stack` leads because merge order is the reviewer's most urgent context; `## Breaking Changes` is omitted (none). After applying the body, the PR is assigned to the current user with `gh pr edit <ref> --add-assignee @me`; assigning anyone else would require asking first.
+`## Stack` leads because merge order is the most urgent context. `## Breaking Changes` is omitted — the `mode` argument is additive and every caller is updated.
 
 ## Applying the edit
 
-Pipe the body to `gh pr edit` via stdin using a heredoc. This avoids both shell-quoting issues with multi-line content **and** the zsh `noclobber` failure mode where `cat > $(mktemp)` is rejected because `mktemp` already created the file:
+Pipe the body to `gh pr edit` through stdin with a heredoc:
 
 ```bash
 gh pr edit <ref> --title "<the generated title>" --body-file - <<'EOF'
@@ -229,27 +254,22 @@ gh pr edit <ref> --title "<the generated title>" --body-file - <<'EOF'
 EOF
 ```
 
-**Do not** use the `mktemp` + `cat > "$BODY_FILE"` pattern. Under zsh with `noclobber` set (the default on many setups), the `>` redirect to an existing file fails with `file exists`, the body file stays empty, and `gh pr edit` happily pushes an empty body. The single-tool stdin approach is shorter and immune to this.
+Stdin sidesteps two failure modes: shell quoting of multi-line content, and zsh `noclobber`. Avoid `mktemp` + `cat > "$BODY_FILE"` — `noclobber` rejects the redirect to the file `mktemp` just created, the body file stays empty, and `gh pr edit` pushes an empty body. The verify step is what catches this, so run it every time.
 
-**Then verify.** Always run `gh pr view <ref> --json body` after the edit and confirm the body is non-empty and contains `## Summary`. If the body is empty or wrong, the edit silently failed — retry with the stdin form, and tell the user what happened. The cost of a check is one tool call; the cost of falsely reporting success is the user discovering an empty PR on GitHub.
+## Assignees
 
-Once verified, confirm success to the user and link to the PR.
+Collaborators are assignees, set with `gh pr edit`. `@me` belongs in the `--add-assignee` flag, never in body text.
 
-## Assigning the PR
+- **Self:** `gh pr edit <ref> --add-assignee @me`. Always safe, always do it.
+- **Anyone else:** gather candidates from the original body or the user's instruction, list them at the confirmation step, and run `--add-assignee <login>` only for the logins the user approves.
 
-Reviewers and collaborators are set as **assignees** via `gh pr edit`, never named or `@`-mentioned in the body. `@me` belongs only in the `--add-assignee @me` CLI flag — never in body text.
+Resolve a candidate against the logged-in account with `gh api user --jq .login`. When `--add-assignee` fails because the user is not a collaborator, tell the user.
 
-- **Self — no confirmation needed:** `gh pr edit <ref> --add-assignee @me`. Always safe; do this by default.
-- **Anyone else — ask first:** gather candidates from the original body or the user's instruction, list them in the confirmation step (step 8), and only run `gh pr edit <ref> --add-assignee <login>` for the users the user approves. Do not assign a non-self user without explicit approval.
+## Edge cases
 
-If you need to compare a candidate against the logged-in account, resolve it with `gh api user --jq .login`. Prefer `@me` for self-assignment so the login isn't hardcoded. If a `--add-assignee` call fails because the user isn't a collaborator on the repo, surface that to the user rather than silently dropping it.
-
-## Edge cases and judgment calls
-
-- **No ticket found:** Ask the user before producing the title. Don't proceed with a placeholder like `TICKET-???`.
-- **Stacked PR / non-default base branch:** Lead with `## Stack` and spell out the merge order. Never rewrite the base branch — just describe the dependency so the reviewer merges in the right order.
-- **PR is a draft:** Apply the template normally; draft state doesn't affect the rewrite.
-- **Original body has useful content (especially in `How to Test`):** Preserve and integrate it rather than discarding. The author often has context the diff doesn't show.
-- **PR is enormous (>5000 line diff):** Sample the diff per file, classify each file's contribution, and aggregate. Mention to the user that the analysis was sampling-based.
-- **Multiple ticket IDs match:** Use the one in the branch name if present, otherwise the first one in commits, otherwise ask.
-- **User pushed back on a previous draft:** Honor their adjustments. If they say "drop the security review item, this isn't auth code," don't re-add it in a regeneration.
+- **No ticket found:** ask before writing the title. A placeholder like `TICKET-???` is not acceptable.
+- **Stacked PR:** lead with `## Stack` and state the merge order. Leave the base branch as it is — describe the dependency instead.
+- **Draft PR:** apply the template normally.
+- **Diff above 5000 lines:** sample per file, classify each file's contribution, aggregate, and tell the user the analysis was sampled.
+- **Several ticket IDs match:** prefer the one in the branch name, then the first in commits, then ask.
+- **User rejected an earlier draft:** honor the adjustment. A dropped item stays dropped through regenerations.
