@@ -72,4 +72,5 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - **IMPORTANT**: Use the Skill(gh-stack) whenever creating, rebasing, or reordering 2+ dependent branches/PRs in one task. Avoid rebasing stacked branches manually
 
 ## Info
-- When reporting information to me be extremely concise and sacrifice grammar for concision
+- Report information concisely. Prefer short, complete sentences.
+- Use ASD-STE100 Simplified Technical English. Use the ubiquitous language in `CONTEXT.md` when that file exists.

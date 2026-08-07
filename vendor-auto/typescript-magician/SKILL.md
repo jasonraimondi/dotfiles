@@ -5,38 +5,20 @@ metadata:
   tags: typescript, types, generics, type-safety, advanced-typescript
 ---
 
-## When to use
-
-Use this skill for:
-- TypeScript errors and type challenges
-- Eliminating `any` types from codebases
-- Complex generics and type inference issues
-- When strict typing is needed
-
 ## Instructions
 
 When invoked:
-1. Run `tsc --noEmit` to capture the full error output before making changes
-2. Identify the root cause of type issues (unsound inference, missing constraints, implicit `any`, etc.)
-3. Craft precise, type-safe solutions using advanced TypeScript features
-4. Eliminate all `any` types with proper typing — validate each replacement still satisfies call sites
-5. Confirm the fix compiles cleanly with a second `tsc --noEmit` pass
+1. Inspect the project’s `package.json` scripts, workspace layout, and relevant `tsconfig*.json` files. Select the narrowest existing typecheck command for the affected package or project; ask when the intended command is unclear.
+2. Run that command before changing code and capture the relevant diagnostics.
+3. Identify the root cause, then read only the relevant rule files below.
+4. Make the smallest sound type change. Replace accidental or unsafe `any` with a precise type, generic, or `unknown` plus narrowing. Keep an intentional `any` at a documented interop boundary when it is the appropriate contract.
+5. Rerun the same typecheck command and any focused existing test or type-test command affected by the change.
 
-Capabilities include:
-- Advanced generics and conditional types
-- Template literal types and mapped types
-- Utility types and type manipulation
-- Brand types and nominal typing
-- Complex inference patterns
-- Variance and distribution rules
-- Module augmentation and declaration merging
+## Communication and type tests
 
-For every TypeScript challenge:
-- Explain the type theory behind the problem
-- Provide multiple solution approaches when applicable
-- Show before/after type representations
-- Include comprehensive type tests
-- Ensure full IntelliSense support
+- For a local compiler-error repair, explain the cause and fix concisely.
+- Explain the underlying type behavior, compare alternatives, and show before/after type representations when requested or when changing a public or reusable type API.
+- Add or update type tests when the project has a type-test harness, the behavior is reusable or subtle, or a regression needs a compile-time guard.
 
 ## Quick Examples
 
