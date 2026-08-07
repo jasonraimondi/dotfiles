@@ -39,14 +39,20 @@ Mark each open ask **tracked** (name the identifier) or **untracked**.
 
 ## 5. Report
 
-Ranked, one line per item, extremely concise:
+Ranked, one line per item, extremely concise. Link the Slack source and, if tracked, the Linear identifier — each to its permalink/URL when one was returned by the search or lookup:
 
 ```
-1. (untracked) Checkout race on discount stacking — Lucy, DM, Tue
-2. [INT-482] Review Pietro's migration plan — #eng-platform, Wed
-3. [INT-455] Rate limiter rollout — assigned, in progress, no Slack activity
+1. (untracked) [Checkout race on discount stacking](slack://...) — Lucy, DM, Tue
+2. [[INT-482](https://linear.app/...)] Review Pietro's migration plan — [#eng-platform](slack://...), Wed
+3. [[INT-455](https://linear.app/...)] Rate limiter rollout — assigned, in progress, no Slack activity
 ```
 
 Rank by: callouts first, then asks blocking someone else, then explicit deadlines, then everything else. Assigned Linear work with no Slack traffic sorts last.
+
+## 6. Log the day
+
+Append today's ranked list to `~/Desktop/ig-notebook/billing-shift/<today's date, YYYY-MM-DD>.md` — same lines as the report, links included. Create the file with a `# <date>` heading if it doesn't exist yet. Never write to, or open for editing, any other date's file.
+
+Re-running later the same day appends only items not already in today's file (match by Slack/Linear link, not by wording); it never touches an item already logged.
 
 End on the list. Jason picks what to start.
