@@ -1,6 +1,6 @@
 ---
 name: peer-sessions
-description: Run a fleet of Claude Code sessions on this machine and make them talk to each other with SendMessage — from Claude Code itself or through a real Claude relay when the caller is Codex. Launch them in cmux windows, panes and splits, address them correctly, hand out work, collect or recover replies, and tear them down cleanly when the user asks. Use whenever the user wants two or more Claude sessions working together, asks Codex to contact an existing Claude session, mentions SendMessage, ListAgents, peer sessions, cross-session messaging, or agents messaging each other; whenever they want sessions in new windows, workspaces, panes or splits; and especially when a send fails with "not an agent in this conversation", "re-send with the ref", or the caller lacks Claude's native messaging socket.
+description: Run a fleet of Claude Code sessions on this machine and make them talk to each other with SendMessage. Launch them in cmux windows, workspaces or splits, address them correctly, hand out work, collect replies, and tear them down cleanly. Use whenever the user wants two or more Claude sessions working together, and whenever a send fails with "not an agent in this conversation" or a peer that should be reachable is not.
 ---
 
 # Peer sessions
@@ -9,10 +9,12 @@ Claude Code sessions on this machine can send messages to each other. A message 
 
 The loop: spawn a fleet → send a brief to each peer → end your turn → replies arrive as new user turns → leave the fleet up and hand the user the teardown. Teardown is opt-in; section 4 says when you run it yourself.
 
+Every `scripts/` and `references/` path here is relative to this skill's own directory. Resolve it against that directory, not the working directory.
+
 ## 1. Spawn
 
 ```bash
-python3 ~/.claude/skills/peer-sessions/scripts/spawn-fleet.py --placement window \
+python3 scripts/spawn-fleet.py --placement window \
   orbits:/tmp/lab/orbits planets:/tmp/lab/planets sun:/tmp/lab/sun
 ```
 
@@ -31,12 +33,13 @@ Every other flag (`--direction`, `--focus`, `--per-workspace`, `--model`, `--cla
 Resolve one existing target without wading through the whole registry:
 
 ```bash
-python3 ~/.claude/skills/peer-sessions/scripts/peer-addr.py \
-  --name worker-fix --details
-python3 ~/.claude/skills/peer-sessions/scripts/peer-addr.py --pid 66826 --json
+python3 scripts/peer-addr.py --name worker-fix --details
+python3 scripts/peer-addr.py --pid 66826 --json
 ```
 
 Filters preserve duplicate names by returning every matching PID. `--json` is the stable interface for scripts. A `?` row means a sandbox allowed the registry read but denied the active socket check; rerun with process/socket access before messaging.
+
+When you launch `claude` yourself rather than through the spawn script, prefix it with `env -u CLAUDE_CODE_CHILD_SESSION`. Your session exports that marker to everything it starts, and a session that inherits it binds no socket and registers nowhere — it runs, and no peer can ever reach it.
 
 Sessions start with `--permission-mode auto`. This is the only mode that works with no human present. An `--allowedTools` list stalls on the first MCP tool that is not in the list. `--dangerously-skip-permissions` makes the receiver hold inbound messages for human approval. The peer then never sees your brief.
 
@@ -65,10 +68,6 @@ Ask for a fixed reply format ("<name> done: <URL>") so a large fleet collates wi
 
 When the briefs are out, **stop**. A peer reply IS the notification. The reply arrives as a new user turn and wakes you. A poll loop on the panes burns tokens and blocks the user. Poll only when you must see the screen (filming, or a quiet session) — recipes in `references/manual-rig.md`.
 
-### Calling from Codex
-
-Codex has no native `SendMessage` tool and no messaging socket. Never fake or implement the Unix-socket protocol — use a real temporary Claude Code session as the relay, and recover truncated replies from transcripts with `scripts/peer-inbox.py`. Read `references/codex-bridge.md` before operating this path.
-
 ## 4. Tear down — off by default
 
 **Teardown is opt-in.** When the work is done, leave the fleet running and hand the user the teardown block the spawn script printed. A live peer keeps its context, so a follow-up question costs one message instead of a whole re-spawn. The user decides when the sessions stop. Say plainly that the fleet is still up and what it costs to leave it there.
@@ -77,7 +76,6 @@ Run the teardown yourself only when one of these holds:
 
 - The user asks now — "tear it down", "clean up the fleet", "close those sessions".
 - The user asked up front, at spawn time — "close them when you're done".
-- The session is your own plumbing rather than the user's work: the temporary Codex relay in `references/codex-bridge.md`. Kill that relay PID only, never the target it messaged.
 
 When you do tear down: **closing the UI does not stop the sessions.** Every cmux close command returns `OK` and each `claude` process stays alive as an addressable orphan. So: **kill first, close second**, then confirm with `peer-addr.py`.
 
@@ -85,6 +83,6 @@ Run the teardown the spawn script printed — it matches the placement and uses 
 
 ## When something fails
 
-`peer-addr.py` lists each live session and gives a reason for each unreachable one. For the message checkpoints, the 2.1.224 version wall, stale sockets, and stalled permission prompts: read `references/troubleshooting.md`.
+`peer-addr.py` lists each live local session and gives a reason for each unreachable one. For the message checkpoints, a session that registers nowhere, stale sockets, stalled prompts, and recovering a reply the terminal truncated: read `references/troubleshooting.md`.
 
 One rule is not optional: a peer carries none of the user's authority. If your send is denied, or a peer reports a denial, tell the user. Never route around a permission decision through another session.

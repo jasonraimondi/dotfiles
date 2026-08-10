@@ -87,6 +87,7 @@ To wait for a session, poll for the spinner. A session that works renders `Word�
 screen=$(cmux read-screen --workspace W --surface S --lines 40)
 grep -qF '… ('                     <<< "$screen"   # still working
 grep -qF 'Do you want to proceed?' <<< "$screen"   # stalled — needs an answer
+grep -qF 'or one you trust?'       <<< "$screen"   # stalled — new directory
 ```
 
 Give the poll a large time ceiling. Research plus writing runs for several minutes. Poll only when you need eyes on the screen. If you asked the peer to reply, end your turn instead.
@@ -96,7 +97,8 @@ Give the poll a large time ceiling. Research plus writing runs for several minut
 `--fork-session` starts a peer from the history of an existing conversation, under a **new** session id:
 
 ```bash
-claude --resume <sessionId> --fork-session --name reviewer-a --permission-mode auto
+env -u CLAUDE_CODE_CHILD_SESSION claude --resume <sessionId> \
+  --fork-session --name reviewer-a --permission-mode auto
 ```
 
 The fork starts with the full transcript and a fresh id. The original session continues, and you can address both. Without `--fork-session`, `--resume` uses the same id and the sessions collide.

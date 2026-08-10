@@ -9,13 +9,11 @@ import sys
 from peer_registry import (
     load_records,
     normalized_name,
-    parse_version,
     pid_alive,
     socket_status,
 )
 
 
-MIN_VERSION = (2, 1, 224)
 NAME_MAX = 40
 
 
@@ -25,8 +23,10 @@ def row_for(record, own_sock):
     version = record.get("version", "?")
     if not sock:
         state = "unreachable"
-        if parse_version(version) < MIN_VERSION:
-            reason = "no socket — build predates 2.1.224 (claude --resume to fix)"
+        # peerProtocol, not the version string, is the capability signal: a
+        # prerelease version parses as ancient and misreports a capable build.
+        if record.get("peerProtocol") is None:
+            reason = "no socket — build predates cross-session messaging (claude --resume to fix)"
         else:
             reason = "no socket — messaging gate off, bind failed, or a thin/bare session"
     elif sock == own_sock:

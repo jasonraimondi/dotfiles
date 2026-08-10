@@ -15,13 +15,6 @@ PROJECTS = os.environ.get(
 )
 
 
-def parse_version(value):
-    try:
-        return tuple(int(part) for part in str(value).split(".")[:3])
-    except (TypeError, ValueError):
-        return (0, 0, 0)
-
-
 def pid_alive(pid):
     """Check PID existence without spawning `ps` (which sandboxes often block)."""
     if not isinstance(pid, int) or pid <= 0:

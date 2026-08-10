@@ -5,7 +5,7 @@ Read this when a send fails, a peer is silent, or you cannot reach a session tha
 First step, always:
 
 ```bash
-python3 ~/.claude/skills/peer-sessions/scripts/peer-addr.py
+python3 scripts/peer-addr.py
 ```
 
 The script lists each live session on the machine. The script gives a reason for each unreachable session.
@@ -23,9 +23,17 @@ Checkpoint 4 is a feature. Each peer message carries a trailer that says a peer 
 
 ## The session is alive but you cannot address it
 
-The usual cause is the version. Cross-session messaging shipped in **2.1.224**. Older builds make no socket. A session from before an upgrade is alive, healthy, and invisible. `claude --resume <sessionId>` in a fresh terminal repairs this and keeps the history.
+**The session has no registry file at all.** The cause is `CLAUDE_CODE_CHILD_SESSION`. Claude Code exports that marker into every process it launches, so a `claude` started from a Bash tool call inherits it. That session boots, works, and prints `Transcript saving is off — inherited CLAUDE_CODE_CHILD_SESSION marker`. It writes no `~/.claude/sessions/<pid>.json`, binds no socket, and never appears in `peer-addr.py`. Strip the marker at launch:
 
-A session on 2.1.224+ with no socket: the messaging gate is off, the bind failed, or the session is thin/bare. The correct version is necessary, not sufficient.
+```bash
+env -u CLAUDE_CODE_CHILD_SESSION claude --name <name> --permission-mode auto
+```
+
+`spawn-fleet.py` does this for you. Do it by hand whenever you type a `claude` command yourself.
+
+**The session has a registry file with no `messagingSocketPath`.** Read `peerProtocol` in that file. A record with no `peerProtocol` comes from a build that predates cross-session messaging (**2.1.224**); it is alive, healthy, and invisible, and `claude --resume <sessionId>` in a fresh terminal repairs it and keeps the history. A record that has `peerProtocol` and no socket means the messaging gate is off, the bind failed, or the session is thin/bare.
+
+Read `peerProtocol`, not the version string: a prerelease version like `2.2.0-beta.1` does not compare cleanly and reads as ancient.
 
 ## Error codes and oddities
 
@@ -39,9 +47,20 @@ A session on 2.1.224+ with no socket: the messaging gate is off, the bind failed
 In order of likelihood:
 
 1. **The peer still works.** Research plus writing runs for several minutes. The reply arrives as a new user turn. End your own turn and wait. This is correct, not lazy.
-2. **The peer is stalled on a permission prompt.** A prompt has no spinner, so the pane looks idle. Run `cmux read-screen` and look for "Do you want to proceed?". Non-auto permission modes make this prompt.
+2. **The peer is stalled on a prompt.** A prompt has no spinner, so the pane looks idle. Run `cmux read-screen` and look for two questions. "Is this a project you created or one you trust?" comes from a directory Claude has not seen before — the common stall, because a fresh fleet directory is new by definition. "Do you want to proceed?" comes from a non-auto permission mode. A session waiting on either one registers no socket.
 3. **You did not ask for a reply.** A send is one-way. If the brief did not contain your `uds:` address and a clear ask, no reply comes.
 4. **The peer declined.** Check the pane. Peers state their refusals.
+
+## The reply arrived but the pane truncated it
+
+A terminal viewport cuts a long reply. The transcript holds the whole thing:
+
+```bash
+python3 scripts/peer-inbox.py \
+  --pid <your-own-pid> --from-pid <peer-pid> --wait 60
+```
+
+The helper accepts only events marked `origin.kind: peer` with a verified peer PID, and `--from-pid` matches that verified PID — the one field a sender cannot spoof or rename. `peer-addr.py` prints it on every row. Use `--json` when another tool consumes the result, or `--session-id` when the registry entry is already gone.
 
 ## CLI traps
 

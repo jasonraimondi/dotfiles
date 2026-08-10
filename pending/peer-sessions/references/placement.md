@@ -35,7 +35,7 @@ cmux close-surface --workspace <uuid> --surface <uuid>   # placement split, one 
 cmux close-workspace --workspace <uuid>                  # placement workspace
 cmux close-window --window <uuid>                        # placement window
 
-python3 ~/.claude/skills/peer-sessions/scripts/peer-addr.py   # confirm gone
+python3 scripts/peer-addr.py                             # confirm gone
 ```
 
 Use UUIDs, not refs. Refs are indexes: each close renumbers the rest, so a saved ref can point at another pane. Get UUIDs with `cmux --id-format both` (details in `manual-rig.md`).

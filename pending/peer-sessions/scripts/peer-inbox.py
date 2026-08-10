@@ -9,7 +9,7 @@ import time
 from peer_registry import find_record, find_transcript
 
 
-def peer_messages(path, sender=None, msg_id=None):
+def peer_messages(path, from_pid=None, msg_id=None):
     messages = []
     try:
         handle = open(path)
@@ -26,10 +26,7 @@ def peer_messages(path, sender=None, msg_id=None):
                 continue
             if not isinstance(origin.get("verifiedPeerPid"), int):
                 continue
-            if sender is not None and sender not in (
-                origin.get("name"),
-                origin.get("from"),
-            ):
+            if from_pid is not None and origin.get("verifiedPeerPid") != from_pid:
                 continue
             if msg_id is not None and origin.get("msg_id") != msg_id:
                 continue
@@ -54,7 +51,12 @@ def main():
     target = parser.add_mutually_exclusive_group(required=True)
     target.add_argument("--pid", type=int, help="registry PID of the receiving session")
     target.add_argument("--session-id", help="receiving session ID")
-    parser.add_argument("--from", dest="sender", help="exact peer name or uds: address")
+    parser.add_argument(
+        "--from-pid",
+        dest="from_pid",
+        type=int,
+        help="PID of the sending session, as printed by peer-addr.py",
+    )
     parser.add_argument("--msg-id", help="exact inbound peer message ID")
     parser.add_argument(
         "--all", action="store_true", help="print all matches, not only latest"
@@ -79,7 +81,7 @@ def main():
     while True:
         transcript = find_transcript(session_id)
         if transcript:
-            matches = peer_messages(transcript, args.sender, args.msg_id)
+            matches = peer_messages(transcript, args.from_pid, args.msg_id)
         if matches or time.monotonic() >= deadline:
             break
         time.sleep(0.5)

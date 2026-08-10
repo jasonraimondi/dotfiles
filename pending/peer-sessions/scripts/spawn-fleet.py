@@ -14,6 +14,9 @@ from peer_registry import live_records, normalized_name, record_identity, socket
 
 
 UUID = re.compile(r"^[0-9A-Fa-f]{8}(-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}$")
+# The teardown block is pasted into a shell, so print a path that resolves from
+# wherever this skill is installed.
+ADDR_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "peer-addr.py")
 
 
 def cmux(*args):
@@ -67,6 +70,7 @@ def caller_context():
 
 def parse_specs(raw):
     specs = []
+    fresh = []
     for item in raw:
         if ":" not in item:
             sys.exit(f"error: '{item}' is not NAME:DIR")
@@ -75,12 +79,22 @@ def parse_specs(raw):
         directory = os.path.abspath(os.path.expanduser(directory.strip()))
         if not name:
             sys.exit(f"error: '{item}' has an empty name")
-        os.makedirs(directory, exist_ok=True)
+        if not os.path.isdir(directory):
+            os.makedirs(directory, exist_ok=True)
+            fresh.append(directory)
         specs.append((name, directory))
     names = [name for name, _ in specs]
     duplicates = {name for name in names if names.count(name) > 1}
     if duplicates:
         sys.exit(f"error: duplicate session names: {', '.join(sorted(duplicates))}")
+    if fresh:
+        print(
+            f"note: created {len(fresh)} directory(s). Claude asks to trust a "
+            "directory it has not seen, and a session waiting on that prompt "
+            "never registers. Watch the panes: "
+            + ", ".join(fresh),
+            file=sys.stderr,
+        )
     return specs
 
 
@@ -132,7 +146,7 @@ def print_cleanup(records, layout):
                 f"  cmux close-surface --workspace {layout['workspace']} "
                 f"--surface {surface}"
             )
-    print("  python3 ~/.claude/skills/peer-sessions/scripts/peer-addr.py")
+    print(f"  python3 {ADDR_SCRIPT}")
 
 
 def start_session(workspace, surface, directory, command):
@@ -261,9 +275,14 @@ def main():
         extra += ["--model", args.model]
 
     def launch_cmd(name):
+        # A session that inherits CLAUDE_CODE_CHILD_SESSION registers no socket
+        # and no transcript, so it is unreachable and invisible to peer-addr.py.
         return " ".join(
             shlex.quote(value)
             for value in [
+                "env",
+                "-u",
+                "CLAUDE_CODE_CHILD_SESSION",
                 "claude",
                 "--name",
                 name,
@@ -332,7 +351,9 @@ def main():
     if missing:
         print(
             f"\n{len(ready)}/{len(wanted)} ready after {elapsed}s. "
-            "Check the pane — a stalled permission prompt never registers.",
+            "Read the pane. A session that waits for an answer never registers: "
+            "a new directory asks 'Is this a project you created or one you "
+            "trust?', and a non-auto mode asks 'Do you want to proceed?'.",
             file=sys.stderr,
         )
         print_cleanup(records, layout)
