@@ -1,6 +1,6 @@
 ---
 name: peer-sessions
-description: Run a fleet of Claude Code sessions on this machine and make them talk to each other with SendMessage. Launch them in cmux windows, workspaces or splits, address them correctly, hand out work, collect replies, and tear them down cleanly. Use whenever the user wants two or more Claude sessions working together, and whenever a send fails with "not an agent in this conversation" or a peer that should be reachable is not.
+description: Run a fleet of Claude Code sessions on this machine and make them talk to each other with SendMessage. Launch them in Herdr panes, tabs or workspaces, address them correctly, hand out work, collect replies, and tear them down cleanly. Use whenever the user wants two or more Claude sessions working together, and whenever a send fails with "not an agent in this conversation" or a peer that should be reachable is not.
 ---
 
 # Peer sessions
@@ -13,22 +13,31 @@ Every `scripts/` and `references/` path here is relative to this skill's own dir
 
 ## 1. Spawn
 
+The fleet runs in Herdr, so you must be inside a Herdr-managed pane. Check once:
+
 ```bash
-python3 scripts/spawn-fleet.py --placement window \
-  orbits:/tmp/lab/orbits planets:/tmp/lab/planets sun:/tmp/lab/sun
+test "${HERDR_ENV:-}" = 1
 ```
 
-Each argument is `NAME:DIR`. The script prints each session's `uds:` address and the exact teardown commands, returns when every session is addressable, and names each session that stalled.
+If that fails, say so and stop. Do not drive a Herdr session from outside Herdr.
+
+```bash
+python3 scripts/spawn-fleet.py orbits:/tmp/lab/orbits planets:/tmp/lab/planets
+```
+
+Each argument is `NAME:DIR`. One name serves as both the Herdr agent name and the Claude session name, so it must match `[a-z][a-z0-9_-]{0,31}`. The script prints each session's `uds:` address and the exact teardown commands, returns when every session is addressable, and names each session that stalled.
 
 `--placement` says where the fleet appears. You choose it. Ask the user only when the choice changes their screen and you cannot tell what they want.
 
 | Placement | Where the peers land | Pick it when |
 |---|---|---|
-| `split` | new panes beside your own pane, in your workspace | 1-3 peers, short work, the user watches you work. Your pane keeps the focus. |
-| `workspace` (default) | new workspaces in your window | 3+ peers, or work that runs for minutes. The user's current screen stays clean, and one tab click reaches the fleet. |
-| `window` | a new window, with the workspaces inside it | a big fleet, a screen recording, or a second monitor. |
+| `split` (default) | sibling panes in your own tab | 1-3 peers. Your pane keeps the focus. |
+| `tab` | new tabs in your workspace | 3+ peers, or work that runs for minutes. The user's current screen stays clean, and one tab click reaches the fleet. |
+| `workspace` | new workspaces | a big fleet, a screen recording, or a second monitor. |
 
-Every other flag (`--direction`, `--focus`, `--per-workspace`, `--model`, `--claude-arg`, …) and the per-placement edge cases: read `references/placement.md`.
+Prefer `split`. Herdr's own guidance is to stay in the current tab and the current directory unless the user asks for other topology.
+
+Every other flag (`--direction`, `--per-tab`, `--model`, `--claude-arg`, …) and the per-placement edge cases: read `references/placement.md`.
 
 Resolve one existing target without wading through the whole registry:
 
@@ -39,11 +48,11 @@ python3 scripts/peer-addr.py --pid 66826 --json
 
 Filters preserve duplicate names by returning every matching PID. `--json` is the stable interface for scripts. A `?` row means a sandbox allowed the registry read but denied the active socket check; rerun with process/socket access before messaging.
 
-When you launch `claude` yourself rather than through the spawn script, prefix it with `env -u CLAUDE_CODE_CHILD_SESSION`. Your session exports that marker to everything it starts, and a session that inherits it binds no socket and registers nowhere — it runs, and no peer can ever reach it.
+When you launch `claude` through `herdr pane run` or any shell of your own rather than through the spawn script, prefix it with `env -u CLAUDE_CODE_CHILD_SESSION`. Your session exports that marker to everything it starts, and a session that inherits it binds no socket and registers nowhere — it runs, and no peer can ever reach it. `herdr agent start` needs no prefix, because Herdr's server owns the pane.
 
 Sessions start with `--permission-mode auto`. This is the only mode that works with no human present. An `--allowedTools` list stalls on the first MCP tool that is not in the list. `--dangerously-skip-permissions` makes the receiver hold inbound messages for human approval. The peer then never sees your brief.
 
-For unusual layouts, manual cmux work, or forks: read `references/manual-rig.md`.
+For unusual layouts, manual Herdr work, or forks: read `references/manual-rig.md`.
 
 ## 2. Send the briefs
 
@@ -66,7 +75,7 @@ Ask for a fixed reply format ("<name> done: <URL>") so a large fleet collates wi
 
 ## 3. End your turn
 
-When the briefs are out, **stop**. A peer reply IS the notification. The reply arrives as a new user turn and wakes you. A poll loop on the panes burns tokens and blocks the user. Poll only when you must see the screen (filming, or a quiet session) — recipes in `references/manual-rig.md`.
+When the briefs are out, **stop**. A peer reply IS the notification. The reply arrives as a new user turn and wakes you. A poll loop on the panes burns tokens and blocks the user. Watch a pane only when you must see the screen (filming, or a quiet session), and use Herdr's own waits rather than a loop — `herdr agent wait <name> --until blocked` and `herdr agent read <name>`. Recipes in `references/manual-rig.md`.
 
 ## 4. Tear down — off by default
 
@@ -77,9 +86,9 @@ Run the teardown yourself only when one of these holds:
 - The user asks now — "tear it down", "clean up the fleet", "close those sessions".
 - The user asked up front, at spawn time — "close them when you're done".
 
-When you do tear down: **closing the UI does not stop the sessions.** Every cmux close command returns `OK` and each `claude` process stays alive as an addressable orphan. So: **kill first, close second**, then confirm with `peer-addr.py`.
+When you do tear down: **kill first, close second**, then confirm with `peer-addr.py`. A `claude` that outlives its pane is an addressable orphan, and killing the PID first makes that impossible whatever the close does.
 
-Run the teardown the spawn script printed — it matches the placement and uses durable UUIDs. Close only what you made: a `split` fleet sits in the user's own workspace, so closing that workspace closes the user's work too. Hand-written teardown syntax: `references/placement.md`.
+Run the teardown the spawn script printed — it matches the placement and holds the pane, tab, and workspace ids it created. Close only what you made: a `split` fleet sits in the user's own tab, so closing that tab closes the user's work too. Hand-written teardown syntax: `references/placement.md`.
 
 ## When something fails
 

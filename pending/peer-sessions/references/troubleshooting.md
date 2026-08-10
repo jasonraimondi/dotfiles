@@ -47,13 +47,15 @@ Read `peerProtocol`, not the version string: a prerelease version like `2.2.0-be
 In order of likelihood:
 
 1. **The peer still works.** Research plus writing runs for several minutes. The reply arrives as a new user turn. End your own turn and wait. This is correct, not lazy.
-2. **The peer is stalled on a prompt.** A prompt has no spinner, so the pane looks idle. Run `cmux read-screen` and look for two questions. "Is this a project you created or one you trust?" comes from a directory Claude has not seen before — the common stall, because a fresh fleet directory is new by definition. "Do you want to proceed?" comes from a non-auto permission mode. A session waiting on either one registers no socket.
+2. **The peer is stalled on a prompt.** Run `herdr agent get <name>`. Herdr reports `blocked` when it recognizes an approval or question UI, so you do not have to read pixels. Then `herdr agent read <name>` for the question itself. "Is this a project you created or one you trust?" comes from a directory Claude has not seen before — the common stall, because a fresh fleet directory is new by definition. "Do you want to proceed?" comes from a non-auto permission mode. A session waiting on either one registers no socket.
 3. **You did not ask for a reply.** A send is one-way. If the brief did not contain your `uds:` address and a clear ask, no reply comes.
-4. **The peer declined.** Check the pane. Peers state their refusals.
+4. **The peer declined.** Read the pane. Peers state their refusals.
+
+Herdr's `unknown` state proves nothing. It means an agent is present that Herdr could not classify, not that the work finished.
 
 ## The reply arrived but the pane truncated it
 
-A terminal viewport cuts a long reply. The transcript holds the whole thing:
+Claude Code runs on the terminal's alternate screen, so rows that scroll away never enter Herdr's scrollback and a larger `--lines` cannot bring them back. The transcript holds the whole thing:
 
 ```bash
 python3 scripts/peer-inbox.py \
@@ -66,9 +68,9 @@ The helper accepts only events marked `origin.kind: peer` with a verified peer P
 
 - `claude agents` needs a TTY. Use `claude agents --json` for scripts. The list contains your own session — check the pid before you kill a process.
 - `logs`, `stop`, and `attach` are not claude subcommands. Claude reads unknown words as prompts and starts work. Use `kill <pid>`.
-- When you close a cmux pane, workspace, or window, the claude process inside does not stop. See the teardown in SKILL.md.
-- `cmux close-window` can return `OK` and not close the window. This happens even for an empty window, and a retry does not always help. If the window stays in `cmux list-windows`, tell the user to close it by hand (Cmd+W). Prefer `--placement split` or `--placement workspace`, which tear down from the CLI every time.
-- `cmux new-window` opens with a default shell workspace of its own. A one-session `--placement window` fleet therefore shows two workspaces.
-- A window keeps its last workspace. `close-workspace` on the final one returns `OK` and the workspace stays.
-- `cmux list-workspaces --window X` ignores the `--window` flag. The command always shows the current window. Use `cmux tree --all` to see every window.
-- Surface and workspace refs are indexes. Each close renumbers them, and `close-surface` even reports a ref that the close itself shifted. Hold UUIDs (`cmux --id-format both`) for anything you plan to close later.
+- Kill the PID before you close the pane. A `claude` that outlives its pane is an addressable orphan, and this ordering makes that impossible whatever the close does.
+- Bare `herdr` launches or attaches the TUI. For discovery, run `herdr --help` or a command group with no subcommand (`herdr pane`).
+- Do not probe a mutating nested command by omitting arguments. `herdr workspace create` is valid with defaults and will execute.
+- `herdr agent start` needs a pane already at its shell prompt. It never creates or moves layout, and it fails on a pane that still runs a foreground command.
+- Herdr server errors are JSON on stderr with exit 1. A CLI syntax error exits 2.
+- A pane command with no target may hit whichever pane the UI has focused, which can belong to the user or another client. Pass `--current`, an explicit pane id, or a unique agent name.

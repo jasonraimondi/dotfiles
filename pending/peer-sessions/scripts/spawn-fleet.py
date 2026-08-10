@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Launch named Claude Code sessions in cmux and verify their live sockets."""
+"""Launch named Claude Code sessions in Herdr and verify their live sockets."""
 
 import argparse
 import json
 import os
 import re
-import shlex
 import subprocess
 import sys
 import time
@@ -13,59 +12,31 @@ import time
 from peer_registry import live_records, normalized_name, record_identity, socket_live
 
 
-UUID = re.compile(r"^[0-9A-Fa-f]{8}(-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}$")
-# The teardown block is pasted into a shell, so print a path that resolves from
-# wherever this skill is installed.
+# Herdr agent names and Claude session names come from the same argument, so a
+# spec name must satisfy the stricter of the two.
+HERDR_NAME = re.compile(r"^[a-z][a-z0-9_-]{0,31}$")
 ADDR_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "peer-addr.py")
 
 
-def cmux(*args):
-    """Run cmux and ask for UUIDs beside refs. Refs renumber; UUIDs do not."""
-    result = subprocess.run(
-        ["cmux", "--id-format", "both", *args], capture_output=True, text=True
-    )
-    output = (result.stdout + result.stderr).strip()
-    if result.returncode != 0 or output.startswith("Error"):
-        raise RuntimeError(f"cmux {' '.join(args)}\n  → {output}")
-    return output
-
-
-def id_from(output, kind):
-    """Take the durable id for `kind` out of `OK surface:22 (UUID) workspace:10 (UUID)`."""
-    tokens = output.replace("(", " ").replace(")", " ").split()
-    for index, token in enumerate(tokens):
-        if not token.startswith(f"{kind}:"):
-            continue
-        if index + 1 < len(tokens) and UUID.match(tokens[index + 1]):
-            return tokens[index + 1]
-        return token
-    raise RuntimeError(f"no {kind} id in cmux output: {output!r}")
-
-
-def workspace_uuid(ref):
-    """`new-workspace` prints a ref only. Refs renumber, so trade it for a UUID."""
-    if UUID.match(ref):
-        return ref
-    # `list-workspaces` covers the caller's window only, so read every window.
-    match = re.search(
-        rf"workspace {re.escape(ref)}(?![0-9])\s+([0-9A-Fa-f-]{{36}})",
-        cmux("tree", "--all"),
-    )
-    return match.group(1) if match else ref
-
-
-def caller_context():
-    """Return the window, workspace, and surface UUIDs that this script runs in."""
+def herdr(*args):
+    """Run a herdr command and return its `result` payload."""
+    result = subprocess.run(["herdr", *args], capture_output=True, text=True)
+    if result.returncode != 0:
+        raise RuntimeError(f"herdr {' '.join(args)}\n  → {result.stderr.strip()}")
     try:
-        payload = json.loads(cmux("identify"))
-    except (RuntimeError, ValueError):
-        return {}
-    caller = payload.get("caller") or {}
-    return {
-        "window": caller.get("window_id"),
-        "workspace": caller.get("workspace_id"),
-        "surface": caller.get("surface_id"),
-    }
+        return json.loads(result.stdout).get("result", {})
+    except ValueError:
+        raise RuntimeError(f"herdr {' '.join(args)}\n  → non-JSON: {result.stdout!r}")
+
+
+def id_of(payload, kind):
+    """Read an opaque id, whether herdr returned the object or the bare id."""
+    value = payload.get(kind)
+    if isinstance(value, dict):
+        value = value.get(f"{kind.rsplit('_', 1)[-1]}_id") or value.get("id")
+    if not isinstance(value, str):
+        raise RuntimeError(f"no {kind} id in herdr result: {payload!r}")
+    return value
 
 
 def parse_specs(raw):
@@ -77,8 +48,11 @@ def parse_specs(raw):
         name, _, directory = item.partition(":")
         name = name.strip()
         directory = os.path.abspath(os.path.expanduser(directory.strip()))
-        if not name:
-            sys.exit(f"error: '{item}' has an empty name")
+        if not HERDR_NAME.match(name):
+            sys.exit(
+                f"error: '{name}' is not a usable name. Herdr agent names start "
+                "with a lowercase letter and hold up to 32 of [a-z0-9_-]."
+            )
         if not os.path.isdir(directory):
             os.makedirs(directory, exist_ok=True)
             fresh.append(directory)
@@ -91,8 +65,7 @@ def parse_specs(raw):
         print(
             f"note: created {len(fresh)} directory(s). Claude asks to trust a "
             "directory it has not seen, and a session waiting on that prompt "
-            "never registers. Watch the panes: "
-            + ", ".join(fresh),
+            "never registers. Watch the panes: " + ", ".join(fresh),
             file=sys.stderr,
         )
     return specs
@@ -109,8 +82,7 @@ def new_matching_records(before, wanted):
 def ready_by_name(records):
     ready = {}
     for record in records:
-        socket_path = record.get("messagingSocketPath")
-        if not socket_live(socket_path):
+        if not socket_live(record.get("messagingSocketPath")):
             continue
         name = normalized_name(record)
         previous = ready.get(name)
@@ -126,109 +98,114 @@ def print_cleanup(records, layout):
         {record.get("pid") for record in records if isinstance(record.get("pid"), int)}
     )
     print("\nTeardown is off by default: hand this block to the user, and run it")
-    print("only when they ask. Kill the processes before closing their UI:")
+    print("only when they ask. Kill the processes before closing their panes:")
     if pids:
         print("  kill " + " ".join(str(pid) for pid in pids))
     else:
         print("  No launched PID registered yet; inspect the panes before closing them.")
-    if layout["placement"] == "window":
-        print(f"  cmux close-window --window {layout['window']}")
-        print("  # close-window can return OK and leave the window open.")
-        print("  # If it stays in cmux list-windows, ask the user for a Cmd+W.")
-    elif layout["placement"] == "workspace":
+    if layout["placement"] == "workspace":
         for workspace in layout["workspaces"]:
-            print(f"  cmux close-workspace --workspace {workspace}")
+            print(f"  herdr workspace close {workspace}")
+    elif layout["placement"] == "tab":
+        for tab in layout["tabs"]:
+            print(f"  herdr tab close {tab}")
     else:
-        # Split placement lives in the caller's own workspace. Close the new
-        # panes only. Never close this workspace or this window.
-        for surface in layout["surfaces"]:
-            print(
-                f"  cmux close-surface --workspace {layout['workspace']} "
-                f"--surface {surface}"
-            )
+        # Split placement lives in the caller's own tab. Close the new panes
+        # only. Never close this tab or this workspace.
+        for pane in layout["panes"]:
+            print(f"  herdr pane close {pane}")
     print(f"  python3 {ADDR_SCRIPT}")
 
 
-def start_session(workspace, surface, directory, command):
-    """Type a launch command into a shell that cmux already opened."""
-    full = f"cd {shlex.quote(directory)} && {command}"
-    cmux("send", "--workspace", workspace, "--surface", surface, full)
-    cmux("send-key", "--workspace", workspace, "--surface", surface, "Enter")
+def start_agent(name, pane, permission_mode, extra, timeout_ms):
+    """Hand the pane to Herdr's agent supervisor and wait until Claude is up."""
+    herdr(
+        "agent",
+        "start",
+        name,
+        "--kind",
+        "claude",
+        "--pane",
+        pane,
+        "--timeout",
+        str(timeout_ms),
+        "--",
+        "--name",
+        name,
+        "--permission-mode",
+        permission_mode,
+        *extra,
+    )
 
 
-def build_splits(specs, launch_cmd, caller, direction, focus):
-    """Put each session in a new pane beside the caller's pane."""
-    workspace = caller.get("workspace")
-    anchor = caller.get("surface")
-    if not workspace or not anchor:
-        sys.exit(
-            "error: --placement split needs a cmux terminal. "
-            "Run it inside cmux, or use --placement workspace|window."
-        )
-    if len(specs) > 3 and direction in ("right", "left"):
+def split_pane(anchor, direction, directory):
+    return id_of(
+        herdr(
+            "pane",
+            "split",
+            "--pane",
+            anchor,
+            "--direction",
+            direction,
+            "--cwd",
+            directory,
+            "--no-focus",
+        ),
+        "pane",
+    )
+
+
+def build_splits(specs, caller_pane, direction):
+    """Put each session in a sibling pane of the caller's own pane."""
+    if not caller_pane:
+        sys.exit("error: no caller pane. Run this inside a Herdr-managed pane.")
+    if len(specs) > 3:
         print(
-            f"note: {len(specs)} side panes get narrow. "
-            "Use --direction down, or --placement workspace.",
+            f"note: {len(specs)} sibling panes get cramped. "
+            "Use --placement tab or --placement workspace.",
             file=sys.stderr,
         )
-    surfaces = []
-    for name, directory in specs:
-        output = cmux(
-            "new-split",
-            direction,
-            "--workspace",
-            workspace,
-            "--surface",
-            anchor,
-            "--focus",
-            focus,
-        )
-        surface = id_from(output, "surface")
-        surfaces.append(surface)
-        start_session(workspace, surface, directory, launch_cmd(name))
-        anchor = surface  # chain, so the panes line up in spec order
-    return {
-        "placement": "split",
-        "window": caller.get("window"),
-        "workspace": workspace,
-        "workspaces": [],
-        "surfaces": surfaces,
-    }
+    panes = []
+    anchor = caller_pane
+    for _, directory in specs:
+        pane = split_pane(anchor, direction, directory)
+        panes.append(pane)
+        anchor = pane  # chain, so the panes line up in spec order
+    return {"placement": "split", "tabs": [], "workspaces": [], "panes": panes}
 
 
-def build_workspaces(specs, launch_cmd, window, prefix, per_workspace, direction, focus):
-    """Put each group of sessions in its own workspace."""
+def build_groups(specs, placement, workspace, prefix, per_tab, direction):
+    """Put each group of sessions in its own tab, or its own workspace."""
+    tabs = []
     workspaces = []
-    surfaces = []
-    groups = [
-        specs[index : index + per_workspace]
-        for index in range(0, len(specs), per_workspace)
-    ]
+    panes = []
+    groups = [specs[index : index + per_tab] for index in range(0, len(specs), per_tab)]
     for group_index, group in enumerate(groups, 1):
-        first_name, first_dir = group[0]
-        cmux_args = [
-            "new-workspace",
-            "--name",
-            f"{prefix}-{group_index}",
-            "--cwd",
-            first_dir,
-            "--command",
-            launch_cmd(first_name),
-        ]
-        if window:
-            cmux_args += ["--window", window]
-        cmux_args += ["--focus", focus if group_index == 1 else "false"]
-        workspace = workspace_uuid(id_from(cmux(*cmux_args), "workspace"))
-        workspaces.append(workspace)
-
-        for name, directory in group[1:]:
-            output = cmux(
-                "new-split", direction, "--workspace", workspace, "--focus", "false"
+        label = f"{prefix}-{group_index}"
+        first_dir = group[0][1]
+        if placement == "workspace":
+            created = herdr(
+                "workspace",
+                "create",
+                "--cwd",
+                first_dir,
+                "--label",
+                label,
+                "--no-focus",
             )
-            surface = id_from(output, "surface")
-            surfaces.append(surface)
-            start_session(workspace, surface, directory, launch_cmd(name))
-    return {"window": window, "workspaces": workspaces, "surfaces": surfaces}
+            workspaces.append(id_of(created, "workspace"))
+        else:
+            args = ["tab", "create", "--cwd", first_dir, "--label", label, "--no-focus"]
+            if workspace:
+                args += ["--workspace", workspace]
+            created = herdr(*args)
+            tabs.append(id_of(created, "tab"))
+        anchor = id_of(created, "root_pane")
+        panes.append(anchor)
+        for _, directory in group[1:]:
+            anchor = split_pane(anchor, direction, directory)
+            panes.append(anchor)
+    return {"placement": placement, "tabs": tabs, "workspaces": workspaces, "panes": panes}
 
 
 def main():
@@ -236,26 +213,18 @@ def main():
     parser.add_argument("specs", nargs="+", metavar="NAME:DIR")
     parser.add_argument(
         "--placement",
-        choices=("split", "workspace", "window"),
-        default="workspace",
-        help="split: panes beside this one. workspace: new workspaces in this "
-        "window. window: a new window (default: workspace)",
-    )
-    parser.add_argument(
-        "--window", action="store_true", help="alias for --placement window"
+        choices=("split", "tab", "workspace"),
+        default="split",
+        help="split: sibling panes in this tab. tab: new tabs in this workspace. "
+        "workspace: new workspaces (default: split)",
     )
     parser.add_argument(
         "--direction",
-        choices=("right", "left", "up", "down"),
+        choices=("right", "down"),
         default="right",
         help="direction of each new pane (default: right)",
     )
-    parser.add_argument(
-        "--focus",
-        choices=("true", "false"),
-        help="move the UI to the fleet (default: false for split, true otherwise)",
-    )
-    parser.add_argument("--per-workspace", type=int, default=2, choices=(1, 2))
+    parser.add_argument("--per-tab", type=int, default=2, choices=(1, 2))
     parser.add_argument("--prefix", default="fleet")
     parser.add_argument("--model")
     parser.add_argument("--claude-arg", action="append", default=[])
@@ -263,8 +232,8 @@ def main():
     parser.add_argument("--permission-mode", default="auto")
     args = parser.parse_args()
 
-    placement = "window" if args.window else args.placement
-    focus = args.focus or ("false" if placement == "split" else "true")
+    if os.environ.get("HERDR_ENV") != "1":
+        sys.exit("error: not inside a Herdr-managed pane. Start this fleet from Herdr.")
 
     specs = parse_specs(args.specs)
     before = {record_identity(record) for record in live_records()}
@@ -274,50 +243,29 @@ def main():
     if args.model:
         extra += ["--model", args.model]
 
-    def launch_cmd(name):
-        # A session that inherits CLAUDE_CODE_CHILD_SESSION registers no socket
-        # and no transcript, so it is unreachable and invisible to peer-addr.py.
-        return " ".join(
-            shlex.quote(value)
-            for value in [
-                "env",
-                "-u",
-                "CLAUDE_CODE_CHILD_SESSION",
-                "claude",
-                "--name",
-                name,
-                "--permission-mode",
-                args.permission_mode,
-                *extra,
-            ]
-        )
-
-    caller = caller_context()
-
-    if placement == "split":
-        layout = build_splits(specs, launch_cmd, caller, args.direction, focus)
-        print(f"workspace {layout['workspace']} (this one)")
-        print(f"panes {', '.join(layout['surfaces'])}")
+    if args.placement == "split":
+        layout = build_splits(specs, os.environ.get("HERDR_PANE_ID"), args.direction)
+        print(f"tab {os.environ.get('HERDR_TAB_ID')} (this one)")
+        print(f"panes {', '.join(layout['panes'])}")
     else:
-        if placement == "window":
-            window = cmux("new-window").split()[-1]
-            print(f"window {window} (new)")
-        else:
-            window = caller.get("window")
-            print(f"window {window or '(focused)'} (this one)")
-        layout = build_workspaces(
+        layout = build_groups(
             specs,
-            launch_cmd,
-            window,
+            args.placement,
+            os.environ.get("HERDR_WORKSPACE_ID"),
             args.prefix,
-            args.per_workspace,
+            args.per_tab,
             args.direction,
-            focus,
         )
-        layout["placement"] = placement
-        print(f"workspaces {', '.join(layout['workspaces'])}")
+        created = layout["workspaces"] or layout["tabs"]
+        print(f"{args.placement}s {', '.join(created)}")
 
     started = time.time()
+    # `agent start` returns once Claude is ready for input, which is earlier
+    # than the messaging bind. Give the whole fleet one budget for both.
+    agent_timeout_ms = max(4000, min(args.timeout, 300) * 1000)
+    for (name, _), pane in zip(specs, layout["panes"]):
+        start_agent(name, pane, args.permission_mode, extra, agent_timeout_ms)
+
     records = []
     ready = {}
     while time.time() - started < args.timeout:
@@ -331,12 +279,6 @@ def main():
     records = new_matching_records(before, wanted)
     ready = ready_by_name(records)
 
-    if focus == "true" and layout["workspaces"]:
-        # A new window opens on its own default workspace, so `--focus true` on
-        # the first workspace does not stick. Select it again here, after every
-        # session has booted. An earlier switch races the launch command that
-        # cmux types into the new shell, and scrambles it.
-        cmux("select-workspace", "--workspace", layout["workspaces"][0])
     for name, _ in specs:
         if name in ready:
             record = ready[name]
@@ -351,9 +293,13 @@ def main():
     if missing:
         print(
             f"\n{len(ready)}/{len(wanted)} ready after {elapsed}s. "
-            "Read the pane. A session that waits for an answer never registers: "
-            "a new directory asks 'Is this a project you created or one you "
-            "trust?', and a non-auto mode asks 'Do you want to proceed?'.",
+            "Read the pane with `herdr agent read <name>`. A session that waits "
+            "for an answer never registers: a new directory asks 'Is this a "
+            "project you created or one you trust?', and a non-auto mode asks "
+            "'Do you want to proceed?'. A session that answers nothing and still "
+            "has no socket inherited CLAUDE_CODE_CHILD_SESSION — relaunch that "
+            "one pane with `herdr pane run <pane> \"env -u "
+            'CLAUDE_CODE_CHILD_SESSION claude --name <name> --permission-mode auto"`.',
             file=sys.stderr,
         )
         print_cleanup(records, layout)

@@ -9,10 +9,11 @@ spawn a fleet → send a brief to each peer → end your turn → replies arrive
 ```
 
 ```
-window F8464A83-... (new)
-+ orbits    uds:/tmp/cc-socks/17466.sock
-+ planets   uds:/tmp/cc-socks/17398.sock
-+ sun       uds:/tmp/cc-socks/17585.sock
+tab w1:t1 (this one)
+panes w1:p4, w1:p5, w1:p6
++ orbits    pid 17466  uds:/tmp/cc-socks/17466.sock
++ planets   pid 17398  uds:/tmp/cc-socks/17398.sock
++ sun       pid 17585  uds:/tmp/cc-socks/17585.sock
 3 ready in 10s.
 ```
 
@@ -29,7 +30,7 @@ Or copy this folder into `~/.claude/skills/peer-sessions/`.
 ## Requirements
 
 - Claude Code **2.1.224 or newer** on macOS or Linux. Older builds publish no messaging socket, so a session is alive but no other session can reach it.
-- [`cmux`](https://github.com/anthropics/cmux) for the spawn scripts. The messaging itself needs no terminal multiplexer — only the fleet layout does.
+- [Herdr](https://herdr.dev) for the spawn scripts, and you must run them from inside a Herdr-managed pane (`HERDR_ENV=1`). The messaging itself needs no terminal multiplexer — only the fleet layout does.
 
 ## What is in the box
 
@@ -37,7 +38,7 @@ Or copy this folder into `~/.claude/skills/peer-sessions/`.
 |---|---|
 | `SKILL.md` | The happy path: spawn, brief, end turn, hand back the teardown |
 | `references/placement.md` | Every spawn flag, the placement edge cases, teardown syntax |
-| `references/manual-rig.md` | The cmux object model, `--id-format`, manual layouts, `--fork-session` |
+| `references/manual-rig.md` | The Herdr object model, manual layouts, agent lifecycle states, `--fork-session` |
 | `references/troubleshooting.md` | The four message checkpoints, a session that registers nowhere, stale sockets, CLI traps |
 | `scripts/spawn-fleet.py` | Launch N named sessions in your chosen layout, wait until each is addressable |
 | `scripts/peer-addr.py` | List live local sessions, give a reason for each unreachable one, print your own reply address |

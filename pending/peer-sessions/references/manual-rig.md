@@ -1,104 +1,84 @@
 # Manual rigging, forks, and paths that the skill does not cover
 
-Read this when `spawn-fleet.py` does not fit: unusual layouts, filming, forks, or a `claude`/`cmux` capability that the skill does not name.
+Read this when `spawn-fleet.py` does not fit: unusual layouts, filming, forks, or a `claude`/`herdr` capability that the skill does not name.
 
-## The cmux object model
+## The Herdr object model
 
-A **window** holds workspaces. A workspace holds panes. A pane holds a **surface** (the terminal that you type into). Workspaces and surfaces use short refs (`workspace:26`, `surface:93`). Windows use full UUIDs.
+A **workspace** holds tabs. A tab holds panes. A pane holds one terminal, and Herdr recognizes a coding agent running inside it.
 
-**A ref is an index, not an identity.** Close one surface and the rest renumber, so a ref that you saved a minute ago can now point at another pane. Ask for UUIDs and hold those instead:
+Ids are opaque and stable: `w1` for a workspace, `w1:t1` for a tab, `w1:p1` for a pane. A closed id is never reused, so an id you saved keeps naming the same thing for as long as that thing exists. Read every id out of the JSON that created it:
 
 ```bash
-cmux --id-format both new-split right --workspace W --surface S --focus false
-# → OK surface:22 (BFB087B6-...) workspace:10 (CCA4E168-...)
+herdr pane split --current --direction right --cwd "$PWD" --no-focus
+# → .result.pane.pane_id
 ```
 
-`--id-format` goes before the subcommand. It takes `refs`, `uuids`, or `both`. Two commands ignore it: `new-workspace` prints a ref only (trade it for a UUID with `cmux --id-format both tree --all`), and `new-window` prints a UUID only.
+`workspace create` returns `.result.workspace`, `.result.tab`, and `.result.root_pane`. `tab create` returns `.result.tab` and `.result.root_pane`.
+
+One exception to id stability: `pane move` re-qualifies a pane id to its new workspace. Continue with `.result.move_result.pane.pane_id`.
 
 ## Where am I?
 
+Herdr injects the caller's context into every managed pane:
+
 ```bash
-cmux --id-format both identify
+printf '%s\n' "$HERDR_WORKSPACE_ID" "$HERDR_TAB_ID" "$HERDR_PANE_ID"
 ```
 
-`caller` is the pane that ran the command. `focused` is the pane the user looks at. They differ often, so build from `caller`:
-
-```json
-"caller": { "window_id": "888C66E8-...", "workspace_id": "CCA4E168-...",
-            "surface_id": "C087AFB0-...", "pane_ref": "pane:11" }
-```
-
-This is how `spawn-fleet.py --placement split` finds the pane to split, and how `--placement workspace` finds the window to build in.
+Build from those, or pass `--current`. A bare pane command with no target may hit the UI-focused pane, which can belong to the user or another client.
 
 ## A session beside your own pane
 
-This is what `--placement split` does. Split your own surface, then chain each next split off the pane you just made, so the panes line up in order:
+This is what `--placement split` does:
 
 ```bash
-cmux --id-format both new-split right \
-  --workspace <caller workspace_id> --surface <caller surface_id> --focus false
-# → OK surface:22 (BFB087B6-...) workspace:10 (CCA4E168-...)
+herdr pane split --current --direction right --cwd /tmp/lab/alpha --no-focus
+# → .result.pane.pane_id, e.g. w1:p4
 
-cmux send     --workspace <ws> --surface <new surface> "cd /tmp/lab && claude --name alpha --permission-mode auto"
-cmux send-key --workspace <ws> --surface <new surface> Enter
+herdr agent start alpha --kind claude --pane w1:p4 -- \
+  --name alpha --permission-mode auto
 ```
 
-`--focus false` matters. Without it the UI jumps to the new pane, and the user's next keystrokes go to the peer.
+`--no-focus` matters. Without it the UI jumps to the new pane, and the user's next keystrokes go to the peer.
 
-Teardown stays off by default here too (SKILL.md section 4). Once the user asks: `cmux close-surface --workspace <ws> --surface <uuid>`, one call per pane, after you kill the PIDs. Never `close-workspace` — that workspace is the user's.
+`agent start` needs a pane already sitting at its shell prompt, and it returns only once Herdr sees Claude ready for input. It never creates or moves layout — split first, then start. The name binds the Herdr agent; `--name` after `--` binds the Claude session name that `SendMessage` and `peer-addr.py` resolve. Keep them identical.
 
-## One workspace, two sessions
+Teardown stays off by default (SKILL.md section 4). Once the user asks: `herdr pane close <pane_id>`, one call per pane, after you kill the PIDs. Never `tab close` — that tab is the user's.
+
+## A tab or a workspace of your own
 
 ```bash
-cmux new-workspace --name peer-demo --cwd <dir> \
-  --command "claude --name alpha --permission-mode auto" --focus true
-# → OK workspace:26
+herdr tab create --workspace "$HERDR_WORKSPACE_ID" --cwd /tmp/lab --label fleet-1 --no-focus
+# → .result.tab, .result.root_pane
 
-cmux new-split right --workspace workspace:26 --focus true
-# → OK surface:93 workspace:26
-cmux send     --workspace workspace:26 --surface surface:93 "claude --name beta --permission-mode auto"
-cmux send-key --workspace workspace:26 --surface surface:93 Enter
+herdr workspace create --cwd /tmp/lab --label fleet --no-focus
+# → .result.workspace, .result.tab, .result.root_pane
 ```
 
-`new-split` gives you a shell, not a session. You start the second session when you type into that shell. `new-split` prints the new surface id. You need `cmux tree --workspace W` only for the first pane's surface, because cmux never prints that surface back.
-
-## A separate window
-
-```bash
-cmux new-window
-# → OK 013D22DA-F68D-43E8-A7CB-F6B7E7251336
-
-cmux new-workspace --name space-lab --cwd <dir> \
-  --window 013D22DA-F68D-43E8-A7CB-F6B7E7251336 \
-  --command "claude --name gamma --permission-mode auto" --focus true
-```
-
-Then split, send, and send-key as above. `cmux list-windows` shows the windows that exist.
+Both hand you a live shell pane in `root_pane`. Start the agent there, then `pane split` off it for a second session in the same tab.
 
 ## Watch the panes
 
 ```bash
-cmux read-screen --workspace W --surface S --lines 30
+herdr agent read alpha --source recent-unwrapped --lines 120
+herdr agent get alpha
 ```
 
-To wait for a session, poll for the spinner. A session that works renders `Word… (12s`. An idle session does not contain `… (`. Check for a stalled permission prompt in the same loop. "The session waits for a human" and "the session is done" look the same on screen:
+Prefer Herdr's own waits to a poll loop. `herdr agent wait alpha --until blocked --timeout 120000` returns when the peer hits an approval or question UI; without `--until` it returns on the first settled `idle`, `done`, or `blocked`.
 
-```bash
-screen=$(cmux read-screen --workspace W --surface S --lines 40)
-grep -qF '… ('                     <<< "$screen"   # still working
-grep -qF 'Do you want to proceed?' <<< "$screen"   # stalled — needs an answer
-grep -qF 'or one you trust?'       <<< "$screen"   # stalled — new directory
-```
+Read the lifecycle state rather than guessing from pixels. `working` means the turn is running. `blocked` means Herdr recognized an approval prompt — the stall that used to need a screen grep. `unknown` means an agent is present that Herdr cannot classify, and it never proves completion.
 
-Give the poll a large time ceiling. Research plus writing runs for several minutes. Poll only when you need eyes on the screen. If you asked the peer to reply, end your turn instead.
+Claude Code runs on the terminal's alternate screen. Rows that scroll off it do not reach Herdr's scrollback, so raising `--lines` cannot recover a long reply that already scrolled. Recover it from the transcript instead — `scripts/peer-inbox.py`, in `troubleshooting.md`.
+
+If you asked the peer to reply by `SendMessage`, end your turn instead of watching anything.
 
 ## Fork a session
 
-`--fork-session` starts a peer from the history of an existing conversation, under a **new** session id:
+`--fork-session` starts a peer from the history of an existing conversation, under a **new** session id. It runs in a shell pane, so strip the child marker:
 
 ```bash
-env -u CLAUDE_CODE_CHILD_SESSION claude --resume <sessionId> \
-  --fork-session --name reviewer-a --permission-mode auto
+herdr pane run <pane_id> "env -u CLAUDE_CODE_CHILD_SESSION claude --resume <sessionId> \
+  --fork-session --name reviewer-a --permission-mode auto"
 ```
 
 The fork starts with the full transcript and a fresh id. The original session continues, and you can address both. Without `--fork-session`, `--resume` uses the same id and the sessions collide.
@@ -114,9 +94,12 @@ Read the help. Do not guess. Do not assume a thing is impossible:
 ```bash
 COLUMNS=200 claude --help    # a pipe through head kills it with SIGPIPE;
 claude agents --help         # narrow terminals wrap it into noise
-cmux --help
+herdr --help
+herdr pane                   # a command group with no subcommand prints its help
 ```
 
-Fleet flags that come up often: `--add-dir` (a second writable directory), `--model` / `--effort` (cheap workers beside one expensive reviewer), `--agent` / `--append-system-prompt` (a standing role, so you do not repeat it in each brief), `--worktree` (own git worktree per session when the fleet edits one repo). Check the spelling of each flag in the help before you use it. Flags change between versions.
+Never run bare `herdr` for discovery — it launches or attaches the TUI. Never probe a mutating nested command by omitting arguments; `herdr workspace create` is valid with defaults and will execute.
 
-cmux also has more commands than the ones above: `respawn-pane`, `swap-pane`, `find-window`, `pipe-pane`, `notify`, `set-progress`.
+Fleet flags that come up often: `--add-dir` (a second writable directory), `--model` / `--effort` (cheap workers beside one expensive reviewer), `--agent` / `--append-system-prompt` (a standing role, so you do not repeat it in each brief). Pass them to `spawn-fleet.py` with `--claude-arg`, or after `--` on `herdr agent start`. Check the spelling of each flag in the help before you use it. Flags change between versions.
+
+Herdr's own worktree commands give each session its own git worktree when the fleet edits one repo: `herdr worktree create --branch <name>`. Create that topology only when the user asks for it.
