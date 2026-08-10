@@ -56,15 +56,13 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 ## 5. Comments
 
-**Comments are a necessary evil. Default to none.**
+**Default to none.** Make the code self-documenting first — a better name, an extracted function, an explaining variable, a named constant. A comment is the last resort.
 
-- Prefer self-documenting code — a better name, an extraction, an explaining variable, a named constant — over a comment.
-- If a comment survives, it explains **why** — intent, a non-obvious consequence, the reason for an obscure choice. The code already shows *what*.
-- Make it stand alone for a reader who sees only the code: no pointers to tickets, Slack, PRs, or planning docs.
-- No journaling: no change logs, dates, TODO-to-self, "per Alice", authorship marks, or AI tags.
+- A comment that survives explains **why**: intent, a non-obvious consequence, the reason for an obscure choice. The code already shows *what*.
+- It stands alone for a reader who sees only the code. No pointers to tickets, Slack, PRs, or planning docs.
+- No journaling: change logs, dates, TODO-to-self, "per Alice", authorship marks, AI tags.
 
 ## Git
-
 - NEVER WRITE coauthored by agent, or written by agent
 
 ### GitHub
