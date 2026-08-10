@@ -42,7 +42,7 @@ The script also wires the shared `AGENT.md` from this repo into the rule/memory 
 | --- | --- |
 | [`best-practices-codebase-architecture`](./skills/best-practices-codebase-architecture) | Finding refactors that deepen shallow modules and improve testability |
 | [`best-practices-comments`](./skills/best-practices-comments) | Auditing and removing journal/noise/redundant code comments |
-| [`best-practices-css`](./skills/best-practices-css) | Idiomatic modern CSS with progressive-enhancement fallbacks |
+| [`best-practices-css`](./skills/best-practices-css) | Idiomatic modern CSS with progressive-enhancement fallbacks, plus motion design |
 | [`best-practices-html`](./skills/best-practices-html) | Semantic HTML/Svelte markup, landmarks, forms, native controls |
 | [`best-practices-oidc`](./skills/best-practices-oidc) | OIDC/OAuth 2.0 flows, token validation, endpoints, security hardening |
 | [`best-practices-svelte5`](./skills/best-practices-svelte5) | Authoring Svelte 5 components and SvelteKit apps |
@@ -68,7 +68,6 @@ Skills sourced from other public repos. Re-sync with [`add-skill.sh`](./add-skil
 
 | Skill | Use for |
 | --- | --- |
-| [`css-motion-systems`](./vendor-auto/css-motion-systems) | CSS motion design, `linear()` easing, View Transitions, Disney principles |
 | [`design-interface`](./vendor/design-interface) | Generating multiple radically different API/module shapes in parallel |
 | [`design-state-machine`](./vendor-auto/design-state-machine) | Statechart and state-machine lifecycle modeling |
 | [`impeccable`](./vendor/impeccable) | UX/UI critique, polish, and ambitious frontend redesign |

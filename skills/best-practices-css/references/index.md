@@ -9,6 +9,7 @@ Use this file first to avoid loading unnecessary rule files.
    - Progressive → `profiles/progressive.md`
    - Experimental → `profiles/experimental.md`
 2. Then load only the few matching rule files in `rules/`.
+3. For motion work, add `motion/index.md` — design, easing, timing, View Transitions.
 
 ## High-Impact Starter Rules (Idiomatic CSS)
 
@@ -18,7 +19,7 @@ Start with these before lower-impact optimizations:
 - **Layout / spacing:** `layout-gap-spacing.md`, `layout-aspect-ratio.md`, `layout-container-queries.md`, `layout-logical-properties.md`
 - **Theme / color:** `workflow-custom-properties.md`, `color-scheme.md`, `color-oklch.md`
 - **Typography:** `typography-fluid.md`, `typography-line-clamp.md`, `typography-variable-fonts.md`
-- **Motion / interaction:** `animation-independent-transforms.md`, `interactive-dialog.md`, `interactive-scroll-snap.md` (feature compatibility only — for motion *design*, use the `css-motion-systems` skill)
+- **Motion / interaction:** `animation-independent-transforms.md`, `interactive-dialog.md`, `interactive-scroll-snap.md` (feature compatibility only — for motion *design*, read `motion/index.md`)
 
 ## Rule Prefix Map
 

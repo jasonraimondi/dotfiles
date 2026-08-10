@@ -44,6 +44,10 @@ Every easing value is a token; per-component curves fragment the motion system. 
 
 Exits run faster than enters. Direction follows layout flow. Stagger only when it improves scannability or hierarchy.
 
+## Character
+
+When motion needs personality — squash and stretch, anticipation, follow-through, arcs, exaggeration — see `disney-principles.md`.
+
 ## View Transitions
 
 - **Same-document** — wrap the state update in `document.startViewTransition(() => update())`, and feature-detect so the un-transitioned path still updates.
