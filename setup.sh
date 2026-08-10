@@ -17,6 +17,7 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # skipped with a warning).
 SKILLS_SOURCES=(
   "$SCRIPT_DIR/skills"
+  "$SCRIPT_DIR/skills-for-work"
   "$SCRIPT_DIR/vendor"
   "$SCRIPT_DIR/vendor-auto"
 )
