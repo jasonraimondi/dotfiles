@@ -11,5 +11,3 @@ Describe the purpose and details of each pull request.
 If a PR is waiting for someone to review, highlight that in the response.
 
 If there were any check failures on the PR, describe them and suggest possible fixes.
-
-If there was no review done by Copilot, offer to request one using #request_copilot_review.
