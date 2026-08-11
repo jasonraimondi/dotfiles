@@ -8,32 +8,34 @@ disable-model-invocation: true
 
 Slack carries the **open asks** — requests aimed at Jason that nobody has closed out. Linear is the **ledger** — what is already written down and assigned. Slack leads because new work lands there first; the ledger follows to say whether an ask is already on the books.
 
-## 1. Window and callouts
+## 1. Window
 
-Default window: the last 3 days. Use whatever window Jason names instead.
-
-**Callouts** — asks from these people outrank everything else: Lucy, Pietro, Emily, Angel, Christian, Adam.
+Default window: the last 3 days. Use whatever window Jason names instead. Every search and the ledger lookup use that same window.
 
 ## 2. Sweep Slack
 
+Jason's own activity is the map. Every conversation he posted in during the window is a live front, and the asks aimed at him sit in those threads or in his DMs.
+
 Batch these searches, each with `after:<window start>` and `sort="timestamp"`:
 
+- `from:me` — every channel, DM, and thread Jason posted in
 - `to:me` — DMs and group DMs
 - `jason` as a plain keyword — channel mentions, which `to:` does not match
-- one search per callout name, `from:Lucy` and so on
 
-`from:Lucy` usually resolves on its own. On zero results or a name shared by two people, get the ID with `slack_search_users` and search `from:<@U…>`.
+`from:me` and `to:me` usually resolve on their own. On zero results, get Jason's ID with `slack_search_users` and search `from:<@U…>`.
 
 ## 3. Close what is already closed
 
-Read every candidate in context before it counts — `slack_read_thread` on the thread, `slack_read_channel` around a loose message. An ask is **closed** when Jason already answered it, someone else picked it up, or the thread landed on a resolution. What survives is an open ask.
+Read every candidate in context before it counts — `slack_read_thread` on the thread, `slack_read_channel` around a loose message. Read forward to the last message: a `from:me` hit means Jason spoke, not that he finished, and whatever came after his last word is where the open ask lives.
 
-Done when every callout name has been searched and every candidate has been read in its thread.
+An ask is **closed** when Jason already answered it, someone else picked it up, or the thread landed on a resolution. What survives is an open ask.
+
+Done when every conversation the sweep returned has been read to its last message.
 
 ## 4. Check the ledger
 
 - `list_issues` with assignee `me` and state started, then unstarted — what is already assigned to Jason
-- `list_issues` with `updatedAt: -P3D` (match the window) plus query terms drawn from the open asks
+- `list_issues` with `updatedAt: -P<window in days>D` plus query terms drawn from the open asks
 
 Mark each open ask **tracked** (name the identifier) or **untracked**.
 
@@ -47,7 +49,7 @@ Ranked, one line per item, extremely concise. Link the Slack source and, if trac
 3. [[INT-455](https://linear.app/...)] Rate limiter rollout — assigned, in progress, no Slack activity
 ```
 
-Rank by: callouts first, then asks blocking someone else, then explicit deadlines, then everything else. Assigned Linear work with no Slack traffic sorts last.
+Rank by: someone waiting on a direct reply from Jason first, then asks blocking someone else, then explicit deadlines, then everything else. Within a tier, the most recent message wins. Assigned Linear work with no Slack traffic sorts last.
 
 ## 6. Log the day
 
