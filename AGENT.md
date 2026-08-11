@@ -72,3 +72,6 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ## Info
 - Report information concisely. Prefer short, complete sentences.
 - Use ASD-STE100 Simplified Technical English. Use the ubiquitous language in `CONTEXT.md` when that file exists.
+- Never hard-wrap prose. Do not insert manual line breaks to hit a column width.
+- Wrap only where the newline is part of the artifact (commit bodies, code).
+- Text for Slack, email, PRs, or issues must be one line per paragraph — the viewer reflows it, so your breaks become permanent.
