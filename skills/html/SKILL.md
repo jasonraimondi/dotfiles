@@ -1,5 +1,5 @@
 ---
-name: best-practices-html
+name: html
 description: Use when writing or refactoring HTML or template markup (including Svelte), choosing between div/section/article/ul/li, cleaning up div soup, fixing heading or landmark structure, labeling forms, deciding between buttons and links, embedding images or media, adding ARIA, or replacing custom controls with native HTML. Also use when asked to "review my UI", "check accessibility", "audit design", "review UX", or check UI code against best practices.
 ---
 
