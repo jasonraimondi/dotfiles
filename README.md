@@ -41,7 +41,7 @@ The script also wires the shared `AGENT.md` from this repo into the rule/memory 
 | Skill | Use for |
 | --- | --- |
 | [`best-practices-codebase-architecture`](./skills/best-practices-codebase-architecture) | Finding refactors that deepen shallow modules and improve testability |
-| [`best-practices-comments`](./skills/best-practices-comments) | Auditing and removing journal/noise/redundant code comments |
+| [`writing-comments`](./skills/writing-comments) | Deciding whether a comment earns its place, writing the ones that do, auditing the ones already there |
 | [`best-practices-css`](./skills/best-practices-css) | Idiomatic modern CSS with progressive-enhancement fallbacks, plus motion design |
 | [`best-practices-html`](./skills/best-practices-html) | Semantic HTML/Svelte markup, landmarks, forms, native controls |
 | [`best-practices-oidc`](./skills/best-practices-oidc) | OIDC/OAuth 2.0 flows, token validation, endpoints, security hardening |
