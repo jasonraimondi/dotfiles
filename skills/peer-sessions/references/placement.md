@@ -8,6 +8,7 @@ Read this when you choose a `spawn-fleet.py` placement, need a non-default flag,
 - `--direction right|down` — where each new pane goes (default `right`)
 - `--per-tab 1|2` — sessions per tab or workspace (default 2)
 - `--prefix <name>` — tab or workspace label prefix (default `fleet`)
+- `--title <words>` — fleet mission, five words or fewer; labels tabs/workspaces `f1: <title>`, `f2: <title>`, … and beats `--prefix` when both are given
 - `--model <model>` — model for every session
 - `--claude-arg <flag>` — repeatable escape hatch, passed to `claude` verbatim
 - `--timeout <seconds>` — how long to wait for live sockets (default 120)

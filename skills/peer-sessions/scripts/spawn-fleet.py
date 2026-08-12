@@ -183,14 +183,14 @@ def build_splits(specs, caller_pane, direction):
     return {"placement": "split", "tabs": [], "workspaces": [], "panes": panes}
 
 
-def build_groups(specs, placement, workspace, prefix, per_tab, direction):
+def build_groups(specs, placement, workspace, prefix, per_tab, direction, title):
     """Put each group of sessions in its own tab, or its own workspace."""
     tabs = []
     workspaces = []
     panes = []
     groups = [specs[index : index + per_tab] for index in range(0, len(specs), per_tab)]
     for group_index, group in enumerate(groups, 1):
-        label = f"{prefix}-{group_index}"
+        label = f"f{group_index}: {title}" if title else f"{prefix}-{group_index}"
         first_dir = group[0][1]
         if placement == "workspace":
             created = herdr(
@@ -235,6 +235,11 @@ def main():
     )
     parser.add_argument("--per-tab", type=int, default=2, choices=(1, 2))
     parser.add_argument("--prefix", default="fleet")
+    parser.add_argument(
+        "--title",
+        help="short fleet mission, five words or fewer; tabs/workspaces are "
+        "labeled 'f1: <title>', 'f2: <title>', … (default: <prefix>-N)",
+    )
     parser.add_argument("--model")
     parser.add_argument("--claude-arg", action="append", default=[])
     parser.add_argument("--timeout", type=int, default=120)
@@ -264,6 +269,7 @@ def main():
             args.prefix,
             args.per_tab,
             args.direction,
+            args.title,
         )
         created = layout["workspaces"] or layout["tabs"]
         print(f"{args.placement}s {', '.join(created)}")
