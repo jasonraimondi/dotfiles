@@ -25,7 +25,7 @@ If that fails, say so and stop. Do not drive a Herdr session from outside Herdr.
 python3 scripts/spawn-fleet.py orbits:/tmp/lab/orbits planets:/tmp/lab/planets
 ```
 
-Each argument is `NAME:DIR`. One name serves as both the Herdr agent name and the Claude session name, so it must match `[a-z][a-z0-9_-]{0,31}`. The script prints each session's `uds:` address and the exact teardown commands, returns when every session is addressable, and names each session that stalled.
+Each argument is `NAME:DIR`. One name serves as both the Herdr agent name and the Claude session name, so it must match `[a-z][a-z0-9_-]{0,31}`. The script labels each pane with its session name (`herdr pane rename`, so the label survives the session retitling its terminal), prints each session's `uds:` address and the exact teardown commands, returns when every session is addressable, and names each session that stalled.
 
 `--placement` says where the fleet appears. You choose it. Ask the user only when the choice changes their screen and you cannot tell what they want.
 

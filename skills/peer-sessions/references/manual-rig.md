@@ -35,11 +35,15 @@ This is what `--placement split` does:
 herdr pane split --current --direction right --cwd /tmp/lab/alpha --no-focus
 # → .result.pane.pane_id, e.g. w1:p4
 
+herdr pane rename w1:p4 alpha
+
 herdr agent start alpha --kind claude --pane w1:p4 -- \
   --name alpha --permission-mode auto
 ```
 
 `--no-focus` matters. Without it the UI jumps to the new pane, and the user's next keystrokes go to the peer.
+
+`pane rename` gives the pane a short label — the session name. A Claude session keeps retitling its terminal with whatever it is doing, and the label is the one thing that survives that, so a labeled fleet stays readable. The spawn script does this for every pane it creates; do the same when rigging by hand.
 
 `agent start` needs a pane already sitting at its shell prompt, and it returns only once Herdr sees Claude ready for input. It never creates or moves layout — split first, then start. The name binds the Herdr agent; `--name` after `--` binds the Claude session name that `SendMessage` and `peer-addr.py` resolve. Keep them identical.
 

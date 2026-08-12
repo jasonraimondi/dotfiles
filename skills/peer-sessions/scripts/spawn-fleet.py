@@ -117,6 +117,15 @@ def print_cleanup(records, layout):
     print(f"  python3 {ADDR_SCRIPT}")
 
 
+def label_panes(specs, panes):
+    """Label each pane with its session name so the fleet reads at a glance."""
+    for (name, _), pane in zip(specs, panes):
+        try:
+            herdr("pane", "rename", pane, name)
+        except RuntimeError as error:
+            print(f"note: could not label pane {pane}: {error}", file=sys.stderr)
+
+
 def start_agent(name, pane, permission_mode, extra, timeout_ms):
     """Hand the pane to Herdr's agent supervisor and wait until Claude is up."""
     herdr(
@@ -258,6 +267,8 @@ def main():
         )
         created = layout["workspaces"] or layout["tabs"]
         print(f"{args.placement}s {', '.join(created)}")
+
+    label_panes(specs, layout["panes"])
 
     started = time.time()
     # `agent start` returns once Claude is ready for input, which is earlier
