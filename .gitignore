@@ -1,6 +1,7 @@
 .idea
 
 aws/dot-aws/credentials
+aws/dot-aws/config
 
 brew/Brewfile.lock.json
 
