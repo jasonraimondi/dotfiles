@@ -9,6 +9,7 @@ aws/dot-aws/sso/
 brew/Brewfile.lock.json
 
 config/karabiner/automatic_backups/
+config/herdr/release-notes.json
 
 git/dot-git-authors
 git/dot-git-user
