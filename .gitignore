@@ -2,6 +2,9 @@
 
 aws/dot-aws/credentials
 aws/dot-aws/config
+aws/dot-aws/*.bkp
+aws/dot-aws/cli/
+aws/dot-aws/sso/
 
 brew/Brewfile.lock.json
 
