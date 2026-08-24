@@ -217,3 +217,35 @@ function yt-dlmerge() {
 
   echo "Playlist merged successfully. Output file: $output_file"
 }
+
+# download a single directory out of a github repo
+function ghdl() {
+  if [ -z "${2}" ]; then
+    echo "usage: ghdl owner/repo path/to/dir [branch]"
+    return 1
+  fi
+
+  local repo="$1"
+  local dir="$2"
+  local tmp
+  tmp=$(mktemp -d) || return 1
+
+  local -a branch_arg
+  [ -n "${3:-}" ] && branch_arg=(--branch "$3")
+
+  if ! git clone --depth 1 --filter=blob:none --sparse "${branch_arg[@]}" "https://github.com/$repo.git" "$tmp"; then
+    rm -rf "$tmp"
+    return 1
+  fi
+
+  (cd "$tmp" && git sparse-checkout set "$dir")
+
+  if [ ! -d "$tmp/$dir" ]; then
+    echo "ERROR: $dir not found in $repo"
+    rm -rf "$tmp"
+    return 1
+  fi
+
+  mv "$tmp/$dir" .
+  rm -rf "$tmp"
+}
