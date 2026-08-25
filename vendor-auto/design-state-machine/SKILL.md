@@ -1,6 +1,6 @@
 ---
 name: design-state-machine
-description: Statechart and state machine modeling for lifecycle and behavior specification
+description: Statechart and state machine modeling for lifecycle and behavior specification. Use when designing a state machine or statechart, or reviewing one for completeness.
 allowed-tools: Read, Glob, Grep, Write, Edit
 ---
 

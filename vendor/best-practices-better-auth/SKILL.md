@@ -1,6 +1,6 @@
 ---
 name: best-practices-better-auth
-description: Skill for integrating Better Auth - the comprehensive TypeScript authentication framework.
+description: Integrates Better Auth, the TypeScript authentication framework. Use when adding, configuring, or troubleshooting auth with Better Auth.
 disable-model-invocation: true
 ---
 

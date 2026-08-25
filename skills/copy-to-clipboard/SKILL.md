@@ -1,6 +1,6 @@
 ---
 name: copy-to-clipboard
-description: Pipe the response's prose to the macOS clipboard via `pbcopy` so the user can paste it directly. Use when the user says "copy to clipboard", "/copy", "pbcopy this", "put it on my clipboard", or otherwise asks for paste-ready output. macOS only.
+description: Pipe the response's prose to the macOS clipboard via `pbcopy` so the user can paste it directly. Use when the user asks to copy the response or runs /copy. macOS only.
 ---
 
 ## What to copy

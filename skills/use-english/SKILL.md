@@ -1,6 +1,6 @@
 ---
 name: use-english
-description: "Use ASD-STE100 Simplified Technical English."
+description: "Simplified Technical English (ASD-STE100) rules for writing."
 disable-model-invocation: true
 ---
 

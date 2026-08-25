@@ -1,7 +1,7 @@
 ---
 name: best-practices-rust
 description: >
-  Guide for writing idiomatic Rust code based on Apollo GraphQL's best practices handbook. Use this skill when:
+  Writes idiomatic Rust code following Apollo GraphQL's best-practices handbook. Use when:
   (1) writing new Rust code or functions,
   (2) reviewing or refactoring existing Rust code,
   (3) deciding between borrowing vs cloning or ownership patterns,

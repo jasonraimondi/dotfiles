@@ -1,6 +1,6 @@
 ---
 name: svelte
-description: "Use when creating, editing, reviewing, or refactoring .svelte components, .svelte.ts/.svelte.js modules, or SvelteKit applications"
+description: "Svelte component and SvelteKit conventions. Use when creating, editing, reviewing, or refactoring .svelte components, .svelte.ts/.svelte.js modules, or SvelteKit applications"
 ---
 
 # Svelte 5 Best Practices

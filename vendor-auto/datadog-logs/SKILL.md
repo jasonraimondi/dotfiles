@@ -1,5 +1,5 @@
 ---
-name: dd-logs
+name: datadog-logs
 description: Log management - search, archives, metrics, and cost control.
 metadata:
   version: "1.0.1"

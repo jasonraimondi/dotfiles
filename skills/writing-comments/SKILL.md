@@ -1,6 +1,6 @@
 ---
 name: writing-comments
-description: Use when about to write a comment, when judging whether one earns its place, or when asked to review, audit, or clean up comments.
+description: Comment-writing discipline. Use when about to write a comment, judging whether one earns its place, or reviewing, auditing, or cleaning up comments.
 ---
 
 # Writing comments

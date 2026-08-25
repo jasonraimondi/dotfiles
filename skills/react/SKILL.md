@@ -1,4 +1,5 @@
 ---
+name: react
 description: Controller/view split for React components. Use when adding a React component, restructuring one that mixes hooks into its JSX, or deciding what belongs in the controller vs the view.
 ---
 

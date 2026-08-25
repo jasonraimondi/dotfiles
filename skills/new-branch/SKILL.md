@@ -1,6 +1,6 @@
 ---
 name: new-branch
-description: Create a new git branch named jason/{type}/{ticket-}{short-description} using conventional-commit types. Use when the user says "new branch", "/new-branch", "branch off", "create a branch", or starts work that should happen on its own branch.
+description: Create a new git branch named jason/{type}/{ticket-}{short-description} using conventional-commit types. Use when the user runs /new-branch or asks to start a new branch, or starts work that should happen on its own branch.
 ---
 
 ## Branch name format

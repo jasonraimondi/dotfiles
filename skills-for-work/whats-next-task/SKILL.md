@@ -1,6 +1,6 @@
 ---
 name: whats-next-task
-description: Sweep Slack for open asks, then check Linear for what's already tracked, and rank what Jason should work on next. Use for "what should I work on next", "what's on my plate", "look through my Slack for things I need to do", or catching up after time away.
+description: Sweep Slack for open asks, then check Linear for what's already tracked, and rank what Jason should work on next. Use for "what should I work on next" or catching up after time away.
 disable-model-invocation: true
 ---
 
