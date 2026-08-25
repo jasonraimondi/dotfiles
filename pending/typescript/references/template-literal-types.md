@@ -1,10 +1,3 @@
----
-name: template-literal-types
-description: String manipulation at the type level with template literals
-metadata:
-  tags: template-literals, string-types, type-manipulation
----
-
 # Template Literal Types
 
 ## Overview
@@ -294,11 +287,3 @@ type AddPrefix<T, P extends string> = {
   [K in keyof T as K extends string ? `${P}${K}` : never]: T[K];
 };
 ```
-
-## Best Practices
-
-1. **Keep patterns simple**: Complex recursive patterns are hard to debug
-2. **Provide fallback types**: Handle non-matching cases gracefully
-3. **Test edge cases**: Empty strings, single characters, no matches
-4. **Consider performance**: Deep recursion can slow down type checking
-5. **Use built-in utilities**: Prefer `Uppercase`, `Lowercase`, etc. over custom implementations

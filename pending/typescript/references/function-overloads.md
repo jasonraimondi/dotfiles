@@ -1,10 +1,3 @@
----
-name: function-overloads
-description: Using function overloads for complex function signatures
-metadata:
-  tags: overloads, function-signatures, polymorphism, type-narrowing
----
-
 # Function Overloads
 
 ## Overview
