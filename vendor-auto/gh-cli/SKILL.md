@@ -1,7 +1,6 @@
 ---
 name: gh-cli
 description: GitHub CLI (gh) comprehensive reference for repositories, issues, pull requests, Actions, projects, releases, gists, codespaces, organizations, extensions, and all GitHub operations from the command line.
-disable-model-invocation: true
 ---
 
 # GitHub CLI (gh)
