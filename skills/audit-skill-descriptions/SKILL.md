@@ -1,10 +1,14 @@
 ---
 name: audit-skill-descriptions
-description: Use when writing or editing skills to improve their description frontmatter
+description: Audit every skill description in a folder against the context-pointer rules.
+disable-model-invocation: true
 ---
 
-The only point of a skill's frontmatter description is to trigger the skill when it should, not to accurately describe everything the skill does. 
+Load `writing-for-agents`. For every `SKILL.md` under the given folder, grade its `description` on:
 
-Treat the description as the thing that gets the model to do this rather than as an accurate description of everything the model can do with the skill
+- leading word front-loaded
+- one trigger per branch
+- identity the body carries cut
+- no collision with another skill's triggers
 
-It should be targeted and concise.
+Done when every skill has a verdict and a proposed rewrite for each failure.
