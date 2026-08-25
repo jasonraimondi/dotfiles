@@ -16,6 +16,8 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 # directories. On name collision, the earlier source wins (the later entry is
 # skipped with a warning).
 SKILLS_SOURCES=(
+  "$SCRIPT_DIR/dupe-soup"
+  "$SCRIPT_DIR/pending"
   "$SCRIPT_DIR/skills"
   "$SCRIPT_DIR/skills-for-work"
   "$SCRIPT_DIR/vendor"
@@ -112,6 +114,7 @@ link_path() {
 #   none    — leave the frontmatter alone
 invocation_policy_for() {
   case "$1" in
+    "$SCRIPT_DIR/pending")     printf 'disable' ;;
     "$SCRIPT_DIR/vendor")      printf 'disable' ;;
     "$SCRIPT_DIR/vendor-auto") printf 'auto' ;;
     *)                         printf 'none' ;;

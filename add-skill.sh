@@ -28,7 +28,7 @@ SKILL=""
 REF=""
 SUBPATH=""
 PATH_EXPLICIT=0
-DEST="./pending"
+DEST="./tmp"
 FORCE=0
 
 # Allow `add-skill.sh add <repo> ...` to mirror `skills add <repo> ...`
