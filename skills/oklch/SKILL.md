@@ -1,5 +1,5 @@
 ---
-name: frontend-oklch
+name: oklch
 description: OKLCH color space for web projects. Convert hex/rgb/hsl to oklch, generate palettes, check contrast, and handle gamut boundaries. Triggers on oklch, color conversion, palette generation, contrast ratio, gamut, display p3, design tokens, hue drift, chroma, dark mode colors.
 ---
 
