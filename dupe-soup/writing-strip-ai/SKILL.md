@@ -1,6 +1,7 @@
 ---
 name: writing-strip-ai
 description: Strip AI-sounding patterns out of a draft so it reads like a human wrote it, not a chatbot. Use whenever the user asks to humanize a draft, remove AI tells (e.g. em dashes), or wants help editing pasted text so it doesn't read like AI. Also use for Slack messages, GitHub PR comments, or other external-facing writing.
+disable-model-invocation: true
 ---
 
 ## Ethos
