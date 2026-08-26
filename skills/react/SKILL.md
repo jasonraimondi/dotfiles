@@ -1,6 +1,6 @@
 ---
 name: react
-description: Controller/view split for React components. Use when adding a React component, restructuring one that mixes hooks into its JSX, or deciding what belongs in the controller vs the view.
+description: Use when writing or editing React components, restructuring one that mixes hooks into its JSX, or deciding what belongs in the controller vs the view.
 ---
 
 # Controller/view paradigm
