@@ -1,12 +1,12 @@
 ---
 name: pr-description-template
-description: Rewrite a GitHub pull request's title and description into a conventional-commits + ticket format with a terse structured body and a diff-derived pre-merge checklist. Use whenever the user wants a PR description formatted or run through "the template".
+description: Rewrite a GitHub pull request's title and description into a conventional-commits + ticket format with a compact, readable body and a diff-derived pre-merge checklist. Use whenever the user wants a PR description formatted or run through "the template".
 disable-model-invocation: true
 ---
 
 # PR Template Applier
 
-Reads a pull request with `gh`, writes a normalized title and a short body, and applies them. A section waits for its trigger; a section with nothing to say never appears.
+Reads a pull request with `gh`, writes a normalized title and a compact body, and applies them. Optimize for density of insight, not minimum word count: explain why the change matters, what changed, and any consequence a reviewer must understand.
 
 ## Workflow
 
@@ -15,10 +15,12 @@ Reads a pull request with `gh`, writes a normalized title and a short body, and 
 3. **Triage the body against the diff.** See "Triage the body".
 4. **Read the ticket and `CONTEXT.md`.** Use `{argument}` for the ticket if given; otherwise search the body and every commit message for `[A-Z]{2,}-\d+` (e.g. `PROJ-456`). Read each ticket you find and treat its description as a claim too — the code is what shipped. Read `CONTEXT.md` if the repo has one (root, or the nearest ancestor directory of the changed files); its terms govern the wording you write.
 5. **Build the title and the body** from the rules below.
-6. **Apply.** Pipe the body through stdin — see "Applying the edit". Apply as soon as it is written; `gh pr edit` is re-runnable, so a rewrite the user dislikes costs one more run.
-7. **Verify.** Run `gh pr view <ref> --json title,body` and confirm the body is non-empty and opens with `## Summary` (or `## Stack`). A mismatch means the apply failed: retry, and tell the user. Report success only after this check passes.
-8. **Assign.** `gh pr edit <ref> --add-assignee @me`, plus any login the user named in their instruction.
-9. **Report.** Print the applied title and body in a code block, then only what needs the user's judgment: every contradicted claim with its evidence, every claim still unverified, and every gap from the diff audit. When the diff spans unrelated top-level areas, add one line suggesting the PR be split.
+6. **Compress.** Aim for the length target below. Delete low-value detail instead of packing it into longer sentences. Check the final length and keep any excess only when it earns its place.
+7. **Unslop.** Read [`../../dupe-soup/unslop/SKILL.md`](../../dupe-soup/unslop/SKILL.md). Apply its complete process and every pattern check to the title and body. Preserve verified technical meaning, conventional title syntax, Markdown headings, literal code, and task-list syntax. This step is complete when the self-audit finds no remaining tell.
+8. **Apply.** Pipe the body through stdin. See "Applying the edit". Apply as soon as it is written. `gh pr edit` is re-runnable, so a rewrite the user dislikes costs one more run.
+9. **Verify.** Run `gh pr view <ref> --json title,body` and confirm the body is non-empty and opens with `## Problem` or `## Stack`. A mismatch means the apply failed. Retry and tell the user. Report success only after this check passes.
+10. **Assign.** `gh pr edit <ref> --add-assignee @me`, plus any login the user named in their instruction.
+11. **Report.** Print the applied title and body in a code block, then only what needs the user's judgment: every contradicted claim with its evidence, every claim still unverified, and every gap from the diff audit. When the diff spans unrelated top-level areas, add one line suggesting the PR be split.
 
 ## Triage the body
 
@@ -42,27 +44,53 @@ A rewrite that launders a stale claim into cleaner prose reads more credible and
 
 ## Description format
 
-The diff already shows *what changed*. The body supplies what the diff cannot: **intent, context, risk**.
+The diff shows implementation detail. The body gives the reviewer the missing frame: **why this matters, what changed, and what consequences follow**. Keep it compact by removing low-value facts, not by compressing useful ideas into clipped prose.
 
 ### Language
 
-Write in ASD-STE100 Simplified Technical English: one idea per sentence, 20 words or fewer, active voice, present tense, one term per concept, plain verbs. When `CONTEXT.md` exists, its ubiquitous language wins — spell each domain concept exactly as that file spells it.
+Follow `/use-english`: use ASD-STE100 Simplified Technical English. Use the ubiquitous language in `CONTEXT.md` when that file exists. The mandatory Unslop pass in step 7 governs punctuation, diction, rhythm, voice, and structure.
 
-Write each paragraph and each bullet as one unbroken line and let GitHub soft-wrap it. Newlines separate paragraphs, bullets, and headings.
+Write natural, connected prose. Give each sentence one clear job, but use enough words to show cause and effect. Write each paragraph and each bullet as one unbroken line and let GitHub soft-wrap it. Newlines separate paragraphs, bullets, and headings.
+
+### Length target
+
+Most PR bodies should land between 150 and 250 words after stripping Markdown syntax. Headings and checklist text count. Preserved image URLs and literal command blocks do not count.
+
+This range is a default, not a cap. A larger body earns its length when the PR has several distinct behaviors, a migration or rollout, a breaking contract, cross-system effects, or risks that reviewers must evaluate. Diff size alone does not justify more prose. Every sentence beyond the range must answer a concrete reviewer question that the shorter version leaves open.
+
+Compression removes content. It does not join discarded facts into dense compound sentences. Keep the causal chain, behavioral changes, strongest test evidence, material scope boundaries, and required human actions. Drop secondary implementation detail, exhaustive cases, repeated consequences, unchanged behavior, and facts a reviewer can read directly from the diff.
+
+Use these defaults as the first editing pass:
+
+- `Problem`: usually one paragraph and no more than 4 sentences.
+- `Fix`: usually no more than 5 one-sentence bullets.
+- `Tests`: usually no more than 4 one-sentence bullets.
+- `Not in this PR`: usually no more than 2 one-sentence bullets.
+- `Pre-merge checklist`: usually no more than 2 items.
+
+Break a default when following it would hide information needed to review or ship the change safely. Above 250 words, challenge every extra bullet and sentence. Never preserve a detail by making another sentence harder to read.
 
 ### Sections
 
-In this order. The typical PR body is a title and three sentences; every other section waits for its trigger.
+Use these sections in this order. Every optional section waits for its trigger.
 
-**`## Stack`** — Only when `baseRefName` is not `main`/`master`, or the body or commits say "stacked on", "depends on", "split out of". First position: merge order is the reviewer's most urgent context. One framing sentence and at most 2 bullets — what it is **stacked on** (the PR number, the merge order) and any **sibling PR** split from the same branch. Note that GitHub retargets this PR to the default branch once the parent merges.
+**`## Stack`** — Only when `baseRefName` is not `main`/`master`, or the body or commits say "stacked on", "depends on", "split out of". First position: merge order is the reviewer's most urgent context. Use one framing sentence and usually no more than 2 bullets — what it is **stacked on** (the PR number, the merge order) and any **sibling PR** split from the same branch. Note that GitHub retargets this PR to the default branch once the parent merges.
 
-**`## Summary`** — Every PR. Three sentences of prose, no bullets: the problem, the approach, and the main rejected alternative when the approach is non-obvious. On a typical PR this section is the whole body.
+**`## Problem`** — Every PR. Explain the failure, need, or constraint before the solution. Trace the causal chain far enough that a reviewer understands both the mechanism and the user or operational consequence. Keep implementation changes out of this section.
 
-**`## Breaking Changes`** — Only when the diff shows one: removed public exports, changed public signatures, renamed or removed endpoints, removed CLI flags, schema removals, a major version bump, or a `BREAKING:` marker. Two sentences: what breaks, and the migration path.
+**`## Fix`** — Every PR. Use plain bullets for substantive changes. Each bullet describes one coherent behavior, contract, or decision and explains its important consequence. Order the bullets along the runtime or user flow when one exists. A small change may use one short paragraph instead.
 
-**`## Pre-Merge Checklist`** — See "Pre-merge checklist". At most 2 items, all unchecked.
+**`## Breaking changes`** — Only when the diff shows one: removed public exports, changed public signatures, renamed or removed endpoints, removed CLI flags, schema removals, a major version bump, or a `BREAKING:` marker. State what breaks and how callers migrate.
+
+**`## Tests`** — Include for code changes when the diff or existing body provides test evidence. Use plain bullets that name the behavior proved, including the main success case and the highest-risk boundary. Combine related assertions. Include commands only when they were run.
+
+**`## Not in this PR`** — Only when a material scope boundary, operational follow-up, unresolved decision, or known affected population could surprise a reviewer. Use plain bullets. State what remains, why it remains, and where it is tracked when known. Omit this section when there is no meaningful boundary.
+
+**`## Pre-merge checklist`** — See "Pre-merge checklist". Usually no more than 2 items, all unchecked.
 
 **`## Screenshots`** — Only when the original body already holds images or video links. Carry them through unchanged, at the bottom. Generate nothing here.
+
+Keep the section set small by omitting optional sections, not by collapsing distinct reviewer questions into one paragraph. Remove file inventories, low-value implementation trivia, and repeated facts. Spend words where they add insight, then stop.
 
 Name collaborators in assignees. Write any `@`-mention from the original body as plain text — GitHub re-notifies mentioned users on every edit.
 
@@ -81,7 +109,7 @@ Signals that usually produce one:
 | New env vars or config keys                                      | Deployment configs updated for staging and production                    |
 | Behavior only a human can confirm (visual, timing, first-run)    | The exact thing to click through and observe                             |
 
-Paraphrase each item to name the actual change: "Migration tested against a production-sized dataset (drop index is a safe rollback)", not the generic wording. Keep the two highest-risk items. Most PRs fire nothing — then the section is omitted.
+Paraphrase each item to name the actual change: "Migration tested against a production-sized dataset (drop index is a safe rollback)", not the generic wording. Usually keep the two highest-risk items. Add more only when each additional action is independently necessary before merge. Most PRs fire nothing — then the section is omitted.
 
 ### Diff audit
 
@@ -99,21 +127,28 @@ A gap is a question for the chat: "new logic in `auth/pkce.ts` ships with no tes
 
 ### Example 1 — the typical PR
 
-**Input:** Body mentions `PROJ-892`. Diff: one query rewrite in `reports/queries.ts`. No migration, no UI, no public API change.
+**Input:** Body mentions `PROJ-892`. Diff: one query rewrite in `reports/queries.ts` plus coverage for large workspaces and result ordering. No migration, no UI, no public API change.
 
 **Output title:** `fix(reports): PROJ-892 rewrite dashboard query to use the events index`
 
 **Output body:**
 ```markdown
-## Summary
-The dashboard times out for workspaces above 50k events. The reports query now drives off the existing `events(workspace_id, created_at)` index instead of sorting in memory. A materialized rollup was rejected: it adds a refresh path for a query that is fast enough once indexed.
+## Problem
+Reports become unusable for large workspaces because the dashboard sorts every event in memory and times out.
+
+## Fix
+- Read reports from the existing `events(workspace_id, created_at)` index.
+- Remove the in-memory sort while keeping the current reporting path.
+
+## Tests
+- The large-workspace report completes with the indexed query and preserves the existing result order.
 ```
 
-That is the whole body. No migration files, so no checklist. No contract change, so no `Breaking Changes`. Most PRs look like this.
+That is the whole body. Each section answers one reviewer question, and the bullets make the change easy to scan. No migration files means no checklist, and no contract change means no `Breaking changes`.
 
-### Example 2 — the rare maximum
+### Example 2 — a larger PR
 
-**Input:** Branch `feature/oauth-pkce`, base `feature/oauth-be`, commits reference `PROJ-456`. Diff adds an authorization code path with tests in `auth/pkce.test.ts`, modifies the `/oauth/authorize` handler, removes the ability to call it without a code challenge, and adds an `OAUTH_PKCE_REQUIRED` env var.
+**Input:** Branch `feature/oauth-pkce`, base `feature/oauth-be`, commits reference `PROJ-456`. Diff adds an authorization code path with tests in `auth/pkce.test.ts`, modifies the `/oauth/authorize` handler, removes the ability to call it without a code challenge, and adds an `OAUTH_PKCE_REQUIRED` env var. Existing public clients migrate in separate repositories.
 
 **Output title:** `feat(auth)!: PROJ-456 add OAuth2 PKCE flow`
 
@@ -121,20 +156,32 @@ That is the whole body. No migration files, so no checklist. No contract change,
 ```markdown
 ## Stack
 Client half of the PKCE work, split from the combined branch.
-- **Stacked on #4666** (token-exchange contract) — merge #4666 first, and GitHub retargets this PR to `main`.
+- **Stacked on #4666.** This PR uses its token-exchange contract. Merge #4666 first. GitHub then retargets this PR to `main`.
 
-## Summary
-An intercepted redirect can leak an authorization code from a public OAuth2 client. PKCE binds each code to a per-request secret, so a stolen code is useless without the verifier. Rotating codes on redirect was rejected: it closes a smaller window and still trusts the redirect.
+## Problem
+An intercepted redirect can expose an authorization code from a public OAuth2 client. An attacker can use that code because nothing binds it to the client that started the request.
 
-## Breaking Changes
-`/oauth/authorize` rejects requests without a `code_challenge`. Public clients must send one before this ships, or they get `400 invalid_request`.
+## Fix
+- Require a PKCE challenge on each authorization request.
+- Verify the matching client secret during token exchange.
+- Gate enforcement with `OAUTH_PKCE_REQUIRED` while public clients migrate.
 
-## Pre-Merge Checklist
+## Breaking changes
+`/oauth/authorize` rejects requests without a `code_challenge`. Public clients must send one before enforcement, or they get `400 invalid_request`.
+
+## Tests
+- Authorization accepts a valid challenge and verifier pair.
+- Token exchange rejects a missing or mismatched verifier.
+
+## Not in this PR
+- Existing public clients still need separate changes to send a PKCE challenge.
+
+## Pre-merge checklist
 - [ ] Security review requested for the new authorization code path
 - [ ] `OAUTH_PKCE_REQUIRED` set in staging and production before deploy
 ```
 
-Four sections is the ceiling, and it takes a stacked base, a broken contract, and two real human actions to reach it. The diff holds `auth/pkce.test.ts`, so the audit passes and nothing about tests reaches the body. The diff does not update the API docs for the new required parameter — that goes in the report, not into a box.
+The body separates the security failure, implementation, compatibility break, test evidence, and remaining human actions. Each section earns its place by answering a different reviewer question. The missing API documentation goes in the report, not into a box.
 
 ## Applying the edit
 
