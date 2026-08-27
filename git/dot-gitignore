@@ -162,7 +162,6 @@ pickle-email-*.html
 
 ### Ruby ###
 *.gem
-/.config
 /spec/reports/
 /spec/examples.txt
 /test/tmp/
