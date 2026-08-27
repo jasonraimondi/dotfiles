@@ -184,10 +184,12 @@ list_skills() {
   done
 }
 
-# Remove links recorded by previous runs (current and legacy manifest), then
-# delete those manifests so the next run can rebuild from scratch.
-cleanup_stale_skills() {
-  local manifest name dir
+# Remove links recorded by previous runs whose skill name isn't in
+# $1 (newline-separated current names) — i.e. skills since renamed or
+# removed. Skills that still exist are left untouched. Also retires the
+# legacy manifest, since everything it tracked is now covered by $MANIFEST.
+cleanup_orphaned_skills() {
+  local current_names="$1" manifest name dir
   for manifest in "$MANIFEST" "$LEGACY_MANIFEST"; do
     [[ -f "$manifest" ]] || continue
     while IFS= read -r name; do
@@ -196,16 +198,17 @@ cleanup_stale_skills() {
         warn "ignoring suspicious manifest entry: $name"
         continue
       fi
+      grep -qxF "$name" <<< "$current_names" && continue
       for dir in "${SKILLS_TARGETS[@]}"; do
         unlink_path "$dir/$name"
       done
     done < "$manifest"
-    if [[ "$DRY_RUN" == true ]]; then
-      log "rm $manifest"
-    else
-      rm "$manifest"
-    fi
   done
+  if [[ "$DRY_RUN" == true ]]; then
+    log "rm $LEGACY_MANIFEST"
+  else
+    rm -f "$LEGACY_MANIFEST"
+  fi
 }
 
 # Write the manifest atomically (temp file + mv) so an interrupted run never
@@ -245,10 +248,6 @@ sync_skills() {
     return 1
   fi
 
-  # Always clear out the previous run's links first; that handles skills that
-  # were since renamed, deleted, or moved between ./skills/ and ./vendor/.
-  cleanup_stale_skills
-
   local skills entry name src dir names=""
   skills="$(list_skills)"
 
@@ -260,6 +259,12 @@ sync_skills() {
         unlink_path "$dir/$name"
       done
     done <<< "$skills"
+    cleanup_orphaned_skills ""
+    if [[ "$DRY_RUN" == true ]]; then
+      log "rm $MANIFEST"
+    else
+      rm -f "$MANIFEST"
+    fi
     return 0
   fi
 
@@ -270,13 +275,22 @@ sync_skills() {
 
   while IFS= read -r entry; do
     [[ -z "$entry" ]] && continue
+    names+="${entry%%|*}"$'\n'
+  done <<< "$skills"
+
+  # Drop links for skills that existed in the last run but are gone now
+  # (removed, renamed, or moved between sources) before linking the current
+  # set, so link_path only has to add or update.
+  cleanup_orphaned_skills "$names"
+
+  while IFS= read -r entry; do
+    [[ -z "$entry" ]] && continue
     name="${entry%%|*}"
     src="${entry#*|}"
     apply_invocation_policy "$src/$name" "$(invocation_policy_for "$src")"
     for dir in "${SKILLS_TARGETS[@]}"; do
       link_path "$src/$name" "$dir/$name"
     done
-    names+="$name"$'\n'
   done <<< "$skills"
 
   write_manifest "$names"
