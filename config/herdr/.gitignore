@@ -1,3 +1,7 @@
 *.log
 *.sock
 session.json
+
+# Installed plugins are git clones managed by herdr itself; plugins.json
+# has enough (source + resolved_commit) for herdr to re-fetch them.
+plugins/
