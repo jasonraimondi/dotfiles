@@ -27,15 +27,15 @@ applications=(
     "$HOME/Applications/RustRover.app"
     "$HOME/Applications/GoLand.app"
     "$HOME/Applications/DataGrip.app"
-    "/Applications/Cmux.app"
     "/Applications/Zed.app"
     "/Applications/Linear.app"
+    "/Applications/iTerm.app"
     "/Applications/Proxyman.app"
     "/Applications/Transmit.app"
+    # "/Applications/Cmux.app"
     "/Applications/keymapp.app"
     "/Applications/Notion.app"
     "/Applications/Figma.app"
-    "/Applications/iTerm.app"
     "/System/Applications/System Settings.app"
 )
 
