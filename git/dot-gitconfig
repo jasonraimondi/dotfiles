@@ -41,6 +41,10 @@ untrackedCache = true
 
 rebase = false
 
+[fetch]
+
+prune = true
+
 [init]
 
 defaultBranch = main
@@ -74,6 +78,12 @@ default = simple
 followTags = true
 # Auto setup remote branches without needing --set-upstream
 autoSetupRemote = true
+
+[rerere]
+
+# Remember conflict resolutions so identical hunks auto-resolve next time.
+enabled = true
+autoupdate = true
 
 [color]
 
@@ -117,8 +127,8 @@ ane = commit --amend --no-edit
 subinit = submodule update --init --recursive
 subup = submodule update --init --recursive --remote
 
-# View abbreviated SHA, description, and history graph of the latest 20 commits.
-l = log --pretty=oneline -n 20 --graph --abbrev-commit
+# View abbreviated SHA, description, and history graph of the latest N commits (default 20).
+l = "!f() { git log --pretty=oneline -n \"${1:-20}\" --graph --abbrev-commit; }; f"
 
 # View the current working tree status using the short format.
 s = status -s
@@ -151,9 +161,6 @@ aliases = config --get-regexp alias
 
 # Amend the currently staged files to the latest commit.
 amend = commit --amend --reuse-message=HEAD
-
-# Credit an author on the latest commit.
-credit = "!f() { git commit --amend --author \"$1 <$2>\" -C HEAD; }; f"
 
 # Interactive rebase with the given number of latest commits.
 reb = "!r() { git rebase -i HEAD~$1; }; r"
