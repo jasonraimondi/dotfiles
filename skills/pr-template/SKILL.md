@@ -1,7 +1,7 @@
 ---
-name: pr-description-template
+name: pr-template
 description: Rewrite a GitHub pull request's title and description into a conventional-commits + ticket format with a compact, readable body and a diff-derived pre-merge checklist. Use whenever the user wants a PR description formatted or run through "the template".
-disable-model-invocation: true
+# disable-model-invocation: true
 ---
 
 # PR Template Applier
