@@ -3,7 +3,9 @@
 cask_args appdir: "/Applications"
 
 # ==== Quick Look Plugins ====
-# @see https://github.com/sindresorhus/quick-look-plugins
+# Legacy .qlgenerator plugins stopped working in macOS 15 Sequoia; only
+# extensions rewritten against the modern Preview/Thumbnail App Extension
+# framework still function. These three are actively maintained.
 cask "qlmarkdown"
 cask "quicklook-video"
 cask "suspicious-package" # http://www.mothersruin.com/software/SuspiciousPackage/
