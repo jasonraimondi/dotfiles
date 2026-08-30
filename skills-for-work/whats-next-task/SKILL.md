@@ -44,9 +44,9 @@ Mark each open ask **tracked** (name the identifier) or **untracked**.
 Ranked, one line per item, extremely concise. Link the Slack source and, if tracked, the Linear identifier — each to its permalink/URL when one was returned by the search or lookup:
 
 ```
-1. (untracked) [Checkout race on discount stacking](slack://...) — Lucy, DM, Tue
-2. [[INT-482](https://linear.app/...)] Review Pietro's migration plan — [#eng-platform](slack://...), Wed
-3. [[INT-455](https://linear.app/...)] Rate limiter rollout — assigned, in progress, no Slack activity
+- [ ] (untracked) [Checkout race on discount stacking](slack://...) — Lucy, DM, Tue
+- [ ] [[INT-482](https://linear.app/...)] Review Pietro's migration plan — [#eng-platform](slack://...), Wed
+- [ ] [[INT-455](https://linear.app/...)] Rate limiter rollout — assigned, in progress, no Slack activity
 ```
 
 Rank by: someone waiting on a direct reply from Jason first, then asks blocking someone else, then explicit deadlines, then everything else. Within a tier, the most recent message wins. Assigned Linear work with no Slack traffic sorts last.
