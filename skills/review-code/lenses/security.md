@@ -1,4 +1,4 @@
-# Mode: `security`
+# Lens: `security`
 
 Identify exploitable vulnerabilities. Report only **HIGH-CONFIDENCE** findings — clear vulnerable patterns with attacker-controlled input.
 
@@ -11,32 +11,32 @@ Do not report based on pattern matching alone. Investigate first, then report on
 
 ## Reference materials
 
-Detect context from file paths and imports, then load the relevant guides — they carry the patterns to flag and the framework mitigations that produce false positives.
+Detect context from file paths and imports, then load the relevant guides — they carry the patterns to flag and the framework mitigations that produce false positives. Paths below are relative to `../security/`.
 
 | Code type | References |
 |---|---|
-| API endpoints, routes | `security/references/authorization.md`, `authentication.md`, `injection.md` |
-| Frontend, templates | `security/references/xss.md`, `csrf.md` |
-| File handling, uploads | `security/references/file-security.md` |
-| Crypto, secrets, tokens | `security/references/cryptography.md`, `data-protection.md` |
-| Deserialization | `security/references/deserialization.md` |
-| External requests | `security/references/ssrf.md` |
-| Business workflows | `security/references/business-logic.md` |
-| GraphQL / REST design | `security/references/api-security.md` |
-| Config, headers, CORS | `security/references/misconfiguration.md` |
-| CI/CD, dependencies | `security/references/supply-chain.md` |
-| Error handling | `security/references/error-handling.md` |
-| Audit, logging | `security/references/logging.md` |
-| Prototype pollution, LLM injection, WebSocket | `security/references/modern-threats.md` |
+| API endpoints, routes | `references/authorization.md`, `references/authentication.md`, `references/injection.md` |
+| Frontend, templates | `references/xss.md`, `references/csrf.md` |
+| File handling, uploads | `references/file-security.md` |
+| Crypto, secrets, tokens | `references/cryptography.md`, `references/data-protection.md` |
+| Deserialization | `references/deserialization.md` |
+| External requests | `references/ssrf.md` |
+| Business workflows | `references/business-logic.md` |
+| GraphQL / REST design | `references/api-security.md` |
+| Config, headers, CORS | `references/misconfiguration.md` |
+| CI/CD, dependencies | `references/supply-chain.md` |
+| Error handling | `references/error-handling.md` |
+| Audit, logging | `references/logging.md` |
+| Prototype pollution, LLM injection, WebSocket | `references/modern-threats.md` |
 
 | Language | Guide |
 |---|---|
-| Python (Django, Flask, FastAPI) | `security/languages/python.md` |
-| JS/TS (Node, Express, React, Vue, Next.js) | `security/languages/javascript.md` |
+| Python (Django, Flask, FastAPI) | `languages/python.md` |
+| JS/TS (Node, Express, React, Vue, Next.js) | `languages/javascript.md` |
 
 | Infra | Guide |
 |---|---|
-| Docker | `security/infrastructure/docker.md` |
+| Docker | `infrastructure/docker.md` |
 
 ## Confidence
 
@@ -44,9 +44,9 @@ Detect context from file paths and imports, then load the relevant guides — th
 |---|---|---|
 | **HIGH** | Vulnerable pattern + attacker-controlled input confirmed | **Report** with severity |
 | **MEDIUM** | Vulnerable pattern, input source unclear | **Note** as "Needs verification" |
-| **LOW** | Theoretical, best practice, defense-in-depth | **Do not report** |
+| **LOW** | Theoretical, best practice, defense-in-depth | **Do not report** — unless dispatched by `full`, which wants every level |
 
-In `multi` mode, emit all findings (HIGH/MEDIUM/LOW) with `confidence` set; the verifier filters. In standalone `security` mode, report HIGH only.
+Dispatched by `full`, emit all findings (HIGH/MEDIUM/LOW) with `confidence` set; the verifier filters. Invoked directly, report HIGH only.
 
 ## Do not flag
 
@@ -114,4 +114,4 @@ os.system(f"cmd {user_input}")     # Command injection
 
 If nothing found: "No high-confidence vulnerabilities identified."
 
-Shared rules in SKILL.md apply.
+Shared rules in `../SKILL.md` apply.

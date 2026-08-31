@@ -1,4 +1,4 @@
-# Mode: `architecture`
+# Lens: `architecture`
 
 Single-pass through one lens: did this change make the codebase's structure better or worse? Not correctness, not security — structure and design quality.
 
@@ -6,10 +6,10 @@ A **deep module** (Ousterhout, *A Philosophy of Software Design*) hides a large 
 
 ## Workflow
 
-1. Resolve scope (see SKILL.md → *Shared: Resolve scope*).
+1. Resolve scope (see `../SKILL.md` → *Shared: Resolve scope*).
 2. Read changed files in full, **plus their callers** — architecture lives in the seams; a diff alone hides coupling.
 3. Analyze each change against the checklist.
-4. Emit findings using the standard output template (see SKILL.md → *Shared: Standard output template*), then a verdict.
+4. Emit findings using the shared report shape (see `../SKILL.md` → *Shared: Report shape*), then a verdict.
 
 ## Checklist
 
@@ -30,4 +30,4 @@ Each finding names the structural problem *and* the cheaper shape — not just "
 - Pre-existing problems are out of scope unless the change makes them worse.
 - Propose the smaller-interface alternative concretely; flag uncertainty rather than guessing.
 
-Shared rules in SKILL.md apply.
+Shared rules in `../SKILL.md` apply.

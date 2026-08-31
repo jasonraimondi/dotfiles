@@ -1,4 +1,4 @@
-# Mode: `merge-risk`
+# Lens: `merge-risk`
 
 Conservative merge verdict with explicit reversibility analysis. **Reversibility is load-bearing** — a 5,000-line PR of pure additions to a new service can be safer than a 20-line PR that drops a column. **One-way doors** (irreversible actions) are the single biggest risk multiplier.
 
@@ -99,4 +99,4 @@ Verdict primary; score secondary.
 - Monorepos: list affected packages/services, weight by blast radius.
 - Say what to test and where — don't suggest generic "add tests".
 
-Shared rules in SKILL.md apply.
+Shared rules in `../SKILL.md` apply.

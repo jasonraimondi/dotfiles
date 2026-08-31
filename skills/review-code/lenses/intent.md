@@ -1,21 +1,28 @@
-# Mode: `intent`
+# Lens: `intent`
 
 Single-pass through one lens: did the diff actually deliver what the stated intent claimed? Not correctness, not structure — intent fidelity.
 
 The implementer has rationalizations baked into their session ("I did it this way because…"). A fresh adversarial reader doesn't share those and is more likely to notice what was skipped, hand-waved, or quietly descoped.
 
-## Stated intent
+## Contract sources
 
-Where the contract lives depends on scope:
+The **contract** is whatever the change promised to do. Take the first of these that yields one:
 
-- **PR** — title + body + commit messages
-- **Branch** — commit messages plus any plan/task doc passed in scope
-- **Working tree** — any plan/task doc passed in scope (if none, say so and stop — don't audit against an invented contract)
+1. A spec, plan, or ticket path passed as an argument.
+2. A ticket reference in the branch name or recent commit messages — fetch it (`gh issue view <n>`, or the tracker's CLI).
+3. The commit messages on the branch.
+4. A plan or spec doc under `docs/`, `specs/`, or `.scratch/` matching the branch name or feature.
+5. A PR's title and body, when the scope is a PR.
+
+**When no contract turns up**, the two callers diverge:
+
+- Invoked directly — say so and stop. Auditing against an invented contract is worse than not auditing.
+- Dispatched as an axis by `quick` or `full` — report "no contract available — intent skipped" and return. The other reviewers still stand.
 
 ## Workflow
 
-1. Resolve scope (see SKILL.md → *Shared: Resolve scope*).
-2. Read the stated intent in full. Bullet out every promised behavior, named verification step, named interface, listed scope item, acknowledged edge case.
+1. Resolve scope (see `../SKILL.md` → *Shared: Resolve scope*).
+2. Read the contract in full. Bullet out every promised behavior, named verification step, named interface, listed scope item, acknowledged edge case.
 3. Read the diff in full, tests included.
 4. **For each intent bullet** — locate the code that delivers it. Not present = gap.
 5. **For each diff hunk** — locate the intent bullet that justifies it. Unjustified = scope creep.
@@ -61,6 +68,5 @@ Omit empty sections. Every finding names **both halves**: the intent bullet *and
 - Don't critique the intent itself; audit only whether the diff matches it.
 - Don't flag missing features that weren't promised. Don't construct attack scenarios. Don't suggest design improvements.
 - Adversarial stance — assume hand-waving until proven otherwise.
-- If no stated intent is available, say so and stop. Don't invent a contract.
 
-Shared rules in SKILL.md apply.
+Shared rules in `../SKILL.md` apply.

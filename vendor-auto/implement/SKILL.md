@@ -1,7 +1,6 @@
 ---
 name: implement
 description: "Implement a piece of work based on a spec or set of tickets."
-disable-model-invocation: true
 ---
 
 Implement the work described by the user in the spec or tickets.
@@ -12,6 +11,6 @@ Use /peer-sessions where possible and helpful.
 
 Run typechecking regularly, single test files regularly, and the full test suite once at the end.
 
-Once done, use /code-review to review the work.
+Once done, use /review-code quick to review the work, passing the spec or ticket path if you have one. Fix everything under *Fix before commit*, then re-run the affected tests.
 
 Commit your work to the current branch.
