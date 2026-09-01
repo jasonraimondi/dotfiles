@@ -23,4 +23,4 @@ Per finding: what the code does, what it should do instead, and what breaks in p
 
 ## Rules
 
-Cover what your brief covers. Dispatched alongside `tests.md` — `quick` pairs them into one axis — the tests are yours too; dispatched alone, leave them to `tests`. Either way vulnerabilities belong to `security` and structure to `architecture`: a finding filed under the wrong lens gets read twice and fixed never.
+Correctness only. Tests belong to `tests`, vulnerabilities to `security`, structure to `architecture` — a finding filed under the wrong lens gets read twice and fixed never.

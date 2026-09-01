@@ -1,6 +1,6 @@
 ---
 name: review-code
-description: "Reviews a diff. `quick` (default) fans out four parallel reviewers — correctness & tests, intent, standards & smells, modularity — and ends in a fix-before-commit list; use it for \"review this branch / these changes\" and after implementing work, before committing. `full` is eight reviewers plus a verifier, run only when named, for a final PR review. Single lenses: `security`, `architecture`, `merge-risk`, `intent`. Invoke as /review-code [<mode>] [<scope>]."
+description: "Reviews a diff. `quick` (default) fans out five parallel reviewers — correctness, tests, intent, standards & smells, modularity — and ends in a fix-before-commit list; use it for \"review this branch / these changes\" and after implementing work, before committing. `full` is eight reviewers plus a verifier, run only when named, for a final PR review. Single lenses: `security`, `architecture`, `merge-risk`, `intent`. Invoke as /review-code [<mode>] [<scope>]."
 argument-hint: "[quick|full|security|architecture|merge-risk|intent] [<scope>]"
 ---
 
