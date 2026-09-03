@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Symlink installer: links this repo's skills and shared AI editor config
-# (AGENT.md, pi/extensions) into the locations Claude Code and Pi look for them.
+# (AGENT.md and Pi settings/extensions) into the locations each agent expects.
 #
 # Usage: setup.sh [-n|--dry-run] [-D|--delete] [-h|--help]
 
@@ -26,6 +26,7 @@ SKILLS_SOURCES=(
 SKILL_MARKER="SKILL.md"                       # a dir is a skill iff it has this
 AGENT_MD_SOURCE="$SCRIPT_DIR/AGENT.md"
 PI_EXTENSIONS_SOURCE="$SCRIPT_DIR/pi/extensions"
+PI_SETTINGS_SOURCE="$SCRIPT_DIR/pi/settings.json"
 
 # --- targets -----------------------------------------------------------------
 SKILLS_TARGETS=(
@@ -41,6 +42,7 @@ AI_LINKS=(
   "$AGENT_MD_SOURCE|$HOME/.junie/guidelines.md"
   "$AGENT_MD_SOURCE|$HOME/.pi/agent/AGENT.md"
   "$PI_EXTENSIONS_SOURCE|$HOME/.pi/agent/extensions"
+  "$PI_SETTINGS_SOURCE|$HOME/.pi/agent/settings.json"
 )
 
 # Records skill names linked on the last successful run, so renamed/removed
