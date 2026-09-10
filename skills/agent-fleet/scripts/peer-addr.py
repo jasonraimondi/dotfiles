@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""List live Claude Code sessions and verified peer-messaging addresses."""
+"""List reachable same-harness sessions and their peer-messaging addresses."""
 
 import argparse
 import json
 import os
 import sys
 
+from harness import detect_harness, pi_records
 from peer_registry import (
     load_records,
     normalized_name,
@@ -149,8 +150,36 @@ def listing(name_filter=None, pid_filter=None, details=False, as_json=False):
     return 0
 
 
+def listing_pi(args):
+    own_id = os.environ.get("PI_SESSION_ID")
+    records = pi_records()
+    if args.me:
+        records = [record for record in records if record["sessionId"] == own_id]
+        if len(records) != 1:
+            print("This Pi session is not uniquely registered; load pi-peer and reload Pi.", file=sys.stderr)
+            return 1
+        result = records[0]
+    else:
+        records = [record for record in records
+                   if (args.name is None or normalized_name(record) == args.name)
+                   and (args.pid is None or record["pid"] == args.pid)]
+        result = {"sessions": records, "reachablePeers": sum(record["sessionId"] != own_id for record in records)}
+    if args.json:
+        print(json.dumps(result, indent=2))
+    else:
+        for record in records:
+            mark = "." if record["sessionId"] == own_id else "+"
+            print(f"{mark} {record['name']}  pid {record['pid']}  {record['address']}")
+            if args.details:
+                print(f"    session {record['sessionId']}  pane {record['paneId']}  cwd {record['cwd']}")
+        if not records:
+            print("No reachable pi-peer sessions matched.")
+    return 0 if records or (not args.me and args.name is None and args.pid is None) else 1
+
+
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--harness", choices=("pi", "claude"))
     parser.add_argument("--me", action="store_true", help="show this session's address")
     parser.add_argument("--name", help="show sessions with this exact normalized name")
     parser.add_argument("--pid", type=int, help="show only this process ID")
@@ -159,9 +188,14 @@ def main():
     args = parser.parse_args()
     if args.me and (args.name is not None or args.pid is not None or args.details):
         parser.error("--me cannot be combined with --name, --pid, or --details")
-    if args.me:
-        return me(args.json)
-    return listing(args.name, args.pid, args.details, args.json)
+    try:
+        if detect_harness(args.harness) == "pi":
+            return listing_pi(args)
+        if args.me:
+            return me(args.json)
+        return listing(args.name, args.pid, args.details, args.json)
+    except RuntimeError as error:
+        parser.error(str(error))
 
 
 if __name__ == "__main__":

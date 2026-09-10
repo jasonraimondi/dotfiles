@@ -1,4 +1,4 @@
-# Manual rigging, forks, and paths that the skill does not cover
+# Manual Claude rigging, forks, and paths that the skill does not cover
 
 Read this when `spawn-fleet.py` does not fit: unusual layouts, filming, forks, or a `claude`/`herdr` capability that the skill does not name.
 

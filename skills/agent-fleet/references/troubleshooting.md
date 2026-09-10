@@ -1,4 +1,4 @@
-# Troubleshooting peer messaging
+# Troubleshooting Claude peer messaging
 
 Read this when a send fails, a peer is silent, or you cannot reach a session that should be reachable.
 
@@ -62,12 +62,12 @@ python3 scripts/peer-inbox.py \
   --pid <your-own-pid> --from-pid <peer-pid> --wait 60
 ```
 
-The helper accepts only events marked `origin.kind: peer` with a verified peer PID, and `--from-pid` matches that verified PID — the one field a sender cannot spoof or rename. `peer-addr.py` prints it on every row. Use `--json` when another tool consumes the result, or `--session-id` when the registry entry is already gone.
+The helper accepts only events marked `origin.kind: peer` with a verified peer PID, and `--from-pid` matches that transport-recorded PID rather than the sender's display name. This is provenance within Claude's transcript, not protection against a local user editing their own files. `peer-addr.py` prints it on every row. Use `--json` when another tool consumes the result, or `--session-id` when the registry entry is already gone.
 
 ## CLI traps
 
 - `claude agents` needs a TTY. Use `claude agents --json` for scripts. The list contains your own session — check the pid before you kill a process.
-- `logs`, `stop`, and `attach` are not claude subcommands. Claude reads unknown words as prompts and starts work. Use `kill <pid>`.
+- Recent Claude builds provide `logs`, `stop`, and `attach` for background-managed sessions. Check `claude --help`; these do not automatically address interactive peers launched in Herdr. Refresh the peer identity before using `kill <pid>`.
 - Kill the PID before you close the pane. A `claude` that outlives its pane is an addressable orphan, and this ordering makes that impossible whatever the close does.
 - Bare `herdr` launches or attaches the TUI. For discovery, run `herdr --help` or a command group with no subcommand (`herdr pane`).
 - Do not probe a mutating nested command by omitting arguments. `herdr workspace create` is valid with defaults and will execute.
