@@ -1,0 +1,10 @@
+- duplicate skills
+  - writing etc
+    - /adhd
+    - /writing-strip-ai
+    - /unslop
+    - /wait-what
+    - /use-english
+  - handoff
+    - /claude-handoff
+    - /handoff
