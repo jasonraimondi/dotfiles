@@ -1,5 +1,44 @@
 [
   {
+    "plugin_id": "jasonraimondi.worktree-setup",
+    "name": "Worktree Setup",
+    "version": "0.2.0-jpatch.0",
+    "min_herdr_version": "0.7.0",
+    "description": "Run per-project setup steps when a worktree is created",
+    "manifest_path": "/Users/jraimondi/dotfiles/config/herdr/plugins/github/jasonraimondi.worktree-setup-a4b6078c6661/herdr-plugin.toml",
+    "plugin_root": "/Users/jraimondi/dotfiles/config/herdr/plugins/github/jasonraimondi.worktree-setup-a4b6078c6661",
+    "enabled": true,
+    "platforms": [
+      "linux",
+      "macos"
+    ],
+    "build": [
+      {
+        "command": [
+          "npm",
+          "ci"
+        ]
+      }
+    ],
+    "events": [
+      {
+        "on": "worktree.created",
+        "command": [
+          "node",
+          "src/setup.js"
+        ]
+      }
+    ],
+    "source": {
+      "kind": "github",
+      "owner": "jasonraimondi",
+      "repo": "herdr-worktree-setup",
+      "resolved_commit": "764741460a8fb389d9302ca32532c8139549a9bc",
+      "managed_path": "/Users/jraimondi/.config/herdr/plugins/github/jasonraimondi.worktree-setup-a4b6078c6661",
+      "installed_unix_ms": 1787924097323
+    }
+  },
+  {
     "plugin_id": "worktrunk",
     "name": "Worktrunk",
     "version": "0.1.0",
