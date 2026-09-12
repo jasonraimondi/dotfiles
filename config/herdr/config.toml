@@ -71,8 +71,8 @@ shell_mode = "auto"
 # workspace_picker = "prefix+w"
 # goto = "prefix+g"
 # new_workspace = "prefix+shift+n"
-# new_worktree = "prefix+shift+g"
-# open_worktree = ""    # optional, unset by default
+new_worktree = "prefix+n"
+open_worktree = "prefix+o"    # optional, unset by default
 # remove_worktree = ""  # optional, unset by default; opens confirmation
 # rename_workspace = "prefix+shift+w"
 # close_workspace = "prefix+shift+d"
@@ -163,16 +163,16 @@ description = "worktrunk: remove worktree"
 
 [ui]
 # Sidebar width (auto-scaled based on workspace names, this sets the default)
-sidebar_width = 28
+sidebar_width = 32
 
 # Minimum sidebar width when expanded (columns)
 # sidebar_min_width = 18
 
 # Maximum sidebar width when expanded (columns)
-# sidebar_max_width = 36
+# sidebar_max_width = 42
 
 # Start with the sidebar collapsed. Changes take effect on the next launch.
-# sidebar_start_collapsed = false
+# sidebar_start_collapsed = true
 
 # Collapsed sidebar presentation: "compact" keeps the narrow status rail, "hidden" uses zero width.
 # sidebar_collapsed_mode = "compact"
