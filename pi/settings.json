@@ -9,6 +9,6 @@
     "npm:@quintinshaw/pi-dynamic-workflows@3.5.1",
     "npm:@bacnh85/pi-serena@0.9.12",
     "npm:pi-subagents@0.48.0",
-    "npm:pi-mcp-adapter@2.32.1"
+    "npm:pi-mcp-adapter"
   ]
 }
