@@ -1,7 +1,6 @@
 ---
 name: pr-template
 description: Rewrite a GitHub pull request's title and description into a conventional-commits + ticket format with a compact, readable body and a diff-derived pre-merge checklist. Use whenever the user wants a PR description formatted or run through "the template".
-# disable-model-invocation: true
 ---
 
 # PR Template Applier
@@ -54,7 +53,7 @@ Write natural, connected prose. Give each sentence one clear job, but use enough
 
 ### Length target
 
-Most PR bodies should land between 150 and 250 words after stripping Markdown syntax. Headings and checklist text count. Preserved image URLs and literal command blocks do not count.
+Most PR bodies should land between 150 and 250 words after stripping Markdown syntax. Headings and checklist text count. Preserved image URLs, literal command blocks, and shape sketches in code fences do not count.
 
 This range is a default, not a cap. A larger body earns its length when the PR has several distinct behaviors, a migration or rollout, a breaking contract, cross-system effects, or risks that reviewers must evaluate. Diff size alone does not justify more prose. Every sentence beyond the range must answer a concrete reviewer question that the shorter version leaves open.
 
@@ -66,6 +65,7 @@ Use these defaults as the first editing pass:
 - `Fix`: usually no more than 5 one-sentence bullets.
 - `Tests`: usually no more than 4 one-sentence bullets.
 - `Not in this PR`: usually no more than 2 one-sentence bullets.
+- `Merge danger`: two labelled bullets, each one sentence.
 - `Pre-merge checklist`: usually no more than 2 items.
 
 Break a default when following it would hide information needed to review or ship the change safely. Above 250 words, challenge every extra bullet and sentence. Never preserve a detail by making another sentence harder to read.
@@ -78,13 +78,15 @@ Use these sections in this order. Every optional section waits for its trigger.
 
 **`## Problem`** — Every PR. Explain the failure, need, or constraint before the solution. Trace the causal chain far enough that a reviewer understands both the mechanism and the user or operational consequence. Keep implementation changes out of this section.
 
-**`## Fix`** — Every PR. Use plain bullets for substantive changes. Each bullet describes one coherent behavior, contract, or decision and explains its important consequence. Order the bullets along the runtime or user flow when one exists. A small change may use one short paragraph instead.
+**`## Fix`** — Every PR. Use plain bullets for substantive changes. Each bullet describes one coherent behavior, contract, or decision and explains its important consequence. Order the bullets along the runtime or user flow when one exists. A small change may use one short paragraph instead. When the change is structural — a new call path, a moved module boundary, a changed component or file layout — open the section with a shape sketch (see "Shape sketches") and keep the bullets for the consequences the sketch cannot show.
 
 **`## Breaking changes`** — Only when the diff shows one: removed public exports, changed public signatures, renamed or removed endpoints, removed CLI flags, schema removals, a major version bump, or a `BREAKING:` marker. State what breaks and how callers migrate.
 
-**`## Tests`** — Include for code changes when the diff or existing body provides test evidence. Use plain bullets that name the behavior proved, including the main success case and the highest-risk boundary. Combine related assertions. Include commands only when they were run.
+**`## Tests`** — Include for code changes when the diff or existing body provides test evidence. Use plain bullets that name the behavior proved, including the main success case and the highest-risk boundary. Combine related assertions. Prefer before-and-after evidence: the exact test or command that failed and now passes, or output captured on each side. Include commands only when they were run. For a visual change, before-and-after screenshots from the original body outrank any prose here; carry them in `## Screenshots`.
 
 **`## Not in this PR`** — Only when a material scope boundary, operational follow-up, unresolved decision, or known affected population could surprise a reviewer. Use plain bullets. State what remains, why it remains, and where it is tracked when known. Omit this section when there is no meaningful boundary.
+
+**`## Merge danger`** — Every code change. Two labelled bullets. `**Door:**` is `one-way` or `two-way`: a change that a revert fully undoes is a two-way door; a destructive migration, a wire format consumers adopt on sight, or a decision that is hard to reverse once data flows through it is a one-way door. `**Blast radius:**` is a short phrase naming the widest thing that breaks if the change is wrong: a query's callers, layout on every page, each consumer of a schema. Add a second sentence to either bullet only when the label alone would mislead.
 
 **`## Pre-merge checklist`** — See "Pre-merge checklist". Usually no more than 2 items, all unchecked.
 
@@ -93,6 +95,75 @@ Use these sections in this order. Every optional section waits for its trigger.
 Keep the section set small by omitting optional sections, not by collapsing distinct reviewer questions into one paragraph. Remove file inventories, low-value implementation trivia, and repeated facts. Spend words where they add insight, then stop.
 
 Name collaborators in assignees. Write any `@`-mention from the original body as plain text — GitHub re-notifies mentioned users on every edit.
+
+### Shape sketches
+
+A sketch shows the shape of a structural change in fewer words than bullets can. Pick the smallest view that makes the point, place it right after the sentence it supports, and cut every call, file, prop, or state the reviewer does not need. One sketch is usual, several is rare, and all of them is never.
+
+- Logic or an algorithm as pseudocode.
+- Runtime control flow as a call tree.
+- UI structure as a component tree, marking the state hooks and module boundaries that matter.
+- File responsibility or a broad refactor as a shallow file tree with one comment per entry.
+- Component interaction or data flow as a Mermaid `sequenceDiagram`.
+- A change to any of these as a `diff` of that shape, when the surrounding structure already exists and the point is what moved.
+- The whole block as code when most of it is new, when omitted context would hide ownership or order, or when the reviewer needs a copyable target shape.
+
+A component tree:
+
+```text
+<SessionPage>                 apps/example/src/routes/session.tsx
+  useSessionEvents()
+  <SessionToolbar>
+    <RunSkillButton>          packages/ui
+```
+
+A data-flow sketch:
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant UI
+    participant Daemon
+    User->>UI: choose command
+    UI->>Daemon: send expanded prompt
+    Daemon-->>UI: stream result
+```
+
+A call-tree diff:
+
+```diff
+ submitForm
+   createSession
+     persistPrompt
++    expandSkillMention
+     launchAgent
+   navigateToSession
++    subscribeToEvents
+```
+
+A file-layout diff:
+
+```diff
+ src/
+ ├── commands/
++│   └── show-me.ts       # expands the slash command
+ ├── sessions/
+-└── transport.ts
++└── transport/
++    ├── client.ts
++    └── stream.ts
+```
+
+A control-flow diff:
+
+```diff
+ on(save)
+-  write content
++  if content is unchanged
++    return cached result
++  write new content
++  invalidate cache
+```
 
 ### Pre-merge checklist
 
@@ -142,9 +213,13 @@ Reports become unusable for large workspaces because the dashboard sorts every e
 
 ## Tests
 - The large-workspace report completes with the indexed query and preserves the existing result order.
+
+## Merge danger
+- **Door:** two-way. A revert restores the in-memory sort.
+- **Blast radius:** dashboard report results in every workspace.
 ```
 
-That is the whole body. Each section answers one reviewer question, and the bullets make the change easy to scan. No migration files means no checklist, and no contract change means no `Breaking changes`.
+That is the whole body. Each section answers one reviewer question, and the bullets make the change easy to scan. A query rewrite has no shape worth sketching, no migration files means no checklist, and no contract change means no `Breaking changes`.
 
 ### Example 2 — a larger PR
 
@@ -162,6 +237,13 @@ Client half of the PKCE work, split from the combined branch.
 An intercepted redirect can expose an authorization code from a public OAuth2 client. An attacker can use that code because nothing binds it to the client that started the request.
 
 ## Fix
+```diff
+ /oauth/authorize
++  requireCodeChallenge
+ /oauth/token
++  verifyCodeVerifier
++  verifyClientSecret
+```
 - Require a PKCE challenge on each authorization request.
 - Verify the matching client secret during token exchange.
 - Gate enforcement with `OAUTH_PKCE_REQUIRED` while public clients migrate.
@@ -176,12 +258,16 @@ An intercepted redirect can expose an authorization code from a public OAuth2 cl
 ## Not in this PR
 - Existing public clients still need separate changes to send a PKCE challenge.
 
+## Merge danger
+- **Door:** two-way while `OAUTH_PKCE_REQUIRED` is off. Turning it on rejects every client that has not migrated, and turning it back off is the rollback.
+- **Blast radius:** every public OAuth client that has not adopted PKCE.
+
 ## Pre-merge checklist
 - [ ] Security review requested for the new authorization code path
 - [ ] `OAUTH_PKCE_REQUIRED` set in staging and production before deploy
 ```
 
-The body separates the security failure, implementation, compatibility break, test evidence, and remaining human actions. Each section earns its place by answering a different reviewer question. The missing API documentation goes in the report, not into a box.
+The body separates the security failure, implementation, compatibility break, test evidence, rollback story, and remaining human actions. The call-tree diff shows where enforcement lands, and the bullets carry the consequences the sketch cannot. The missing API documentation goes in the report, not into a box.
 
 ## Applying the edit
 
