@@ -3,7 +3,7 @@
   "defaultThinkingLevel": "medium",
   "doubleEscapeAction": "tree",
   "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-6-astra",
+  "defaultModel": "gpt-6-sol",
   "theme": "dark",
   "packages": [
     "npm:@quintinshaw/pi-dynamic-workflows@3.5.1",
