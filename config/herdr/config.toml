@@ -262,6 +262,7 @@ sidebar_width = 32
 # Background notification popup delivery
 agent_panel_sort = "priority"
 show_agent_labels_on_pane_borders = true
+status_indicators = "symbols"
 [ui.toast]
 # off = disable pop-up notifications
 # herdr = show in-app toasts
