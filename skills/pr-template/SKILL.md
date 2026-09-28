@@ -15,7 +15,7 @@ Reads a pull request with `gh`, writes a normalized title and a compact body, an
 4. **Read the ticket and `CONTEXT.md`.** Use `{argument}` for the ticket if given; otherwise search the body and every commit message for `[A-Z]{2,}-\d+` (e.g. `PROJ-456`). Read each ticket you find and treat its description as a claim too — the code is what shipped. Read `CONTEXT.md` if the repo has one (root, or the nearest ancestor directory of the changed files); its terms govern the wording you write.
 5. **Build the title and the body** from the rules below.
 6. **Compress.** Aim for the length target below. Delete low-value detail instead of packing it into longer sentences. Check the final length and keep any excess only when it earns its place.
-7. **Unslop.** Read [`../../dupe-soup/unslop/SKILL.md`](../../dupe-soup/unslop/SKILL.md). Apply its complete process and every pattern check to the title and body. Preserve verified technical meaning, conventional title syntax, Markdown headings, literal code, and task-list syntax. This step is complete when the self-audit finds no remaining tell.
+7. **Unslop.** Read [`../unslop/SKILL.md`](../unslop/SKILL.md). Apply its complete process and every pattern check to the title and body. Preserve verified technical meaning, conventional title syntax, Markdown headings, literal code, and task-list syntax. This step is complete when the self-audit finds no remaining tell.
 8. **Apply.** Pipe the body through stdin. See "Applying the edit". Apply as soon as it is written. `gh pr edit` is re-runnable, so a rewrite the user dislikes costs one more run.
 9. **Verify.** Run `gh pr view <ref> --json title,body` and confirm the body is non-empty and opens with `## Problem` or `## Stack`. A mismatch means the apply failed. Retry and tell the user. Report success only after this check passes.
 10. **Assign.** `gh pr edit <ref> --add-assignee @me`, plus any login the user named in their instruction.
@@ -228,7 +228,7 @@ That is the whole body. Each section answers one reviewer question, and the bull
 **Output title:** `feat(auth)!: PROJ-456 add OAuth2 PKCE flow`
 
 **Output body:**
-```markdown
+````markdown
 ## Stack
 Client half of the PKCE work, split from the combined branch.
 - **Stacked on #4666.** This PR uses its token-exchange contract. Merge #4666 first. GitHub then retargets this PR to `main`.
@@ -265,7 +265,7 @@ An intercepted redirect can expose an authorization code from a public OAuth2 cl
 ## Pre-merge checklist
 - [ ] Security review requested for the new authorization code path
 - [ ] `OAUTH_PKCE_REQUIRED` set in staging and production before deploy
-```
+````
 
 The body separates the security failure, implementation, compatibility break, test evidence, rollback story, and remaining human actions. The call-tree diff shows where enforcement lands, and the bullets carry the consequences the sketch cannot. The missing API documentation goes in the report, not into a box.
 
