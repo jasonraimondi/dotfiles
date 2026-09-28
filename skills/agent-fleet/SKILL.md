@@ -7,7 +7,7 @@ description: Launch and coordinate independent coding agents in Herdr panes, tab
 
 A fleet is a set of independent, visible sessions that remain available for follow-up. The coordinator launches its own harness: **pi launches pi; Claude Code launches Claude Code**. Model choice does not determine the harness. Mixed fleets are not supported yet.
 
-For panes that do not host an agent — dev servers, watchers, test runs, or any other ordinary command — use the `herdr` skill instead of these scripts.
+For panes that do not host an agent — dev servers, watchers, test runs, or any other ordinary command — use the `herdr` skill instead of these scripts. Name what you create so the layout reads at a glance: pass `--label` with a short purpose (e.g. `dev: web`) to `tab create` or `workspace create`, and run `herdr pane rename <pane> <name>` on each new pane.
 
 All paths below are relative to this skill directory. Resolve them here, not against the working directory.
 
