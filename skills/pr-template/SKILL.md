@@ -108,6 +108,15 @@ A sketch shows the shape of a structural change in fewer words than bullets can.
 - A change to any of these as a `diff` of that shape, when the surrounding structure already exists and the point is what moved.
 - The whole block as code when most of it is new, when omitted context would hide ownership or order, or when the reviewer needs a copyable target shape.
 
+A component tree:
+
+```text
+<SessionPage>                 apps/example/src/routes/session.tsx
+  useSessionEvents()
+  <SessionToolbar>
+    <RunSkillButton>          packages/ui
+```
+
 A data-flow sketch:
 
 ```mermaid
@@ -118,6 +127,18 @@ sequenceDiagram
     User->>UI: choose command
     UI->>Daemon: send expanded prompt
     Daemon-->>UI: stream result
+```
+
+A call-tree diff:
+
+```diff
+ submitForm
+   createSession
+     persistPrompt
++    expandSkillMention
+     launchAgent
+   navigateToSession
++    subscribeToEvents
 ```
 
 A file-layout diff:
@@ -131,6 +152,17 @@ A file-layout diff:
 +└── transport/
 +    ├── client.ts
 +    └── stream.ts
+```
+
+A control-flow diff:
+
+```diff
+ on(save)
+-  write content
++  if content is unchanged
++    return cached result
++  write new content
++  invalidate cache
 ```
 
 ### Pre-merge checklist
