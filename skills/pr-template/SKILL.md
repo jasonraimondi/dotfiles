@@ -10,7 +10,7 @@ Reads a pull request with `gh`, writes a normalized title and a compact body, an
 ## Workflow
 
 1. **Identify the PR.** Use whichever reference the user supplied: number (`gh pr view 123`), URL, branch, or the current branch (`gh pr view` with no arg). If ambiguous, ask.
-2. **Gather.** `gh pr view <ref> --json title,body,headRefName,baseRefName,commits,files,additions,deletions` and `gh pr diff <ref>`. Read the body first and in full — it is the newest version and the only place the author's intent lives. `baseRefName` tells you whether the PR is stacked. Above ~2000 diff lines, sample it: file headers plus a few hunks per file classify the change.
+2. **Gather.** `gh pr view <ref> --json title,body,headRefName,baseRefName,commits,files,additions,deletions` and `gh pr diff <ref>`. Read the body first and in full — it is the newest version and the only place the author's intent lives. `baseRefName` tells you whether the PR is stacked. Above ~2000 diff lines, sample it: file headers plus a few hunks per file classify the change. Tell the user in the report that the analysis was sampled.
 3. **Triage the body against the diff.** See "Triage the body".
 4. **Read the ticket and `CONTEXT.md`.** Use `{argument}` for the ticket if given; otherwise search the body and every commit message for `[A-Z]{2,}-\d+` (e.g. `PROJ-456`). Read each ticket you find and treat its description as a claim too — the code is what shipped. Read `CONTEXT.md` if the repo has one (root, or the nearest ancestor directory of the changed files); its terms govern the wording you write.
 5. **Build the title and the body** from the rules below.
@@ -293,6 +293,5 @@ Resolve a candidate against the logged-in account with `gh api user --jq .login`
 ## Edge cases
 
 - **No ticket found:** leave the ticket ID out of the title and write the rest of it normally.
-- **Diff above 5000 lines:** sample per file, classify each file's contribution, aggregate, and tell the user the analysis was sampled.
 - **Several ticket IDs match:** prefer the one in the branch name, then the first in commits.
 - **User wants a change after the apply:** honor the adjustment and re-apply. A dropped item stays dropped through later rewrites.
