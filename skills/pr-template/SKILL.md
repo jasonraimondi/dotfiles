@@ -47,7 +47,7 @@ The diff shows implementation detail. The body gives the reviewer the missing fr
 
 ### Language
 
-Follow `/use-english`: use ASD-STE100 Simplified Technical English. Use the ubiquitous language in `CONTEXT.md` when that file exists. The mandatory Unslop pass in step 7 governs punctuation, diction, rhythm, voice, and structure.
+Use the ubiquitous language in `CONTEXT.md` when that file exists. The mandatory Unslop pass in step 7 governs punctuation, diction, rhythm, voice, and structure.
 
 Write natural, connected prose. Give each sentence one clear job, but use enough words to show cause and effect. Write each paragraph and each bullet as one unbroken line and let GitHub soft-wrap it. Newlines separate paragraphs, bullets, and headings.
 
