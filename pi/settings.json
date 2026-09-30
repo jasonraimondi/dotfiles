@@ -6,9 +6,9 @@
   "defaultModel": "gpt-6-sol",
   "theme": "dark",
   "packages": [
-    "npm:@quintinshaw/pi-dynamic-workflows@3.5.1",
-    "npm:@bacnh85/pi-serena@0.9.12",
-    "npm:pi-subagents@0.48.0",
+    "npm:@quintinshaw/pi-dynamic-workflows",
+    "npm:@bacnh85/pi-serena",
+    "npm:pi-subagents",
     "npm:pi-mcp-adapter"
   ]
 }
