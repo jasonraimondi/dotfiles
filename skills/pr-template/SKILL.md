@@ -12,7 +12,7 @@ Reads a pull request with `gh`, writes a normalized title and a compact body, an
 1. **Identify the PR.** Use whichever reference the user supplied: number (`gh pr view 123`), URL, branch, or the current branch (`gh pr view` with no arg). If ambiguous, ask.
 2. **Gather.** `gh pr view <ref> --json title,body,headRefName,baseRefName,commits,files,additions,deletions` and `gh pr diff <ref>`. Read the body first and in full — it is the newest version and the only place the author's intent lives. `baseRefName` tells you whether the PR is stacked. Above ~2000 diff lines, sample it: file headers plus a few hunks per file classify the change. Tell the user in the report that the analysis was sampled.
 3. **Triage the body against the diff.** See "Triage the body".
-4. **Read the ticket and `CONTEXT.md`.** Use `{argument}` for the ticket if given; otherwise search the body and every commit message for `[A-Z]{2,}-\d+` (e.g. `PROJ-456`). Read each ticket you find and treat its description as a claim too — the code is what shipped. Read `CONTEXT.md` if the repo has one (root, or the nearest ancestor directory of the changed files); its terms govern the wording you write.
+4. **Read the ticket and `GLOSSARY.md`.** Use `{argument}` for the ticket if given; otherwise search the body and every commit message for `[A-Z]{2,}-\d+` (e.g. `PROJ-456`). Read each ticket you find and treat its description as a claim too — the code is what shipped. Read `GLOSSARY.md` if the repo has one (root, or the nearest ancestor directory of the changed files); its terms govern the wording you write.
 5. **Build the title and the body** from the rules below.
 6. **Compress.** Aim for the length target below. Delete low-value detail instead of packing it into longer sentences. Check the final length and keep any excess only when it earns its place.
 7. **Unslop.** Read [`../unslop/SKILL.md`](../unslop/SKILL.md). Apply its process and every pattern check to the title and body, but skip "Adding soul": a PR body states facts without opinion or first person. Preserve verified technical meaning, conventional title syntax, Markdown headings, the `**Door:**` and `**Blast radius:**` labels, literal code, and task-list syntax. This step is complete when the self-audit finds no remaining tell.
@@ -47,7 +47,7 @@ The diff shows implementation detail. The body gives the reviewer the missing fr
 
 ### Language
 
-Use the ubiquitous language in `CONTEXT.md` when that file exists. The mandatory Unslop pass in step 7 governs punctuation, diction, rhythm, voice, and structure.
+Use the ubiquitous language in `GLOSSARY.md` when that file exists. The mandatory Unslop pass in step 7 governs punctuation, diction, rhythm, voice, and structure.
 
 Write natural, connected prose. Give each sentence one clear job, but use enough words to show cause and effect. Write each paragraph and each bullet as one unbroken line and let GitHub soft-wrap it. Newlines separate paragraphs, bullets, and headings.
 

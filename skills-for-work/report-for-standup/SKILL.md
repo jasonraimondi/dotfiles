@@ -10,7 +10,7 @@ Jason reads this aloud at standup. Write for the listeners, not for Jason — no
 
 Source: the work in this conversation. If the conversation carries none, use `git log --author=jason --since=yesterday` across the repo.
 
-Talk in ASD-STE100 Simplified Technical English. Use the ubiquitous language from `CONTEXT.md` if it exists.
+Talk in ASD-STE100 Simplified Technical English. Use the ubiquitous language from `GLOSSARY.md` if it exists.
 
 Sacrifice grammar for concision.
 

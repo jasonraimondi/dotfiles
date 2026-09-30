@@ -17,7 +17,7 @@ NOTEBOOK="${AI_NOTEBOOK_PATH:-$HOME/Notebook}"
 
 `AI_NOTEBOOK_PATH` overrides the default `~/Notebook`. When the root is missing, create it with the seven dirs below: `mkdir -p "$NOTEBOOK"/{research,plans,decisions,reviews,prototypes,handoff,drafts}`. Every path in this skill is relative to `$NOTEBOOK`.
 
-Durable project docs belong in the repo and follow their own skill or convention: `CONTEXT.md`, ADRs, `README`, `AGENTS.md`, `CLAUDE.md`, skills. Skills such as domain-modeling own their output paths.
+Durable project docs belong in the repo and follow their own skill or convention: `GLOSSARY.md`, ADRs, `README`, `AGENTS.md`, `CLAUDE.md`, skills. Skills such as domain-modeling own their output paths.
 
 ## Where it goes
 
