@@ -63,6 +63,8 @@ ALIGNED | GAPS | DRIFT — one-sentence summary of intent-vs-implementation fit
 
 Omit empty sections. Every finding names **both halves**: the intent bullet *and* the missing/divergent code.
 
+Dispatched as an axis, return the findings in the anatomy from `../report.md` and leave this template out; *both halves* still binds.
+
 ## Rules (mode-specific)
 
 - Don't critique the intent itself; audit only whether the diff matches it.
