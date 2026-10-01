@@ -1,9 +1,11 @@
 ---
 name: react
-description: Use when writing or editing React components, restructuring one that mixes hooks into its JSX, or deciding what belongs in the controller vs the view.
+description: React component structure and performance. Use when writing or editing React components, restructuring one that mixes hooks into its JSX, deciding what belongs in the controller vs the view, or reviewing or fixing React performance — request waterfalls, bundle size, re-renders, slow rendering.
 ---
 
-# Controller/view paradigm
+# React
+
+## Controller/view paradigm
 
 Every component with logic is a **controller** that owns the hooks paired with a **view** that owns the markup; a purely presentational component with no logic stays one file.
 
@@ -28,3 +30,7 @@ example/
 - `ComponentName.spec.tsx` mounts the controller and stubs the api module, so one spec exercises the real hooks against the real view.
 
 The split is right when the view file imports nothing from `api/` or react-query, and the controller file holds no markup beyond its single view element.
+
+## Performance
+
+`references/performance.md` indexes the performance rules by category in impact order; each rule is one file in `references/rules/` with an incorrect/correct pair. Read the index when the task is a performance review or fix, or when the code being written fetches data, awaits more than once, lazy-loads, renders a long list, or runs in a hot path. Then read only the rule files that match.
