@@ -25,23 +25,17 @@ Each round the user answers reshapes the tree: settled decisions push the fronti
 
 Finding _facts_ is your job, never the user's. When a frontier question needs a fact from the environment (filesystem, tools, etc.), dispatch a sub-agent to find it; don't ask the user for anything you could look up yourself. Don't block on it: a running exploration is an unsettled prerequisite, so only the questions downstream of it wait for the sub-agent to report; ask the rest of the frontier now. The _decisions_ are the user's: put each to them and wait.
 
-The session is done when the frontier is empty: every branch of the design tree visited, nothing left silently assumed. Do not act on it until the user confirms you have reached a shared understanding.
+## Frame the questions that need it
 
-### Frame the questions that need it
-
-Don't assume the user recognises every library, pattern, or term. When a question turns on something they may not know, or carries a tradeoff worth seeing, expand its body before asking them to choose: where it sits in the existing system, what rides on the choice, the realistic options with their costs, and a minimal sketch of each proposal — likely files, interfaces, responsibilities, and where they plug in. Label a sketch as illustration, not final code.
+Don't assume the user recognises every library, pattern, or term. When a question turns on something they may not know, or carries a tradeoff worth seeing, expand its body before asking them to choose: where it sits in the existing system, what rides on the choice, the realistic options with their costs, and a minimal sketch of each proposal: likely files, interfaces, responsibilities, and where they plug in. Label a sketch as illustration, not final code.
 
 Expand only the questions that earn it. Framing every question identically buries the ones that matter.
 
-## Facts are your job, decisions are the user's
-
-Finding _facts_ is your job, never the user's. When a frontier question needs a fact from the environment (filesystem, tools, docs), dispatch a sub-agent to find it — don't ask the user for anything you could look up yourself. Don't block on it: a running exploration is an unsettled prerequisite, so only the questions downstream of it wait for the sub-agent to report — ask the rest of the frontier now.
-
 ## Keep a decision log
 
-Start a **decision log** once the first decision lands and append to it every round — decisions and their reasons, rejected alternatives and why not, open questions, assumptions to validate, research findings, and captured ideas. Follow [`references/decision-log.md`](references/decision-log.md). It lives outside the repo — never commit it. Keep it tight enough to paste into a future session as context.
+Start a **decision log** once the first decision lands and append to it every round: decisions and their reasons, rejected alternatives and why not, open questions, assumptions to validate, research findings, and captured ideas. Follow [`references/decision-log.md`](references/decision-log.md). It lives outside the repo; never commit it. Keep it tight enough to paste into a future session as context.
 
-When a round surfaces something valuable but out of scope, capture it in the log — motivation, constraints, open questions, enough to start a future grill cold — and return to the frontier. Don't let it annex the session.
+When a round surfaces something valuable but out of scope, capture it in the log: motivation, constraints, open questions, enough to start a future grill cold, and return to the frontier. Don't let it annex the session.
 
 ## Close with a handoff
 
