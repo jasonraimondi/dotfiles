@@ -20,14 +20,7 @@ Never change what the code does - only how it does it. All original features, ou
 
 ### 2. Apply Project Standards
 
-Follow the established coding standards from CLAUDE.md including:
-
-- Use ES modules with proper import sorting and extensions
-- Prefer `function` keyword over arrow functions
-- Use explicit return type annotations for top-level functions
-- Follow proper React component patterns with explicit Props types
-- Use proper error handling patterns (avoid try/catch when possible)
-- Maintain consistent naming conventions
+Follow the project's own coding standards: its `CLAUDE.md` / `AGENTS.md`, lint and formatter config, any skill that covers the code's language or framework, and the conventions of the surrounding code.
 
 ### 3. Enhance Clarity
 

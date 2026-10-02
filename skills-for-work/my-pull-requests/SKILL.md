@@ -4,7 +4,7 @@ description: 'List my pull requests in the current repository'
 disable-model-invocation: true
 ---
 
-Search the current repo (using #githubRepo for the repo info) and list any pull requests you find (using #list_pull_requests) that are assigned to me.
+List the open pull requests in the current repo that are assigned to me (`gh pr list --assignee @me`).
 
 Describe the purpose and details of each pull request.
 

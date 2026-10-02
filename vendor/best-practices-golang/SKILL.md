@@ -10,7 +10,6 @@ metadata:
   role: specialist
   scope: implementation
   output-format: code
-  related-skills: devops-engineer, microservices-architect, test-master
 disable-model-invocation: true
 ---
 
@@ -91,7 +90,7 @@ Key properties demonstrated: bounded goroutine lifetime via `ctx`, error propaga
 
 ## Constraints
 
-### MUST DO
+### Do
 - Use gofmt and golangci-lint on all code
 - Add context.Context to all blocking operations
 - Handle all errors explicitly (no naked returns)
@@ -101,7 +100,7 @@ Key properties demonstrated: bounded goroutine lifetime via `ctx`, error propaga
 - Propagate errors with fmt.Errorf("%w", err)
 - Run race detector on tests (-race flag)
 
-### MUST NOT DO
+### Avoid
 - Ignore errors (avoid _ assignment without justification)
 - Use panic for normal error handling
 - Create goroutines without clear lifecycle management
@@ -117,7 +116,3 @@ When implementing Go features, provide:
 2. Implementation files with proper package structure
 3. Test file with table-driven tests
 4. Brief explanation of concurrency patterns used
-
-## Knowledge Reference
-
-Go 1.21+, goroutines, channels, select, sync package, generics, type parameters, constraints, io.Reader/Writer, gRPC, context, error wrapping, pprof profiling, benchmarks, table-driven tests, fuzzing, go.mod, internal packages, functional options

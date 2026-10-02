@@ -7,7 +7,7 @@ Implement the work described by the user in the spec or tickets.
 
 Use /tdd where possible, at pre-agreed seams.
 
-Use /peer-sessions where possible and helpful.
+Use /agent-fleet when the work splits into independent tracks.
 
 Run typechecking regularly, single test files regularly, and the full test suite once at the end.
 

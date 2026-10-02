@@ -19,9 +19,9 @@ Paths are relative to this repo (local) and to the upstream repo root (upstream)
 | `vendor-auto/codebase-design` | `skills/engineering/codebase-design` | none |
 | `vendor-auto/diagnosing-bugs` | `skills/engineering/diagnosing-bugs` | none |
 | `vendor-auto/domain-modeling` | `skills/engineering/domain-modeling` | none |
-| `vendor-auto/implement` | `skills/engineering/implement` | model-invoked locally: upstream's `disable-model-invocation` dropped. Adds "Use /peer-sessions where possible and helpful." Review step calls `/review-code quick` with the spec path and fixes every Blocker and Major finding |
+| `vendor-auto/implement` | `skills/engineering/implement` | model-invoked locally: upstream's `disable-model-invocation` dropped. Adds "Use /agent-fleet when the work splits into independent tracks." Review step calls `/review-code quick` with the spec path and fixes every Blocker and Major finding |
 | `vendor-auto/prototype` | `skills/engineering/prototype` | none |
-| `vendor-auto/tdd` | `skills/engineering/tdd` | none |
+| `vendor-auto/tdd` | `skills/engineering/tdd` | `code-review` reference renamed to `review-code` |
 | `vendor-auto/grilling` | `skills/productivity/grilling` | extended with "Frame the questions that need it", "Keep a decision log" (`references/decision-log.md`) and "Close with a handoff" (`references/handoff.md`) |
 | `vendor-auto/writing-for-agents` | `skills/productivity/writing-for-agents` | none |
 | `dev/research` | `skills/engineering/research` | none |

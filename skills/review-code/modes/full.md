@@ -50,7 +50,7 @@ The report in `../report.md`, with one section added after *Summary*:
 ```
 ## Merge risk
 
-**<SHIP | SHIP WITH MITIGATIONS | HOLD | DO NOT MERGE>** (score: N/10)
+**<SHIP | SHIP WITH MITIGATIONS | HOLD | DO NOT MERGE>**
 
 - Reversibility: <tier, and what cannot be undone>
 - Blast radius: <who and what is affected, at what scale>

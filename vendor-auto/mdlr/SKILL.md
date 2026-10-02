@@ -58,9 +58,9 @@ themselves.
 
 ## Workflow
 
-1. Check for staged or unstaged changes. If there are any, commit them first with a
-   reasonable message — `mdlr check`'s diff-mode scoping depends on a clean working tree to
-   correctly detect "changes vs. main."
+1. Check for staged or unstaged changes. `mdlr check` scopes to them when present (see
+   *Scope auto-selects from git state* above), so a dirty tree needs no commit before a
+   report. Before making fixes, keep unrelated uncommitted work out of the mdlr commit.
 2. Run `mdlr check --pretty` (add `-f <dir>` to scope to a subdirectory, `-A` for a full
    sweep). Read the opportunities table.
 3. For real fixes (not just a report), run `mdlr prompt` for mdlr's own suggested playbook —
@@ -68,12 +68,11 @@ themselves.
    (`cargo test`, `cargo llvm-cov`); substitute this project's actual test/typecheck/coverage
    commands instead of following those literally.
 4. Make a task list for any large change before starting.
-5. **You MUST commit all changes after finishing. Do not skip this step. Do not end without
-   committing.**
+5. Commit the changes after finishing.
 
 ## Commit messages
 
-The commit message for post-mdlr changes MUST include "auto" somewhere, and name the metric
+The commit message for post-mdlr changes includes "auto" somewhere, and names the metric
 and target improved:
 
 ```bash

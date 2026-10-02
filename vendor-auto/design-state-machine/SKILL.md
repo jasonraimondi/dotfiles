@@ -6,14 +6,6 @@ allowed-tools: Read, Glob, Grep, Write, Edit
 
 # State Machine Design Skill
 
-## When to Use This Skill
-
-Use this skill when:
-
-- **State Machine Design tasks** - Working on statechart and state machine modeling for lifecycle and behavior specification
-- **Planning or design** - Need guidance on State Machine Design approaches
-- **Best practices** - Want to follow established patterns and standards
-
 ## Overview
 
 Design finite state machines and statecharts for modeling entity lifecycles, workflows, and system behavior.

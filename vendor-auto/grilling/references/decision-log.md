@@ -4,7 +4,7 @@ The durable record of a grill. Written continuously, not at the end. Keep it con
 
 **Never write it into the repo.** It is working state, not a project artifact — don't create `docs/`, don't commit it, don't mention it in a commit.
 
-Save it to `~/.claude/grills/<repo-or-project>-<topic>.md` (create the dir) so a future session can still load it. Keep one file and append; don't fork a new one per turn.
+Save it in the notebook vault under `decisions/grills/` (the `notebook` skill owns the vault path and file naming) so a future session can still load it. Keep one file and append; don't fork a new one per turn.
 
 ---
 

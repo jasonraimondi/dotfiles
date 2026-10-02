@@ -1,6 +1,6 @@
 ---
 name: oklch
-description: OKLCH color space for web projects. Convert hex/rgb/hsl to oklch, generate palettes, check contrast, and handle gamut boundaries. Triggers on oklch, color conversion, palette generation, contrast ratio, gamut, display p3, design tokens, hue drift, chroma, dark mode colors.
+description: OKLCH color space for web projects. Use when converting hex/rgb/hsl to oklch, generating palettes or dark-mode colors, fixing contrast or hue drift, defining color design tokens, or handling gamut boundaries (display P3, sRGB fallbacks).
 ---
 
 # OKLCH Colors

@@ -15,9 +15,9 @@ Replace outdated styling patterns with idiomatic, accessible, performance-aware 
 ## Workflow
 
 1. **Classify** — name the styling domain (layout, motion, theme, selectors, interactive, typography, workflow/architecture) and constraints (browser support, a11y, framework).
-2. **Load context** — read `preferences/index.md` first (token-driven, scope-local, cascade-first defaults). Then `references/index.md` to find the matching profile and **only** the relevant rule files in `references/rules/`. Cap rule files at 5 per task. For motion, add `references/motion/index.md`.
+2. **Load context** — read `preferences/index.md` first (token-driven, scope-local, cascade-first defaults). Then `references/index.md` to find the matching profile and **only** the relevant rule files in `references/rules/`. For motion, add `references/motion/index.md`.
 3. **Match tier** — confirm each rule's `tier` matches the active compatibility mode. Use `bcd_id` and `mdn_url` from rule frontmatter for any user-facing support claims.
-4. **Implement** — provide a patch-level code change. For B/C features, include an `@supports` fallback that preserves a usable Tier A baseline.
+4. **Implement** — make the change. For B/C features, include an `@supports` fallback that preserves a usable Tier A baseline.
 5. **Quality check:**
    - No a11y regressions
    - No unnecessary specificity escalation
@@ -54,6 +54,8 @@ When user requests **Svelte**: use `<style>` blocks (scoped by default), reach f
 
 ## Output Format
 
+When editing files, make the change and name the compatibility mode, tier, and any fallback in a sentence. When the request is for advice or a review without an edit, answer in this shape:
+
 1. **Recommendation** — one concise modern replacement
 2. **Why** — maintainability/perf/a11y benefit in 1–2 lines
 3. **Compatibility** — mode + tier
@@ -76,4 +78,4 @@ When user requests **Svelte**: use `<style>` blocks (scoped by default), reach f
 - Introducing `!important` or deep specificity chains without necessity
 - Returning style advice without concrete patch-level code
 - Outputting framework-specific syntax when user asked for plain CSS
-- Loading more rule files than needed — stay within 5 per task
+- Loading rule files the task doesn't need

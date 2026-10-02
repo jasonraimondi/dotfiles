@@ -70,7 +70,7 @@ herdr agent get alpha
 
 Prefer Herdr's own waits to a poll loop. `herdr agent wait alpha --until blocked --timeout 120000` returns when the peer hits an approval or question UI; without `--until` it returns on the first settled `idle`, `done`, or `blocked`.
 
-Read the lifecycle state rather than guessing from pixels. `working` means the turn is running. `blocked` means Herdr recognized an approval prompt — the stall that used to need a screen grep. `unknown` means an agent is present that Herdr cannot classify, and it never proves completion.
+Read the lifecycle state rather than guessing from pixels. `working` means the turn is running. `blocked` means Herdr recognized an approval prompt. `unknown` means an agent is present that Herdr cannot classify, and it never proves completion.
 
 Claude Code runs on the terminal's alternate screen. Rows that scroll off it do not reach Herdr's scrollback, so raising `--lines` cannot recover a long reply that already scrolled. Recover it from the transcript instead — `scripts/peer-inbox.py`, in `troubleshooting.md`.
 

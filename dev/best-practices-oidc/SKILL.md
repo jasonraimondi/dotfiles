@@ -25,7 +25,7 @@ Authoritative source: **RFC 9700** (OAuth 2.0 Security BCP, Jan 2025). OAuth 2.1
 ## Workflow
 
 1. **Classify the task** — relying party (client/RP), authorization server (OP), or library? Which area: flow, tokens, endpoints, security, deployment profile?
-2. **Load the matching reference(s)** from the table below — read before writing or reviewing code. Cap at 3 files per task.
+2. **Load the matching reference(s)** from the table below — read before writing or reviewing code.
 3. **Apply the non-negotiable rules** above plus the loaded reference.
 4. **Verify** against the checklist embedded in the relevant reference file.
 

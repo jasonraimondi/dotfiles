@@ -17,7 +17,7 @@ pbcopy <<'CLIP_a93b2f'
 CLIP_a93b2f
 ```
 
-The single quotes disable expansion, so `$`, backticks, backslashes, and newlines pass through literally — the quoting hazards the previous file-based approach worried about don't apply. Pick a fresh sentinel each call; collision with content is the only failure mode and is negligible for normal prose.
+The single quotes disable expansion, so `$`, backticks, backslashes, and newlines pass through literally. Pick a fresh sentinel each call; collision with content is the only failure mode and is negligible for normal prose.
 
 Fallback (only if content might literally contain your sentinel — e.g. you're copying a doc *about* heredocs): Write to `/tmp/clip.txt`, then `pbcopy < /tmp/clip.txt`. No `rm` — `/tmp` cleans itself and the chained command can trip the harness into backgrounding.
 

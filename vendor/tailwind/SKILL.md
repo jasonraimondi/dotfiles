@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Tailwind Best Practices
 
-Produce idiomatic, token-aligned Tailwind CSS. Cross-cutting CSS concepts (cascade, accessibility, motion, logical properties, container queries) defer to `best-practices-css`.
+Produce idiomatic, token-aligned Tailwind CSS. Cross-cutting CSS concepts (cascade, accessibility, motion, logical properties, container queries) defer to `css`.
 
 ## Defaults
 
@@ -19,7 +19,7 @@ Produce idiomatic, token-aligned Tailwind CSS. Cross-cutting CSS concepts (casca
 1. **Classify** — utility composition, theme/config edit, `@apply` refactor, or vanilla CSS → Tailwind translation.
 2. **Read project config** — locate `tailwind.config.*` or `@theme` block. Match output to existing tokens (colors, spacing, radii, fonts, breakpoints).
 3. **Compose with utilities first.** Reach for `@apply` only when a class group recurs across many components and earns its own primitive.
-4. **Implement** — provide a patch-level diff (HTML/JSX class lists or `@apply` blocks).
+4. **Implement** — make the change (HTML/JSX class lists or `@apply` blocks).
 5. **Quality check:**
    - Class lists stay readable (group by concern: layout → spacing → typography → color → state)
    - No arbitrary values when a theme token covers the case
@@ -40,6 +40,8 @@ Produce idiomatic, token-aligned Tailwind CSS. Cross-cutting CSS concepts (casca
 
 ## Output Format
 
+When editing files, make the change and give the reason in a sentence. When the request is for advice or a review without an edit, answer in this shape:
+
 1. **Recommendation** — class list or `@apply` block
 2. **Why** — token alignment, readability, removed `@apply` overhead
 3. **Code patch** — copy-paste ready
@@ -51,8 +53,8 @@ Produce idiomatic, token-aligned Tailwind CSS. Cross-cutting CSS concepts (casca
 - Custom CSS selectors for states Tailwind variants already cover
 - Ignoring `prettier-plugin-tailwindcss` ordering when the project uses it
 - String concatenation for conditional classes
-- Replicating cascade/specificity reasoning here when `best-practices-css` is authoritative
+- Replicating cascade/specificity reasoning here when `css` is authoritative
 
 ## See Also
 
-- `best-practices-css` — cascade, custom-property tokens, accessibility, motion, logical properties, container queries
+- `css` — cascade, custom-property tokens, accessibility, motion, logical properties, container queries

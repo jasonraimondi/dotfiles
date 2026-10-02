@@ -4,7 +4,7 @@
 - Commits are authored by me alone. Do not co-commit.
 
 ### GitHub
-- **IMPORTANT**: When creating a PR always assign to me
+- When creating a PR, assign it to me.
 - **IMPORTANT**: Use the Skill(gh-stack) whenever creating, rebasing, or reordering 2+ dependent branches/PRs in one task. Avoid rebasing stacked branches manually
 
 ## Info
@@ -60,13 +60,6 @@ Transform tasks into verifiable goals:
 - "Add validation" → "Write tests for invalid inputs, then make them pass"
 - "Fix the bug" → "Write a test that reproduces it, then make it pass"
 - "Refactor X" → "Ensure tests pass before and after"
-
-For multi-step tasks, state a brief plan:
-```
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
-3. [Step] → verify: [check]
-```
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 

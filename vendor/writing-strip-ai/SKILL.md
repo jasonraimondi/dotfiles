@@ -19,7 +19,7 @@ Good writing sounds like a person talking, not a chatbot performing. The goal is
 
 ## Hard rules
 
-- No em dashes. Use commas, parentheses, or two sentences.
+- No em dashes. Use commas or two sentences.
 - No italics for emphasis.
 - No corporate AI vocabulary (banned word list in the pattern catalog below).
 - No sycophantic openers ("Great question," "I'd be happy to").

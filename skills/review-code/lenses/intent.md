@@ -11,7 +11,7 @@ The **contract** is whatever the change promised to do. Take the first of these 
 1. A spec, plan, or ticket path passed as an argument.
 2. A ticket reference in the branch name or recent commit messages — fetch it (`gh issue view <n>`, or the tracker's CLI).
 3. The commit messages on the branch.
-4. A plan or spec doc under `docs/`, `specs/`, or `.scratch/` matching the branch name or feature.
+4. A plan or spec doc under `docs/`, `specs/`, or `.scratch/`, or in the notebook vault's `plans/` (see the `notebook` skill), matching the branch name or feature.
 5. A PR's title and body, when the scope is a PR.
 
 **When no contract turns up**, the two callers diverge:
