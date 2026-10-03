@@ -14,9 +14,6 @@ config/herdr/release-notes.json
 git/dot-git-authors
 git/dot-git-user
 
-kube/dot-kube/config
-kube/dot-kube/kubectx
-
 ssh/config
 
 vim/dot-vim/.netrwhist
@@ -26,4 +23,3 @@ zsh/dot-zsh/*-custom.zsh
 .plan-bender/
 .plan-bender.local.yaml
 .claude/skills/bender-*
-.claude/skills/.dotfiles-skills-manifest
