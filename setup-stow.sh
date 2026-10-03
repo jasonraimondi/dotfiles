@@ -2,22 +2,14 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-AGENT_MD_SOURCE="$SCRIPT_DIR/ai/AGENT.md"
-PI_EXTENSIONS_SOURCE="$SCRIPT_DIR/ai/pi/extensions"
-
 FLAGS=()
-DELETE_MODE=false
-DRY_RUN=false
 for arg in "$@"; do
   case "$arg" in
     -D|--delete)
       FLAGS+=("-D")
-      DELETE_MODE=true
       ;;
     -n|--dry-run)
       FLAGS+=("-n")
-      DRY_RUN=true
       ;;
   esac
 done
