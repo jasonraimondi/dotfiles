@@ -27,13 +27,9 @@ Each directory is a stow package. The `--dotfiles` flag (in `.stowrc`) converts 
 - `zsh/dot-zsh/03-aliases.zsh` → `~/.zsh/03-aliases.zsh`
 
 Most packages target `$HOME`. Exceptions with custom targets:
-- `config/` → `~/.config` (XDG apps: karabiner, zed, skillshare, mise)
+- `config/` → `~/.config` (XDG apps: cmux, herdr, karabiner, mise, worktrunk, zed)
 - `ssh/` → `~/.ssh`
 - `dictionary/` → `~/Library/Spelling`
-
-### AI Agent Rules
-
-`ai/AGENT.md` is the canonical agent ruleset, symlinked by `setup-stow.sh` to Claude, Cursor, Windsurf, Junie, and Pi config directories. Edit `ai/AGENT.md` to change rules across all tools.
 
 ### Shell (ZSH)
 
@@ -44,11 +40,11 @@ Most packages target `$HOME`. Exceptions with custom targets:
 - `03-*` — aliases (general, macOS, programming)
 - `04-*` — dev tool config
 - `05-*` — utility functions
-- `99-custom.zsh` — private, git-ignored
+- `01.5-custom.zsh`, `99-custom.zsh` — private, git-ignored
 
 ### Homebrew
 
-Separated Brewfiles in `brew/`: `Requirefile` (essentials installed first), `Brewfile`, `Caskfile`, `CaskfileQuicklook`, `Fontfile`, `Macfile`.
+Separated Brewfiles in `brew/`: `Requirefile` (essentials installed first), `Brewfile`, `Caskfile`, `CaskfileQuicklook`, `Fontfile`, `Macfile`. `CaskfileExtended` holds optional apps and is installed manually.
 
 ### Submodules
 
@@ -56,8 +52,8 @@ zprezto, tmux plugins (dracula, resurrect, sensible, tpm), and vim dracula theme
 
 ## Conventions
 
-- **Bash scripts**: Always `#!/usr/bin/env bash` + `set -euo pipefail`, support `--help`/`--dry-run` flags
+- **Bash scripts**: Always `#!/usr/bin/env bash` + `set -euo pipefail`
 - **Stow files**: Use `dot-` prefix for dotfiles, never create raw `.` files in packages
 - **Commits**: Conventional format — `type(scope): description` (scopes: tool/component names)
-- **Private files**: `99-custom.zsh`, `dot-git-user`, `00-SECRETS.zsh` are git-ignored
+- **Private files**: `01.5-custom.zsh`, `99-custom.zsh`, `dot-git-user`, `00-SECRETS.zsh` are git-ignored
 - **New scripts**: Add to `bin/` — automatically on `$PATH` via `$DOTFILES_HOME/bin`

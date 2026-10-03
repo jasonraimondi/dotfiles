@@ -14,10 +14,11 @@ brew         > homebrew all the things
 config       > for the noble apps using .config
 dictionary   > extend the macos dictionary
 git          > global git config and aliases
+iterm2       > iterm2 utilities
 mackup       > mackup config
-mcp          > manage mcp.json config(s)
 mise         > mise for maintaining language versions
 obs          > various tools for obs
+ruby         > ruby config
 ssh          > ssh config
 tmux         > tmux config
 vim          > vim configs
@@ -69,10 +70,10 @@ vim ~/.zsh/99-custom.zsh
 ZSH automatically sources all `*.zsh` files from `~/.zsh/` using the [Prezto](https://github.com/sorin-ionescu/prezto) framework for enhanced functionality.
 
 ### Package Management
-Homebrew installs software through categorized Brewfiles: Requirefile (essentials), Brewfile (CLI tools), Caskfile (GUI apps), Fontfile, and Macfile (Mac App Store).
+Homebrew installs software through categorized Brewfiles: Requirefile (essentials), Brewfile (CLI tools), Caskfile (GUI apps), Fontfile, and Macfile (Mac App Store). CaskfileExtended (optional apps) is installed manually.
 
 ### Language Versions
-[mise](https://mise.jdx.dev/) manages programming language versions defined in `.tool-versions` for consistent development environments.
+[mise](https://mise.jdx.dev/) manages programming language versions defined in `config/mise/config.toml` for consistent development environments.
 
 ## Manual Operations
 
@@ -85,6 +86,7 @@ brew bundle --file brew/Caskfile           # GUI apps
 brew bundle --file brew/CaskfileQuicklook  # quicklook extensions
 brew bundle --file brew/Fontfile           # fonts
 brew bundle --file brew/Macfile            # Mac App Store apps
+brew bundle --file brew/CaskfileExtended   # optional apps, manual only
 
 # Update language versions
 mise install --yes && mise reshim
