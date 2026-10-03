@@ -7,7 +7,7 @@
 cp $1 $2
 
 # Get the number of frames
-numframes=`gifsicle $1 -I | grep -P "\d+ images" --only-matching | grep -P "\d+" --only-matching`
+numframes=`gifsicle $1 -I | grep -oE "[0-9]+ images" | grep -oE "[0-9]+"`
 
 # Deletion
 let i=0

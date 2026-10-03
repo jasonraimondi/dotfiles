@@ -8,7 +8,7 @@
 if [ -n "$1" ]; then
   port_num="$(lsof -ti4TCP:"$1")"
   if [ $? -eq 0 ]; then
-    kill "$port_num"
+    kill $port_num
   fi
 else
   echo >&2 Usage: clear-port port-number

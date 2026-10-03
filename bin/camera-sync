@@ -1,10 +1,5 @@
 #!/usr/bin/env zsh
 
-if [ "$USER" != "jason" ]; then
-    echo "Jason Specific Script - Exiting"
-    exit 1
-fi
-
 if ! command -v "immich-go" &> /dev/null; then
     echo "Error: Required command 'immich-go' not found"
     exit 1
