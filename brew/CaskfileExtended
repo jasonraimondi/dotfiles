@@ -6,7 +6,6 @@ cask "tor-browser"
 
 cask "beyond-compare"
 cask "betterdisplay"
-cask "betterdiscord-installer"
 cask "discord"
 cask "element"
 cask "figma"

@@ -3,10 +3,12 @@ brew "atuin"
 brew "bash"
 brew "coreutils" # Those that come with macOS are outdated
 brew "curl"
+brew "direnv"
+brew "dockutil"
 brew "docker-compose"
 brew "fzf"
-brew "ffmpeg", with_openssl: true
-brew "gnu-sed", with_default_names: true
+brew "ffmpeg"
+brew "gnu-sed"
 brew "grep"
 brew "jq"
 brew "mackup"
@@ -18,13 +20,14 @@ brew "rsync"
 brew "safe-rm"
 brew "stow"
 brew "the_silver_searcher" # https://gist.github.com/indiesquidge/ec010eca3ffa254788c2#brew-install-the_silver_searcher
-brew "runkids/tap/skillshare"
 brew "trash"
 brew "tree"
 brew "tmux"
+brew "usage" # mise completion
 brew "vim"
 brew "watch"
 brew "wget"
+brew "worktrunk"
 brew "yq"
 brew "zsh"
 
