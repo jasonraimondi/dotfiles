@@ -5,9 +5,6 @@
 alias pbtext="pbpaste | textutil -convert txt -stdin -stdout -encoding 30 | pbcopy"
 alias pbspaces="pbpaste | expand | pbcopy"
 
-# Homebrew
-alias cask="brew cask"
-
 # Exclude macOS specific files in ZIP archives
 alias zip="zip -x *.DS_Store -x *__MACOSX* -x *.AppleDouble*"
 
@@ -35,9 +32,6 @@ alias emptytrash="sudo rm -rfv /Volumes/*/.Trashes; sudo rm -rfv ~/.Trash; sudo 
 alias displays="system_profiler SPDisplaysDataType"
 alias cpu="sysctl -n machdep.cpu.brand_string"
 alias ram="top -l 1 -s 0 | grep PhysMem"
-
-# Flush Directory Service cache
-alias flush="dscacheutil -flushcache && killall -HUP mDNSResponder"
 
 # macOS has no `md5sum`, so use `md5` as a fallback
 command -v md5sum > /dev/null || alias md5sum="md5"

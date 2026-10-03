@@ -12,17 +12,8 @@ if command -v direnv > /dev/null 2>&1; then
   eval "$(direnv hook zsh)"
 fi
 
-# mise is the global default; proto is opt-in per-directory via direnv
-# (see ~/Code/intelligems/.envrc). PROTO_HOME is exported so .envrc can reuse it.
-export PROTO_HOME="$HOME/.proto"
-
 if command -v mise > /dev/null 2>&1; then
   eval "$(mise completion zsh)"
-fi
-
-if command -v fnox > /dev/null 2>&1; then
-  echo "using fnox";
-  eval "$(fnox activate bash)"
 fi
 
 if command -v wt >/dev/null 2>&1; then

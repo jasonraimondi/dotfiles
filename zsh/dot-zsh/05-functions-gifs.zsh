@@ -1,6 +1,4 @@
 function youtube-gif() {
-  set -x
-
   if [ $# -eq 0 ]
   then
     echo "No arguments supplied"
@@ -37,7 +35,6 @@ function gifsnip() {
 }
 
 function gifit() {
-  set -x
   if [ $# -eq 0 ]
   then
     echo "No arguments supplied"
@@ -49,7 +46,7 @@ function gifit() {
 
   ffmpeg -i "$INPUT_PATH" "$STAMP.output.mp4"
   ffmpeg -i "$STAMP.output.mp4" -vf "fps=10,scale=480:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 "$STAMP.output.gif"
-  ffmpeg -i "$STAMP.output.gif" -vf "fps=5,scale=480:-1,smartblur=ls=-0.5,crop=iw:ih-2:0:0" result.gif
+  ffmpeg -i "$STAMP.output.gif" -vf "fps=5,scale=480:-1,smartblur=ls=-0.5,crop=iw:ih-2:0:0" "$STAMP.result.gif"
   gifsicle -O3 "$STAMP.result.gif" -o "$STAMP.result_optimized.gif"
 }
 
@@ -65,7 +62,7 @@ function gifopt() {
         local loss_level=$2
     else
         echo "${2:-"Loss level parameter must be an integer from 30-200"}" 1>&2
-        exit 1
+        return 1
     fi
     local inputgif="${1?'Missing input file parameter'}"
     local gifname="$(basename $inputgif .gif)"

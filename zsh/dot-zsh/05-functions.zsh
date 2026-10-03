@@ -43,10 +43,6 @@ function latest() {
   curl -sL "https://api.github.com/repos/$1/releases/latest" | jq -r ".tag_name"
 }
 
-function lt() {
-  ls -ltrsa "$@" | tail;
-}
-
 function remove_lines_from() {
   # removes lines from $1 if they appear in $2
   grep -F -x -v -f $2 $1;
@@ -77,16 +73,15 @@ function slugify() {
 }
 
 function mini-img() {
-  local RESIZE=""
-  if [ test -e $2 ]; then
-    local RESIZE="-resize $2x"
+  local -a resize
+  if [ -n "$2" ]; then
+    resize=(-resize "$2x")
   fi
-  convert -strip -interlace Plane -gaussian-blur 0.05 "$RESIZE" -quality 85% "$1" "$1.min.jpg"
-  exit 0
+  convert -strip -interlace Plane -gaussian-blur 0.05 "${resize[@]}" -quality 85% "$1" "$1.min.jpg"
 }
 
 function sidebyside() {
-  local OUTPUT="${3:-ouput.png}"
+  local OUTPUT="${3:-output.png}"
   if [ -z "${2}" ]; then
     echo "requires two inputs";
     return 1;
