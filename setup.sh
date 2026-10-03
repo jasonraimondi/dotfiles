@@ -7,7 +7,7 @@ sudo -v
 
 # copy templates over if missing
 [ ! -f git/dot-git-user ] && cp -n git/dot-git-user.template git/dot-git-user
-[ ! -f zsh/dot-zsh/99-custom.zsh ] && echo "# add private zsh customizations here\n# this file is not included in git" > zsh/dot-zsh/99-custom.zsh
+[ ! -f zsh/dot-zsh/99-custom.zsh ] && printf '# add private zsh customizations here\n# this file is not included in git\n' > zsh/dot-zsh/99-custom.zsh
 
 # configure mac system preferences
 bash setup-systemprefs.sh
