@@ -31,7 +31,6 @@ zstyle ':prezto:load' pmodule-allow-overrides 'yes'
 # Set the Prezto modules to load (browse modules).
 # The order matters.
 zstyle ':prezto:load' pmodule \
-  'autosuggestions' \
   'environment' \
   'terminal' \
   'editor' \
@@ -41,6 +40,8 @@ zstyle ':prezto:load' pmodule \
   'utility' \
   'completion' \
   'history-substring-search' \
+  'autosuggestions' \
+  'git' \
   'prompt'
 
 #
@@ -184,13 +185,6 @@ zstyle ':prezto:module:prompt' theme 'sorin'
 
 # Auto start a session when Zsh is launched in a SSH connection.
 # zstyle ':prezto:module:screen:auto-start' remote 'yes'
-
-#
-# SSH
-#
-
-# Set the SSH identities to load into the agent.
-zstyle ':prezto:module:ssh:load' identities 'id_edd2519' 'id_github'
 
 #
 # Syntax Highlighting
