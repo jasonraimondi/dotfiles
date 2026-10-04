@@ -1,46 +1,50 @@
-# Brews
-brew "atuin"
+# Core
 brew "bash"
 brew "coreutils" # Those that come with macOS are outdated
 brew "curl"
-brew "direnv"
-brew "dockutil"
-brew "docker-compose"
-brew "fzf"
-brew "ffmpeg"
 brew "gnu-sed"
 brew "grep"
+brew "rsync"
+brew "vim"
+brew "zsh"
+
+# Shell & utilities
+brew "atuin"
+brew "direnv"
+brew "dockutil"
+brew "fzf"
 brew "jq"
 brew "mackup"
-# brew "minikube"
-brew "mise" # rtx was renamed :upside_down_face:
-brew "libpq" # for postgres gem
-brew "php" # mise php is a pain in the ass
-brew "rsync"
 brew "safe-rm"
 brew "stow"
 brew "the_silver_searcher" # https://gist.github.com/indiesquidge/ec010eca3ffa254788c2#brew-install-the_silver_searcher
+brew "tmux"
 brew "trash"
 brew "tree"
-brew "tmux"
-brew "usage" # mise completion
-brew "vim"
 brew "watch"
 brew "wget"
-brew "worktrunk"
 brew "yq"
-brew "zsh"
 
-# git stuff
-brew "git"
-brew "git-lfs"
-brew "git-extras"
+# Dev tools
+brew "docker-compose"
+brew "libpq" # for postgres gem
+# brew "minikube"
+brew "mise" # rtx was renamed :upside_down_face:
+brew "php" # mise php is a pain in the ass
+brew "usage" # mise completion
+brew "worktrunk"
+
+# Git
 brew "diff-so-fancy"
 brew "difftastic"
 brew "gh"
+brew "git"
+brew "git-extras"
+brew "git-lfs"
 brew "hub"
-# brew "potatolabs/git-redate/git-redate"
 # brew "git-duet/tap/git-duet"
+# brew "potatolabs/git-redate/git-redate"
 
-# Image
+# Media
+brew "ffmpeg"
 brew "imagemagick"

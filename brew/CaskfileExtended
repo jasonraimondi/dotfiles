@@ -2,31 +2,40 @@
 # see https://github.com/kevinpapst/mac-os-setup/blob/master/Brewfile
 cask_args appdir: "/Applications"
 
-cask "tor-browser"
-
-cask "beyond-compare"
-cask "betterdisplay"
-cask "discord"
-cask "element"
-cask "figma"
-cask "godot"
-cask "handbrake-app"
-cask "latest"
-cask "libreoffice"
-cask "malwarebytes"
-cask "notion"
-cask "obs"
-cask "openscad"
-cask "micro-snitch"
-cask "responsively"
-cask "selfcontrol"
-cask "steam"
-cask "transmission"
-cask "tuple"
-cask "ubersicht"
+# Security & privacy
 cask "little-snitch"
-cask "keymapp"
-cask "qlc+"
+cask "malwarebytes"
+cask "micro-snitch"
+cask "selfcontrol"
+cask "tor-browser"
 cask "wireshark-app"
 
+# Dev & design
+cask "beyond-compare"
+cask "figma"
+cask "godot"
 cask "imageoptim"
+cask "openscad"
+cask "responsively"
+
+# Communication
+cask "discord"
+cask "element"
+cask "notion"
+cask "tuple"
+
+# Media
+cask "handbrake-app"
+cask "obs"
+cask "steam"
+cask "transmission"
+
+# Hardware & system
+cask "betterdisplay"
+cask "keymapp"
+cask "latest"
+cask "qlc+"
+cask "ubersicht"
+
+# Office
+cask "libreoffice"

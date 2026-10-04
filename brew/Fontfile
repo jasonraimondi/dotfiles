@@ -3,19 +3,13 @@
 cask_args appdir: "/Applications"
 
 # Fonts
-cask "font-lato"
+cask "font-bad-script"
 cask "font-go"
+cask "font-lato"
 
 # Nerd Fonts for your IDE
 # https://www.nerdfonts.com/font-downloads
-
-cask "font-bad-script"
-
-# FiraMono Nerd Font Mono
+cask "font-caskaydia-cove-nerd-font" # Cascadia Code
 cask "font-fira-mono-nerd-font"
-# Cascadia Code
-cask "font-caskaydia-cove-nerd-font"
-# VictorMono Nerd Font Mono
-cask "font-victor-mono-nerd-font"
-# JetBrainsMonoNL Nerd Font Mono
 cask "font-jetbrains-mono-nerd-font"
+cask "font-victor-mono-nerd-font"
