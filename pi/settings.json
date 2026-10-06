@@ -1,14 +1,9 @@
 {
-  "lastChangelogVersion": "0.85.1",
+  "lastChangelogVersion": "1.0.2",
   "defaultThinkingLevel": "medium",
   "doubleEscapeAction": "tree",
   "defaultProvider": "openai-codex",
   "defaultModel": "gpt-6-sol",
   "theme": "dark",
-  "packages": [
-    "npm:@quintinshaw/pi-dynamic-workflows",
-    "npm:@bacnh85/pi-serena",
-    "npm:pi-subagents",
-    "npm:pi-mcp-adapter"
-  ]
+  "packages": []
 }

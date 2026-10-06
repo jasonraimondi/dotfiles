@@ -63,6 +63,11 @@ Transform tasks into verifiable goals:
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
+No tautological tests. A test must be able to fail when the behavior breaks:
+- Don't assert on values the test itself just set, or on mocks you configured to return that value.
+- Don't recompute the expected value with the same logic as the code under test. Use a literal or an independent oracle.
+- Before keeping a test, ask: "If I broke the code under test, would this fail?" If not, delete or rewrite it.
+
 ### 5. Comments
 
 **Default to none.** Make the code self-documenting first — a better name, an extracted function, an explaining variable, a named constant. A comment is the last resort.
