@@ -34,7 +34,7 @@ Most packages target `$HOME`. Exceptions with custom targets:
 ### Shell (ZSH)
 
 `zsh/dot-zsh/` files are sourced by glob in numeric order:
-- `00-SECRETS.zsh` — encrypted credentials (never read/edit)
+- `00-SECRETS.zsh` — decrypted credentials from `00-SECRETS.zsh.gpg` (never read or edit either file)
 - `01-*` — base config, exports, PATH
 - `02-*` — framework setup
 - `03-*` — aliases (general, macOS, programming)
