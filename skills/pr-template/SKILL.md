@@ -39,7 +39,7 @@ A rewrite that launders a stale claim into cleaner prose reads more credible and
 - `<scope>` — a short module or area name from the file paths (`auth`, `api`, `reports`, `ui`). If the change spans many areas, use the dominant one or omit the scope.
 - `<TICKET-ID>` — from step 4. When no ticket ID appears in the branch, body, or commits, leave it out: `fix(reports): rewrite dashboard query`.
 - `<short description>` — 5–10 words, lowercase, imperative, no trailing period.
-- **Breaking change?** Append `!` before the colon: `feat(auth)!: PROJ-456 add OAuth2 PKCE flow`. The title becomes the squash-merge commit message, so the marker belongs there as well as in the body.
+- **Breaking change or migration?** Append `!` before the colon: `feat(auth)!: PROJ-456 add OAuth2 PKCE flow`. Any PR whose diff adds or changes a migration (the files under the Blockers table's migration signal) gets the `!`, even when nothing else in it breaks. The title becomes the squash-merge commit message, so the marker belongs there as well as in the body.
 
 ## Description format
 
