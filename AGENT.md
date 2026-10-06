@@ -5,7 +5,7 @@
 
 ### GitHub
 - When creating a PR, assign it to me.
-- **IMPORTANT**: Use the Skill(gh-stack) whenever creating, rebasing, or reordering 2+ dependent branches/PRs in one task. Avoid rebasing stacked branches manually
+- Use the gh-stack skill when creating, rebasing, or reordering two or more dependent branches or PRs in one task, rather than rebasing the stack by hand.
 
 ## Info
 - Never hard-wrap prose. Do not insert manual line breaks to hit a column width.

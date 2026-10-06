@@ -39,54 +39,6 @@ Read the matching file **before** writing code for that topic.
 | **SvelteKit** | Load functions, form actions, SSR, page typing | [sveltekit.md](references/sveltekit.md) |
 | **Performance** | Universal reactivity, avoiding over-reactivity, streaming | [performance.md](references/performance.md) |
 
-## Essential Patterns
-
-### Reactive State
-
-```svelte
-<script>
-  let count = $state(0);            // Reactive state
-  let doubled = $derived(count * 2); // Computed value
-</script>
-```
-
-### Component Props
-
-```svelte
-<script>
-  let { name, count = 0 } = $props();
-  let { value = $bindable() } = $props(); // Two-way binding
-</script>
-```
-
-### Snippets (replacing slots)
-
-```svelte
-<script>
-  let { children, header } = $props();
-</script>
-
-{@render header?.()}
-{@render children()}
-```
-
-### Event Handlers
-
-```svelte
-<!-- Svelte 5: use onclick, not on:click -->
-<button onclick={() => count++}>Click</button>
-```
-
-### Callback Props (replacing createEventDispatcher)
-
-```svelte
-<script>
-  let { onclick } = $props();
-</script>
-
-<button onclick={() => onclick?.({ data })}>Click</button>
-```
-
 ## Common Mistakes
 
 1. **`let` without `$state`** — Variables are not reactive without `$state()`

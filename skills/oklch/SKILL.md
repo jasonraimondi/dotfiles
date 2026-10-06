@@ -58,7 +58,7 @@ oklch(0.8 0.05 200 / 0.5)
 
 ## Review Output Format
 
-Always present color changes as a markdown table with **Before** and **After** columns. Include **every color that was changed** — not just a subset. Never list findings as separate "Before:" / "After:" lines outside of a table.
+Present color changes in a review as a markdown table with **Before** and **After** columns, one row per changed color.
 
 | Before | After |
 | --- | --- |

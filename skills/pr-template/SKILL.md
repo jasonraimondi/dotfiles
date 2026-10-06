@@ -14,7 +14,7 @@ Reads a pull request with `gh`, writes a normalized title and a compact body, an
 3. **Triage the body against the diff.** See "Triage the body".
 4. **Read the ticket and `GLOSSARY.md`.** Use `{argument}` for the ticket if given; otherwise search the body and every commit message for `[A-Z]{2,}-\d+` (e.g. `PROJ-456`). Read each ticket you find and treat its description as a claim too — the code is what shipped. Read `GLOSSARY.md` if the repo has one (root, or the nearest ancestor directory of the changed files); its terms govern the wording you write.
 5. **Build the title and the body** from the rules below.
-6. **Compress.** Aim for the length target below. Delete low-value detail instead of packing it into longer sentences. Check the final length and keep any excess only when it earns its place.
+6. **Compress.** Apply "Length" below. Delete low-value detail instead of packing it into longer sentences.
 7. **Unslop.** Use Skill(unslop). Apply its process and every pattern check to the title and body, but skip "Adding soul": a PR body states facts without opinion or first person. Preserve verified technical meaning, conventional title syntax, Markdown headings, the `**Door:**`, `**Blast radius:**`, and `**Before merge:**` labels, literal code, and task-list syntax. This step is complete when the self-audit finds no remaining tell.
 8. **Apply.** Pipe the body through stdin. See "Applying the edit". Apply as soon as it is written. `gh pr edit` is re-runnable, so a rewrite the user dislikes costs one more run.
 9. **Verify.** Run `gh pr view <ref> --json title,body` and confirm the body is non-empty and opens with `## Why` or `## Stack`. A mismatch means the apply failed. Retry and tell the user. Report success only after this check passes.
@@ -51,22 +51,13 @@ Use the ubiquitous language in `GLOSSARY.md` when that file exists. The mandator
 
 Write natural, connected prose. Give each sentence one clear job, but use enough words to show cause and effect. Write each paragraph and each bullet as one unbroken line and let GitHub soft-wrap it. Newlines separate paragraphs, bullets, and headings.
 
-### Length target
+### Length
 
-Most PR bodies should land between 150 and 250 words after stripping Markdown syntax. Headings and blocker text count. Preserved image URLs, literal command blocks, and shape sketches in code fences do not count.
-
-This range is a default, not a cap. A larger body earns its length when the PR has several distinct behaviors, a migration or rollout, a breaking contract, cross-system effects, or risks that reviewers must evaluate. Diff size alone does not justify more prose. Every sentence beyond the range must answer a concrete reviewer question that the shorter version leaves open.
+A reviewer reads the body once before opening the diff, so it should be short enough to read in one pass. A typical PR needs a short paragraph for `Why`, a sentence or two for `What changed`, and two labelled `Risk` bullets. A body earns more length when the PR has several distinct behaviors, a migration or rollout, a breaking contract, cross-system effects, or risks that reviewers must evaluate. Diff size alone does not justify more prose. Every added sentence must answer a concrete reviewer question that a shorter version leaves open.
 
 Compression removes content. It does not join discarded facts into dense compound sentences. Keep the causal chain, behavioral changes, strongest test evidence, material scope boundaries, and required human actions. Drop secondary implementation detail, exhaustive cases, repeated consequences, unchanged behavior, and facts a reviewer can read directly from the diff.
 
-Use these defaults as the first editing pass:
-
-- `Why`: usually one paragraph and no more than 4 sentences.
-- `What changed`: usually 1–3 sentences, plus no more than 4 one-sentence bullets when the change has several distinct behaviors.
-- `How to verify`: usually no more than 4 one-sentence bullets.
-- `Risk`: two labelled bullets, each one sentence, plus usually no blockers and rarely more than 2.
-
-Break a default when following it would hide information needed to review or ship the change safely. Above 250 words, challenge every extra bullet and sentence. Never preserve a detail by making another sentence harder to read.
+Never cut information needed to review or ship the change safely, and never preserve a detail by making another sentence harder to read.
 
 ### Sections
 

@@ -49,15 +49,6 @@ Avoid over-simplification that could:
 
 Only refine code that has been recently modified or touched in the current session, unless explicitly instructed to review a broader scope.
 
-## Refinement Process
-
-1. **Identify** the recently modified code sections
-2. **Analyze** for opportunities to improve elegance and consistency
-3. **Apply** project-specific best practices and coding standards
-4. **Ensure** all functionality remains unchanged
-5. **Verify** the refined code is simpler and more maintainable
-6. **Document** only significant changes that affect understanding
-
 ## Examples
 
 ### Before: Nested Ternaries

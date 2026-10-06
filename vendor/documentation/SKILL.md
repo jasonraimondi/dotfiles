@@ -18,7 +18,7 @@ Use this skill when you need to create, review, or improve technical documentati
 
 Organize documentation into four distinct types — tutorials, how-to guides, reference material, and explanations — each serving different user needs and contexts.
 
-Always ask clarifying questions about the user's context, audience, and goals **before** creating documentation.
+Before writing, make sure you know the audience, their goal, and what they already know; ask about whichever the request leaves unclear.
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: datadog-logs
-description: Log management - search, archives, metrics, and cost control.
+description: Search and manage Datadog logs with the `pup` CLI - log search, archives, log-based metrics, and log cost control. Use when the user asks about Datadog logs or log indexing costs.
 metadata:
   version: "1.0.1"
   author: datadog-labs

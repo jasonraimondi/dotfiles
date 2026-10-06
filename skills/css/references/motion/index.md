@@ -71,7 +71,7 @@ Under `@media (prefers-reduced-motion: reduce)`, replace travel and zoom with a 
 
 ## Output
 
-A motion answer adds two sections to the skill's Output Format:
+When editing, state the reduced-motion behavior in a sentence. An advice-only motion answer adds two sections to the skill's Output Format:
 
 - **Motion spec** — trigger, affected elements, duration, easing token, distance
 - **Reduced-motion behavior** — what happens under `prefers-reduced-motion: reduce`, and when the API is unsupported

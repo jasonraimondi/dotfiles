@@ -68,7 +68,7 @@ node_modules/
 
 ## Finding Package READMEs
 
-**CRITICAL: Never use `find`, `grep`, or `rg` for locating READMEs. Follow this sequence:**
+Locate a package's README by reading its likely paths directly, not by searching node_modules with `find`, `grep`, or `rg`, which walks every nested dependency. Follow this sequence:
 
 1. **Direct Read attempts (try in order):**
    ```

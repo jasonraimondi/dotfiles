@@ -10,7 +10,7 @@ Create a presentation slide deck using the Marp markdown format, following the e
 
 ## Phase 1: Interview
 
-Before generating anything, interview the user by asking these questions **one at a time**, waiting for each answer before proceeding to the next.
+Before generating anything, make sure you know the answers to the questions below. Ask about whichever ones the request and any provided files don't already answer, one at a time, waiting for each answer before the next.
 
 **Question 1 — Goal & Topic:**
 Ask: "What's this presentation about? What should the audience walk away knowing or being able to do?"

@@ -24,7 +24,7 @@ Apply these guidelines when writing or reviewing Rust code. Based on Apollo Grap
 
 ## Best Practices Reference
 
-Before reviewing, familiarize yourself with Apollo's Rust best practices. Read ALL relevant chapters in the same turn in parallel. Reference these files when providing feedback:
+Before reviewing, read the chapters of Apollo's Rust best practices that are relevant to the code, and reference them when giving feedback:
 
 - [Chapter 1 - Coding Styles and Idioms](references/chapter_01.md): Borrowing vs cloning, Copy trait, Option/Result handling, iterators, comments
 - [Chapter 2 - Clippy and Linting](references/chapter_02.md): Clippy configuration, important lints, workspace lint setup

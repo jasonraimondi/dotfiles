@@ -1,6 +1,6 @@
 ---
 name: unslop
-description: Cut AI tells from any writing
+description: Cut AI tells from writing so it reads as human-written. Use when the user asks to unslop or humanize a draft, or to remove AI patterns from text they wrote or pasted.
 ---
 
 # Unslop

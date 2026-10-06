@@ -8,16 +8,16 @@ Paths are relative to this repo (local) and to the upstream repo root (upstream)
 
 | Local | Upstream | Kept divergence |
 |---|---|---|
-| `vendor/claude-handoff` | `skills/in-progress/claude-handoff` | none |
+| `pending/claude-handoff` | `skills/in-progress/claude-handoff` | parked in `pending/` (not installed) |
 | `vendor/grill-me` | `skills/productivity/grill-me` | none |
 | `vendor/grill-with-docs` | `skills/engineering/grill-with-docs` | none |
-| `vendor/handoff` | `skills/productivity/handoff` | none |
+| `vendor-auto/handoff` | `skills/productivity/handoff` | none |
 | `vendor/teach` | `skills/productivity/teach` | none |
 | `vendor/to-questionnaire` | `skills/productivity/to-questionnaire` | none |
 | `vendor/wait-what` | `skills/productivity/wait-what` | none |
 | `vendor/wizard` | `skills/engineering/wizard` | user-invoked locally: `disable-model-invocation: true` added |
 | `vendor-auto/codebase-design` | `skills/engineering/codebase-design` | none |
-| `vendor-auto/diagnosing-bugs` | `skills/engineering/diagnosing-bugs` | none |
+| `vendor-auto/diagnosing-bugs` | `skills/engineering/diagnosing-bugs` | Phase 1's "Be aggressive. Be creative. Refuse to give up." replaced with a concrete try-several-loops instruction |
 | `vendor-auto/domain-modeling` | `skills/engineering/domain-modeling` | none |
 | `vendor-auto/implement` | `skills/engineering/implement` | model-invoked locally: upstream's `disable-model-invocation` dropped. Adds "Use /agent-fleet when the work splits into independent tracks." Review step calls `/review-code quick` with the spec path and fixes every Blocker and Major finding |
 | `vendor-auto/prototype` | `skills/engineering/prototype` | none |

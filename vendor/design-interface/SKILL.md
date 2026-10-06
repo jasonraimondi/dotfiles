@@ -24,7 +24,7 @@ Ask: "What does this module need to do? Who will use it?"
 
 ### 2. Generate Designs (Parallel Sub-Agents)
 
-Spawn 3+ sub-agents simultaneously using Task tool. Each must produce a **radically different** approach.
+Spawn 3+ sub-agents in parallel with the Agent tool. Each must produce a **radically different** approach.
 
 ```
 Prompt template for each sub-agent:
@@ -70,10 +70,7 @@ Discuss trade-offs in prose, not tables. Highlight where designs diverge most.
 
 ### 5. Synthesize
 
-Often the best design combines insights from multiple options. Ask:
-
-- "Which design best fits your primary use case?"
-- "Any elements from other designs worth incorporating?"
+Recommend the design you think is strongest and say why. If elements from different designs combine well, propose the hybrid. Then ask the user which direction to take.
 
 ## Evaluation Criteria
 

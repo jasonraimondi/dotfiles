@@ -16,13 +16,13 @@ Sacrifice grammar for concision.
 
 ## Format
 
-One block per topic, max 3 topics. Heading ~65ch, max 3 bullets each.
+One block per topic: a short heading, then a few terse bullets. The report is read aloud in about a minute, so when more topics were touched than fit, keep the ones the listeners most need.
 
 ```
-Checkout discount stacking (~65ch)
+Checkout discount stacking
 - Race found. Two discounts applied together.
 - Fix written. In review.
 - Ships tomorrow.
 ```
 
-Done when every topic touched today has a block, or 3 blocks exist.
+Done when every topic the listeners need has a block.

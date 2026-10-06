@@ -111,8 +111,4 @@ Key properties demonstrated: bounded goroutine lifetime via `ctx`, error propaga
 
 ## Output Templates
 
-When implementing Go features, provide:
-1. Interface definitions (contracts first)
-2. Implementation files with proper package structure
-3. Test file with table-driven tests
-4. Brief explanation of concurrency patterns used
+When editing files, make the change and give the reason in a sentence. When the request is for a design without an edit, lay it out as interface definitions first, then the implementation, then table-driven tests, with a short note on the concurrency patterns used.

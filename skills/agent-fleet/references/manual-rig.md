@@ -104,6 +104,6 @@ herdr pane                   # a command group with no subcommand prints its hel
 
 Never run bare `herdr` for discovery — it launches or attaches the TUI. Never probe a mutating nested command by omitting arguments; `herdr workspace create` is valid with defaults and will execute.
 
-Fleet flags that come up often: `--add-dir` (a second writable directory), `--model` / `--effort` (cheap workers beside one expensive reviewer), `--agent` / `--append-system-prompt` (a standing role, so you do not repeat it in each brief). Pass them to `spawn-fleet.py` with `--claude-arg`, or after `--` on `herdr agent start`. Check the spelling of each flag in the help before you use it. Flags change between versions.
+Fleet flags that come up often: `--add-dir` (a second writable directory), `--model` / `--effort` (cheap workers beside one expensive reviewer), `--agent` / `--append-system-prompt` (a standing role, so you do not repeat it in each brief). Pass them to `spawn-fleet.py` with `--agent-arg=<flag>`, or after `--` on `herdr agent start`. Check the spelling of each flag in the help before you use it. Flags change between versions.
 
 Herdr's own worktree commands give each session its own git worktree when the fleet edits one repo: `herdr worktree create --branch <name>`. Create that topology only when the user asks for it.

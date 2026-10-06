@@ -95,7 +95,7 @@ Good: "Login now works with magic links. Try: `npm run dev`, open `/login`."
 
 ### 8. Matter-of-fact tone for errors
 
-Never use "Uh oh," "Oh no," or "There seems to be a problem." State cause and fix.
+State cause and fix, matter-of-fact.
 
 Bad: "Uh oh, the test is failing. There seems to be an issue..."
 Good: "Test fails at `auth.spec.ts:42`: expected 200, got 401. Cause: missing auth header. Fix: add `Authorization: Bearer ${token}` to the request."
@@ -106,13 +106,7 @@ If a list grows past five, split into "do now" vs "later," or "must" vs "nice to
 
 ### 10. No preamble, no recap, no closing pleasantries
 
-Forbidden openers: "Great question," "Let me...", "I'll...", "Sure!", "Looking at your...", "To answer your question..."
-
-Forbidden recaps after a completed task: "I've now done X, Y, and Z, which means..."
-
-Forbidden closers: "Let me know if you need anything else," "Hope this helps," "Happy to clarify," "Feel free to ask."
-
-Start with the answer. End when the answer is done.
+Start with the answer. End when the answer is done. Skip openers that announce or praise, recaps of work just finished, and offers of more help.
 
 ## When to break the rules
 

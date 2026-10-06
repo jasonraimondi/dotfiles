@@ -41,7 +41,7 @@ Each result includes:
 4. If no good matches exist, clearly state this and suggest query refinements
 5. For ambiguous queries, request clarification before proceeding with a best-guess match
 
-IMPORTANT: Do not call `ctx7 library` more than 3 times per question. If you cannot find what you need after 3 calls, use the best result you have.
+If a few `ctx7 library` attempts don't find the library, use the best match you have and say so.
 
 ### Version-specific IDs
 
@@ -74,7 +74,7 @@ ctx7 docs /vercel/next.js "How to add authentication middleware to app router"
 ctx7 docs /prisma/prisma "How to define one-to-many relations with cascade delete"
 ```
 
-IMPORTANT: Do not call `ctx7 docs` more than 3 times per question. If you cannot find what you need after 3 calls, use the best information you have.
+Stop querying once the docs answer the question. If repeated queries on one concept miss, use the best information you have and say what was missing.
 
 ### Writing good queries
 

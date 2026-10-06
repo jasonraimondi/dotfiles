@@ -46,7 +46,7 @@ Detect context from file paths and imports, then load the relevant guides — th
 | **MEDIUM** | Vulnerable pattern, input source unclear | **Note** as "Needs verification" |
 | **LOW** | Theoretical, best practice, defense-in-depth | **Do not report** — unless dispatched by `full`, which wants every level |
 
-Dispatched by `full`, emit all findings (HIGH/MEDIUM/LOW) with `confidence` set; the verifier filters. Invoked directly, report HIGH only.
+Dispatched by `full`, emit all findings (HIGH/MEDIUM/LOW) with `confidence` set; the verifier filters. Invoked directly, report HIGH as findings, list MEDIUM under *Needs Verification*, and drop LOW.
 
 ## Do not flag
 
@@ -64,7 +64,7 @@ Dispatched by `full`, emit all findings (HIGH/MEDIUM/LOW) with `confidence` set;
 | **Medium** | Reflected XSS, CSRF on state-changing actions, path traversal |
 | **Low** | Missing headers, verbose errors, weak algorithms in non-critical context |
 
-**Always flag (Critical)**
+**Critical once the input is attacker-controlled**
 ```
 eval(user_input)
 exec(user_input)
@@ -76,7 +76,7 @@ shell=True + user_input
 child_process.exec(user)
 ```
 
-**Always flag (High)**
+**High once the input is attacker-controlled**
 ```
 innerHTML = userInput              # DOM XSS
 dangerouslySetInnerHTML={user}     # React XSS
