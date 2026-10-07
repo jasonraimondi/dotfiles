@@ -21,7 +21,10 @@ if command -v direnv > /dev/null 2>&1; then
   unset direnv_hook_stock
 fi
 
+# shims rather than `mise activate`: its per-prompt PATH rebuild fights direnv,
+# which hands ~/Code/intelligems/intelligems over to proto
 if command -v mise > /dev/null 2>&1; then
+  eval "$(mise activate zsh --shims)"
   eval "$(mise completion zsh)"
 fi
 
