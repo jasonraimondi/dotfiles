@@ -127,30 +127,6 @@ open_worktree = "prefix+o"    # optional, unset by default
 # width = "80%"
 # height = "80%"
 
-[[keys.command]]
-key = "prefix+shift+o"
-type = "plugin_action"
-command = "worktrunk.open"
-description = "worktrunk: switch/create from default branch"
-
-[[keys.command]]
-key = "prefix+shift+c"
-type = "plugin_action"
-command = "worktrunk.open-current"
-description = "worktrunk: switch/create from current branch"
-
-[[keys.command]]
-key = "prefix+shift+m"
-type = "plugin_action"
-command = "worktrunk.open-with-remotes"
-description = "worktrunk: switch/create incl. remote branches"
-
-[[keys.command]]
-key = "prefix+shift+y"
-type = "plugin_action"
-command = "worktrunk.remove"
-description = "worktrunk: remove worktree"
-
 # Legacy indexed shortcut config is still parsed for compatibility.
 # Prefer switch_tab, switch_workspace, and focus_agent for new configs.
 # [keys.indexed]

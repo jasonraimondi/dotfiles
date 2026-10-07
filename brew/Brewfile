@@ -31,7 +31,6 @@ brew "libpq" # for postgres gem
 brew "mise" # rtx was renamed :upside_down_face:
 brew "php" # mise php is a pain in the ass
 brew "usage" # mise completion
-brew "worktrunk"
 
 # Git
 brew "diff-so-fancy"

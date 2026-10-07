@@ -25,10 +25,6 @@ if command -v mise > /dev/null 2>&1; then
   eval "$(mise completion zsh)"
 fi
 
-if command -v wt >/dev/null 2>&1; then
-  eval "$(command wt config shell init zsh)"
-fi
-
 # if command -v plan-bender > /dev/null; then
 #   eval "$(plan-bender completion zsh)"
 # fi
