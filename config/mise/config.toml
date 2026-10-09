@@ -4,19 +4,15 @@ min_version = "2024.9.5"
 PROJECT_NAME = "{{ config_root | basename }}"
 
 [tools]
-awscli    = "2.33.17"
-bun       = "latest"
+awscli    = "2"
 deno      = "2"
-elixir    = "1.19.5-otp-28"
-erlang    = "28.3"
-node      = "lts"
-pnpm      = ["11", "10"]
+node      = "24"
+pnpm      = "12"
 python    = "3"
 ruby      = "4"
 rust      = "1"
 terraform = "1.14"
 uv        = "latest"
-zig       = "latest"
 
 # uv tool install -p 3.13 serena-agent@latest --prerelease=allow
 "pipx:serena-agent" = { version = "latest", uvx_args = "--python 3.13 --prerelease allow" }
