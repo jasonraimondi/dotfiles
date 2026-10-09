@@ -149,7 +149,7 @@ run defaults write com.apple.menuextra.clock ShowDate -int 1
 # Battery percentage (host-specific Control Center preference)
 run defaults -currentHost write com.apple.controlcenter BatteryShowPercentage -bool true
 
-run killall SystemUIServer
+run killall SystemUIServer || true
 
 # ========================================
 # DOCK SETTINGS
@@ -166,7 +166,7 @@ run defaults write com.apple.dock tilesize -float 42.0
 run defaults write com.apple.dock wvous-bl-corner -int 5
 run defaults write com.apple.dock wvous-bl-modifier -int 0
 
-run killall Dock
+run killall Dock || true
 
 # ========================================
 # POWER MANAGEMENT
@@ -221,7 +221,7 @@ run defaults write com.apple.screencapture name ""
 run defaults write com.apple.screencapture type png
 run defaults write com.apple.screencapture disable-shadow -bool true
 
-run killall SystemUIServer
+run killall SystemUIServer || true
 
 # ========================================
 # RECTANGLE APP SETTINGS (OPTIONAL)
