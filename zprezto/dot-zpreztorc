@@ -148,11 +148,7 @@ zstyle ':prezto:module:editor' key-bindings 'vi'
 # Set the prompt theme to load.
 # Setting it to 'random' loads a random theme.
 # Auto set to 'off' on dumb terminals.
-if [[ $HOST == dev-box-* ]]; then
-  zstyle ':prezto:module:prompt' theme 'paradox'
-else
-  zstyle ':prezto:module:prompt' theme 'sorin'
-fi
+zstyle ':prezto:module:prompt' theme 'sorin'
 
 # Set the working directory prompt display length.
 # By default, it is set to 'short'. Set it to 'long' (without '~' expansion)
