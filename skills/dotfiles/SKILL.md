@@ -1,6 +1,6 @@
 ---
 name: dotfiles
-description: Change Jason's macOS dotfiles in ~/dotfiles. Use when asked to add or change a shell alias, function, env var, PATH entry, tool init, Homebrew package, mise tool version, git alias or setting, macOS default, Dock app, or an app config under ~/.config (herdr, worktrunk, zed, karabiner, mise), or to add a script to bin.
+description: Change Jason's macOS dotfiles in ~/dotfiles. Use when asked to add or change a shell alias, function, env var, PATH entry, tool init, Homebrew package, mise tool version, git alias or setting, macOS default, Dock app, or an app config under ~/.config (herdr, zed, karabiner, mise), or to add a script to bin.
 ---
 
 # Dotfiles
@@ -35,7 +35,7 @@ description: Change Jason's macOS dotfiles in ~/dotfiles. Use when asked to add 
 | default npm or gem package | `mise/dot-default-npm-packages`, `mise/dot-default-gems` | file read |
 | git alias or setting | `git/dot-gitconfig` | `git config --get KEY` |
 | global gitignore | `git/dot-gitignore` | `git check-ignore -v PATH` |
-| Herdr, worktrunk, Zed, Karabiner | `config/APP/` | app reload |
+| Herdr, Zed, Karabiner | `config/APP/` | app reload |
 | macOS default | `setup-systemprefs.sh` with the `run` wrapper | `bash setup-systemprefs.sh -n` |
 | Dock app | `setup-dock.sh` | `bash setup-dock.sh` |
 | tmux, vim | `tmux/dot-tmux.conf`, `vim/dot-vimrc` | `tmux source-file`, `vim -c q` |
