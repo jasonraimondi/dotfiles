@@ -10,6 +10,7 @@ macOS development environment managed with [GNU Stow](https://www.gnu.org/softwa
 
 ```bash
 bash setup.sh                    # Full setup (requires sudo)
+bash setup-linux.sh              # Linux: zsh + prezto only
 bash setup-stow.sh               # Re-apply all symlinks
 bash setup-stow.sh -n            # Dry-run symlinks
 bash setup-stow.sh -D            # Delete all symlinks

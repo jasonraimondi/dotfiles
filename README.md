@@ -40,6 +40,12 @@ cd dotfiles && bash setup.sh
 
 **What this does:** Sets up a complete macOS dev environment with shell configs, applications, and tools managed through GNU Stow symlinks.
 
+**Linux (zsh only):**
+```bash
+git clone https://github.com/jasonraimondi/dotfiles.git ~/dotfiles && bash ~/dotfiles/setup-linux.sh
+```
+Installs zsh, stow and git if missing (apt, dnf or pacman), stows the `zsh` and `zprezto` packages, and makes zsh the login shell.
+
 ## Post-Install Setup
 
 **Configure git user (required):**
