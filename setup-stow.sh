@@ -15,6 +15,8 @@ for arg in "$@"; do
 done
 
 stow "${FLAGS[@]}" aws
+mkdir -p "$HOME/.claude" \
+  && stow "${FLAGS[@]}" -t "$HOME/.claude" claude
 stow "${FLAGS[@]}" git
 stow "${FLAGS[@]}" iterm2
 stow "${FLAGS[@]}" -t "$HOME/Library/Spelling" dictionary
