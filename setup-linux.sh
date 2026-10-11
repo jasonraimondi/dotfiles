@@ -29,6 +29,15 @@ git submodule update --init --recursive zprezto/dot-zprezto
 
 [ ! -f zsh/dot-zsh/99-custom.zsh ] && printf '# add private zsh customizations here\n# this file is not included in git\n' > zsh/dot-zsh/99-custom.zsh
 
+for pkg in zsh zprezto; do
+  for src in "$pkg"/dot-*; do
+    target="$HOME/.${src#"$pkg"/dot-}"
+    if [ -e "$target" ] && [ ! -L "$target" ]; then
+      mv -n "$target" "$target.pre-dotfiles"
+    fi
+  done
+done
+
 stow -t "$HOME" zsh zprezto
 
 ZSH_PATH="$(command -v zsh)"
