@@ -1,4 +1,5 @@
-start=$(gdate +%s.%N)
+zmodload zsh/datetime
+start=$EPOCHREALTIME
 
 export DOTFILES_HOME=$HOME/dotfiles
 
@@ -10,8 +11,4 @@ for filename in $HOME/.zsh/**/*.zsh; do
   fi 
 done
 
-end=$(gdate +%s.%N)
-
-runtime=$(echo "(${end} - ${start}) * 1000" | bc | xargs printf "%.0f")
-
-echo "dotfiles in ${runtime}ms"
+printf "dotfiles in %.0fms\n" $(( (EPOCHREALTIME - start) * 1000 ))

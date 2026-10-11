@@ -1,3 +1,5 @@
+[[ "$OSTYPE" == darwin* ]] || return
+
 # Trash / RM
 # alias rm="trash"
 
