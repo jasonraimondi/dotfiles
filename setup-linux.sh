@@ -33,12 +33,22 @@ for pkg in zsh zprezto; do
   for src in "$pkg"/dot-*; do
     target="$HOME/.${src#"$pkg"/dot-}"
     if [ -e "$target" ] && [ ! -L "$target" ]; then
-      mv -n "$target" "$target.pre-dotfiles"
+      rm -rf "$target"
     fi
   done
 done
 
 stow -t "$HOME" zsh zprezto
+
+mkdir -p "$HOME/.config"
+while IFS= read -r src; do
+  target="$HOME/.config/${src#config/}"
+  if [ -e "$target" ] && [ ! -L "$target" ]; then
+    rm -f "$target"
+  fi
+done < <(find config -type f ! -name .gitignore)
+
+stow -t "$HOME/.config" config
 
 ZSH_PATH="$(command -v zsh)"
 USER_NAME="$(id -un)"
