@@ -28,7 +28,7 @@ Each directory is a stow package. The `--dotfiles` flag (in `.stowrc`) converts 
 - `zsh/dot-zsh/03-aliases.zsh` → `~/.zsh/03-aliases.zsh`
 
 Most packages target `$HOME`. Exceptions with custom targets:
-- `config/` → `~/.config` (XDG apps: cmux, herdr, karabiner, mise, zed)
+- `config/` → `~/.config` (XDG apps: atuin, cmux, herdr, karabiner, mise, zed)
 - `ssh/` → `~/.ssh`
 - `dictionary/` → `~/Library/Spelling`
 
