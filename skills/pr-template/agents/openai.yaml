@@ -1,3 +1,3 @@
 interface:
   display_name: "PR Template"
-  short_description: "Rewrite a PR title and body through the template"
+  short_description: "Open a PR, or rewrite an existing one, through the template"

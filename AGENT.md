@@ -4,7 +4,7 @@
 - Commits are authored by me alone. Do not co-commit.
 
 ### GitHub
-- When creating a PR, assign it to me.
+- Open PRs with the pr-template skill, which writes the title and body and assigns the PR to me.
 - Use the gh-stack skill when creating, rebasing, or reordering two or more dependent branches or PRs in one task, rather than rebasing the stack by hand.
 
 ## Info
