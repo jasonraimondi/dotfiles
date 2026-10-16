@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 import type { Invite } from "../../../api/invites";
 import { RoleBadge } from "./RoleBadge";
 
@@ -10,8 +8,11 @@ type InviteRowViewProps = {
   expiresInDays: number;
   canResend: boolean;
   canRevoke: boolean;
+  isConfirmingRevoke: boolean;
   onResend: () => void;
-  onRevoke: () => void;
+  onRequestRevoke: () => void;
+  onCancelRevoke: () => void;
+  onConfirmRevoke: () => void;
 };
 
 export function InviteRowView({
@@ -21,11 +22,12 @@ export function InviteRowView({
   expiresInDays,
   canResend,
   canRevoke,
+  isConfirmingRevoke,
   onResend,
-  onRevoke,
+  onRequestRevoke,
+  onCancelRevoke,
+  onConfirmRevoke,
 }: InviteRowViewProps) {
-  const [isConfirmingRevoke, setIsConfirmingRevoke] = useState(false);
-
   return (
     <div>
       <span>{email}</span>
@@ -38,16 +40,10 @@ export function InviteRowView({
 
       {isConfirmingRevoke ? (
         <>
-          <button
-            type="button"
-            onClick={() => {
-              setIsConfirmingRevoke(false);
-              onRevoke();
-            }}
-          >
+          <button type="button" onClick={onConfirmRevoke}>
             Confirm revoke
           </button>
-          <button type="button" onClick={() => setIsConfirmingRevoke(false)}>
+          <button type="button" onClick={onCancelRevoke}>
             Cancel
           </button>
         </>
@@ -55,7 +51,7 @@ export function InviteRowView({
         <button
           type="button"
           disabled={!canRevoke}
-          onClick={() => setIsConfirmingRevoke(true)}
+          onClick={onRequestRevoke}
         >
           Revoke
         </button>

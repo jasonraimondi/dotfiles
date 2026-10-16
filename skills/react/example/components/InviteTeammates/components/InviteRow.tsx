@@ -4,11 +4,22 @@ import { InviteRowView } from "./InviteRow.view";
 type InviteRowProps = {
   invite: Invite;
   isBusy: boolean;
+  isConfirmingRevoke: boolean;
   onResend: () => void;
-  onRevoke: () => void;
+  onRequestRevoke: () => void;
+  onCancelRevoke: () => void;
+  onConfirmRevoke: () => void;
 };
 
-export function InviteRow({ invite, isBusy, onResend, onRevoke }: InviteRowProps) {
+export function InviteRow({
+  invite,
+  isBusy,
+  isConfirmingRevoke,
+  onResend,
+  onRequestRevoke,
+  onCancelRevoke,
+  onConfirmRevoke,
+}: InviteRowProps) {
   const expiresInDays = Math.ceil(
     (new Date(invite.expiresAt).getTime() - Date.now()) / 86_400_000,
   );
@@ -21,8 +32,11 @@ export function InviteRow({ invite, isBusy, onResend, onRevoke }: InviteRowProps
       expiresInDays={expiresInDays}
       canResend={invite.status === "pending" && !isBusy}
       canRevoke={invite.status !== "revoked" && !isBusy}
+      isConfirmingRevoke={isConfirmingRevoke}
       onResend={onResend}
-      onRevoke={onRevoke}
+      onRequestRevoke={onRequestRevoke}
+      onCancelRevoke={onCancelRevoke}
+      onConfirmRevoke={onConfirmRevoke}
     />
   );
 }

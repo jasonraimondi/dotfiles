@@ -1,12 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo, useReducer, useState } from "react";
 
 import { fetchInvites, resendInvite, revokeInvite } from "../../api/invites";
+import { initialRevokeState, revokeMachine } from "./InviteTeammates.machine";
 import { InviteTeammatesView } from "./InviteTeammates.view";
 
 export function InviteTeammates({ workspaceId }: { workspaceId: string }) {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
+  const [revokeState, dispatch] = useReducer(revokeMachine, initialRevokeState);
 
   const { data: invites = [], isPending } = useQuery({
     queryKey: ["invites", workspaceId],
@@ -33,6 +35,11 @@ export function InviteTeammates({ workspaceId }: { workspaceId: string }) {
       ? resend.variables
       : null;
 
+  const confirmRevoke = () => {
+    if (revokeState.status === "confirming") revoke.mutate(revokeState.inviteId);
+    dispatch({ type: "confirmed" });
+  };
+
   return (
     <InviteTeammatesView
       invites={visibleInvites}
@@ -41,7 +48,10 @@ export function InviteTeammates({ workspaceId }: { workspaceId: string }) {
       search={search}
       onSearchChange={setSearch}
       onResend={(inviteId) => resend.mutate(inviteId)}
-      onRevoke={(inviteId) => revoke.mutate(inviteId)}
+      confirmingInviteId={revokeState.status === "confirming" ? revokeState.inviteId : null}
+      onRequestRevoke={(inviteId) => dispatch({ type: "revokeRequested", inviteId })}
+      onCancelRevoke={() => dispatch({ type: "cancelled" })}
+      onConfirmRevoke={confirmRevoke}
       busyInviteId={busyInviteId ?? null}
     />
   );

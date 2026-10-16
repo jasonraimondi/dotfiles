@@ -7,9 +7,12 @@ type InviteTeammatesViewProps = {
   pendingCount: number;
   search: string;
   busyInviteId: string | null;
+  confirmingInviteId: string | null;
   onSearchChange: (search: string) => void;
   onResend: (inviteId: string) => void;
-  onRevoke: (inviteId: string) => void;
+  onRequestRevoke: (inviteId: string) => void;
+  onCancelRevoke: () => void;
+  onConfirmRevoke: () => void;
 };
 
 export function InviteTeammatesView({
@@ -18,9 +21,12 @@ export function InviteTeammatesView({
   pendingCount,
   search,
   busyInviteId,
+  confirmingInviteId,
   onSearchChange,
   onResend,
-  onRevoke,
+  onRequestRevoke,
+  onCancelRevoke,
+  onConfirmRevoke,
 }: InviteTeammatesViewProps) {
   if (isLoading) return <p>Loading invites…</p>;
 
@@ -49,8 +55,11 @@ export function InviteTeammatesView({
               <InviteRow
                 invite={invite}
                 isBusy={busyInviteId === invite.id}
+                isConfirmingRevoke={confirmingInviteId === invite.id}
                 onResend={() => onResend(invite.id)}
-                onRevoke={() => onRevoke(invite.id)}
+                onRequestRevoke={() => onRequestRevoke(invite.id)}
+                onCancelRevoke={onCancelRevoke}
+                onConfirmRevoke={onConfirmRevoke}
               />
             </li>
           ))}

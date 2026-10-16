@@ -53,3 +53,16 @@ it("revokes an invite after confirmation", async () => {
 
   await waitFor(() => expect(invitesApi.revokeInvite).toHaveBeenCalledWith("inv_1"));
 });
+
+it("confirms one revoke at a time", async () => {
+  renderComponent();
+  await screen.findByText("ada@example.com");
+
+  const [adaRevoke, graceRevoke] = screen.getAllByRole("button", { name: "Revoke" });
+  await userEvent.click(adaRevoke);
+  await userEvent.click(graceRevoke);
+  await userEvent.click(screen.getByRole("button", { name: "Confirm revoke" }));
+
+  await waitFor(() => expect(invitesApi.revokeInvite).toHaveBeenCalledWith("inv_2"));
+  expect(invitesApi.revokeInvite).not.toHaveBeenCalledWith("inv_1");
+});
