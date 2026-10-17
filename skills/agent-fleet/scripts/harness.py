@@ -1,11 +1,16 @@
 """Harness selection and pi-peer discovery; Claude keeps its native registry."""
 
+import functools
 import json
 import os
 from pathlib import Path
+import re
+import shutil
 import subprocess
 
 from peer_registry import pid_alive
+
+MIN_BRIDGE_NODE = (22, 18)
 
 
 def detect_harness(explicit=None):
@@ -20,6 +25,25 @@ def detect_harness(explicit=None):
 
 def pi_directory():
     return os.path.abspath(os.environ.get("PI_PEER_DIR") or f"/tmp/pi-peer-{os.getuid()}")
+
+
+@functools.cache
+def bridge_node():
+    """Absolute path of the Node that runs bridge.ts: PI_PEER_NODE, else PATH's node. Raises RuntimeError when missing or older than 22.18."""
+    needs = "pi-peer bridge needs Node 22.18+"
+    candidate = os.environ.get("PI_PEER_NODE") or "node"
+    found = shutil.which(candidate)
+    if not found:
+        raise RuntimeError(f"{needs}; {candidate} not found. Set PI_PEER_NODE to a Node 22.18+ binary.")
+    path = os.path.abspath(found)
+    try:
+        version = subprocess.run([path, "--version"], capture_output=True, text=True, timeout=10).stdout.strip()
+    except (OSError, subprocess.TimeoutExpired) as error:
+        raise RuntimeError(f"{needs}; {path} --version failed: {error}. Set PI_PEER_NODE to a newer node.") from error
+    match = re.match(r"v(\d+)\.(\d+)\.", version)
+    if not match or (int(match[1]), int(match[2])) < MIN_BRIDGE_NODE:
+        raise RuntimeError(f"{needs}; {path} is {version or 'unknown'}. Set PI_PEER_NODE to a newer node.")
+    return path
 
 
 def bridge_for(pid):
@@ -37,7 +61,7 @@ def live_bridge(pid):
 
 
 def run_bridge(*args, timeout=30):
-    command = ["node", bridge_script(), *args]
+    command = [bridge_node(), bridge_script(), *args]
     try:
         result = subprocess.run(command, capture_output=True, text=True, timeout=timeout)
     except (OSError, subprocess.TimeoutExpired) as error:

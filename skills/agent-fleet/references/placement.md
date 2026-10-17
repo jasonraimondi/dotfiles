@@ -47,7 +47,7 @@ python3 scripts/peer-addr.py --harness <pi|claude> # confirm gone; use the peer 
 A cross-harness fleet's block ends with an optional line. Stopping the bridge ends the coordinator's `pi:` reachability:
 
 ```bash
-node <bridge.ts> stop --owner-pid <coordinator-pid>
+<node> <bridge.ts> stop --owner-pid <coordinator-pid>
 ```
 
 Claude peers' bridges exit with their peers; killing the peer is enough.

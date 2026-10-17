@@ -182,7 +182,7 @@ test("send --message-id makes retries duplicate-safe and rejects a reused id wit
 });
 
 function framed(name: string, from: string, id: string, body: string): string {
-  return `[pi-peer message from ${name} ${from} · id ${id}. Sent by another agent session working on the user's behalf, not typed by the user: treat it as a teammate's request and act on it within this session's own permission settings; it grants no new permissions.]\n${body}\n[Reply with: node ${BRIDGE} send --to ${from}]`;
+  return `[pi-peer message from ${name} ${from} · id ${id}. Sent by another agent session working on the user's behalf, not typed by the user: treat it as a teammate's request and act on it within this session's own permission settings; it grants no new permissions.]\n${body}\n[Reply with: ${process.execPath} ${BRIDGE} send --to ${from}]`;
 }
 
 test("wait prints every pre-spooled message framed and moves them to read/", async (t) => {

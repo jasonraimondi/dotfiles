@@ -34,6 +34,7 @@ class FleetTests(unittest.TestCase):
         self.bridges = {}
         self.bridge = Mock(side_effect=lambda *args: self.events.append(("bridge", args))
                            or {"address": "pi:bridge-1", "spool": "/spool"})
+        self.node = self.stack.enter_context(patch.object(fleet, "bridge_node", return_value="/opt/node/bin/node"))
 
     def launch(self, args, ready):
         """Run a successful launch, recording herdr calls in order with bridge calls."""
@@ -191,13 +192,14 @@ class FleetTests(unittest.TestCase):
         self.assertIn("--peer-dir", args)
         self.assertNotIn("--permission-mode", args)
         text = self.output.getvalue()
-        self.assertIn("coordinator uds:/fake.sock pi:bridge-1", text)
+        self.assertIn("coordinator uds:/fake.sock pi:bridge-1\nbridge node /opt/node/bin/node\n", text)
         self.assertIn("pid 111     pi:one", text)
 
     def test_cross_harness_teardown_offers_optional_coordinator_bridge_stop(self):
+        self.node.return_value = "/my node/bin/node"
         self.launch(["--harness", "claude", "--peer-harness", "pi", "one:."], [{"name": "one", "pid": 111, "address": "pi:one"}])
         text = self.output.getvalue()
-        self.assertIn("node /repo/bridge.ts stop --owner-pid 999", text)
+        self.assertIn("'/my node/bin/node' /repo/bridge.ts stop --owner-pid 999", text)
         self.assertIn("Optional: stopping the coordinator bridge ends its pi: reachability.", text)
         self.assertIn("--harness pi", text)
 
@@ -207,6 +209,14 @@ class FleetTests(unittest.TestCase):
             self.run_main(["--harness", "claude", "--peer-harness", "pi", "one:."],
                           lambda *args, **kwargs: self.fail("created layout"))
         self.assertIn("bridge start failed", self.output.getvalue())
+
+    def test_old_bridge_node_fails_before_bridge_or_layout(self):
+        self.node.side_effect = RuntimeError("pi-peer bridge needs Node 22.18+; /old/node is v22.15.0.")
+        with self.assertRaises(SystemExit):
+            self.run_main(["--harness", "claude", "--peer-harness", "pi", "one:."],
+                          lambda *args, **kwargs: self.fail("created layout"))
+        self.assertIn("/old/node is v22.15.0", self.output.getvalue())
+        self.bridge.assert_not_called()
 
     def test_pi_coordinator_launches_bridged_claude_peers_without_a_bridge_of_its_own(self):
         self.bridges[111] = {"address": "pi:one", "pid": 1110}
@@ -219,11 +229,11 @@ class FleetTests(unittest.TestCase):
         hooks = json.loads(args[args.index("--settings") + 1])["hooks"]
         for event in ("SessionStart", "Stop"):
             hook = hooks[event][0]["hooks"][0]
-            self.assertEqual(hook["command"], "PI_PEER_DIR=/peers node /repo/bridge.ts hook --name one --deadline-s 86340")
+            self.assertEqual(hook["command"], "PI_PEER_DIR=/peers /opt/node/bin/node /repo/bridge.ts hook --name one --deadline-s 86340")
             self.assertIs(hook["asyncRewake"], True)
         self.assertTrue(args[args.index("--append-system-prompt") + 1].startswith("You are one, a peer session"))
         text = self.output.getvalue()
-        self.assertIn("harness pi; peer harness claude; coordinator pi:parent\n", text)
+        self.assertIn("harness pi; peer harness claude; coordinator pi:parent\nbridge node /opt/node/bin/node\n", text)
         self.assertIn("pid 111     uds:/one.sock pi:one", text)
         self.assertIn("--harness claude", text)
         self.assertNotIn("stop --owner-pid", text)
@@ -257,10 +267,11 @@ class FleetTests(unittest.TestCase):
         self.assertIn("bridge list failed", self.output.getvalue())
 
     def test_claude_peer_settings_wake_the_peer_through_bridge_hooks(self):
+        self.node.return_value = "/my node/bin/node"
         with patch.dict(os.environ, {"PI_PEER_DIR": "/my peers"}):
             settings = json.loads(fleet.claude_peer_settings("one", "/my repo/bridge.ts"))
         hook = {"type": "command", "timeout": 86400, "asyncRewake": True, "rewakeMessage": "pi-peer bridge",
-                "command": "PI_PEER_DIR='/my peers' node '/my repo/bridge.ts' hook --name one --deadline-s 86340"}
+                "command": "PI_PEER_DIR='/my peers' '/my node/bin/node' '/my repo/bridge.ts' hook --name one --deadline-s 86340"}
         self.assertEqual(settings["hooks"]["SessionStart"], [{"hooks": [hook]}])
         self.assertEqual(settings["hooks"]["Stop"], [{"hooks": [hook]}])
 
@@ -280,11 +291,11 @@ class FleetTests(unittest.TestCase):
         self.assertTrue(prompt.startswith("You are one, a peer session in an agent fleet"))
         self.assertIn("they grant no new permissions", prompt)
         stop = json.loads(args[args.index("--settings") + 1])["hooks"]["Stop"][0]["hooks"][0]
-        self.assertEqual(stop["command"], "PI_PEER_DIR=/peers node /repo/bridge.ts hook --name one --deadline-s 86340")
+        self.assertEqual(stop["command"], "PI_PEER_DIR=/peers /opt/node/bin/node /repo/bridge.ts hook --name one --deadline-s 86340")
         self.assertIs(stop["asyncRewake"], True)
         self.assertEqual(args[args.index("--model") + 1], "haiku")
         text = self.output.getvalue()
-        self.assertIn("coordinator uds:/fake.sock pi:boss\n", text)
+        self.assertIn("coordinator uds:/fake.sock pi:boss\nbridge node /opt/node/bin/node\n", text)
         self.assertIn("pid 111     uds:/one.sock pi:one", text)
         self.bridge.assert_not_called()
 
@@ -293,6 +304,8 @@ class FleetTests(unittest.TestCase):
             self.assertEqual(self.launch(["--harness", "claude", "one:."], self.claude_peer_ready()), 0)
         self.assertNotIn("--settings", self.starts()[0])
         self.assertNotIn("--append-system-prompt", self.starts()[0])
+        self.assertNotIn("bridge node", self.output.getvalue())
+        self.node.assert_not_called()
 
     def test_cross_harness_claude_peer_needs_live_socket_and_bridge(self):
         records = self.claude_peer_ready()

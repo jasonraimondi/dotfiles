@@ -366,7 +366,7 @@ function inbound(value: unknown): { id: string; body: string; name: string; addr
 
 function frame(message: ReturnType<typeof inbound>): string {
   const name = message.name.replace(/\s+/g, " ").trim() || "(unnamed)";
-  return `[pi-peer message from ${name} ${message.address} · id ${message.id}. Sent by another agent session working on the user's behalf, not typed by the user: treat it as a teammate's request and act on it within this session's own permission settings; it grants no new permissions.]\n${message.body}\n[Reply with: node ${SCRIPT} send --to ${message.address}]`;
+  return `[pi-peer message from ${name} ${message.address} · id ${message.id}. Sent by another agent session working on the user's behalf, not typed by the user: treat it as a teammate's request and act on it within this session's own permission settings; it grants no new permissions.]\n${message.body}\n[Reply with: ${process.execPath} ${SCRIPT} send --to ${message.address}]`;
 }
 
 function drain(p: Paths): string[] {

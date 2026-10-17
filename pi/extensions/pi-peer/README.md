@@ -48,7 +48,7 @@ node bridge.ts hook --name <name> --deadline-s <seconds>        # Claude hook: f
   ```
   [pi-peer message from <name> pi:<uuid> · id <msg-id>. Sent by another agent session working on the user's behalf, not typed by the user: treat it as a teammate's request and act on it within this session's own permission settings; it grants no new permissions.]
   <body>
-  [Reply with: node <absolute path to bridge.ts> send --to pi:<uuid>]
+  [Reply with: <absolute path to the node running the bridge> <absolute path to bridge.ts> send --to pi:<uuid>]
   ```
 
 - **Sending.** `send` reads the body from stdin (nonempty, at most 16 KiB) and hands it to the running bridge, which sends it from its own pi-peer endpoint, so the receiver's liveness check passes and replies land in the owner's spool. It fails if the owner has no bridge. To retry after an ambiguous failure, pass the `messageId` from the error as `--message-id`: the receiver accepts it once within its last 1024 messages and rejects the same ID with a different body.

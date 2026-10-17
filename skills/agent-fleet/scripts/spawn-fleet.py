@@ -12,7 +12,7 @@ import sys
 import time
 
 from peer_registry import live_records, normalized_name, record_identity, socket_live
-from harness import (bridge_script, coordinator, detect_harness, live_bridge, pi_directory, pi_extension,
+from harness import (bridge_node, bridge_script, coordinator, detect_harness, live_bridge, pi_directory, pi_extension,
                      pi_records, run_bridge)
 
 
@@ -127,7 +127,7 @@ def claude_peer_settings(name, bridge_script):
     """Per-launch hooks that start the peer's bridge and wake it on pi-peer messages."""
     deadline_s = HOOK_TIMEOUT_S - HOOK_DEADLINE_MARGIN_S
     hook = {"type": "command", "timeout": HOOK_TIMEOUT_S, "asyncRewake": True, "rewakeMessage": "pi-peer bridge",
-            "command": f"PI_PEER_DIR={shlex.quote(pi_directory())} node {shlex.quote(bridge_script)} hook --name {shlex.quote(name)} --deadline-s {deadline_s}"}
+            "command": f"PI_PEER_DIR={shlex.quote(pi_directory())} {shlex.quote(bridge_node())} {shlex.quote(bridge_script)} hook --name {shlex.quote(name)} --deadline-s {deadline_s}"}
     return json.dumps({"hooks": {"SessionStart": [{"hooks": [hook]}], "Stop": [{"hooks": [hook]}]}})
 
 
@@ -332,11 +332,12 @@ def main():
         own_bridge = live_bridge(own["pid"]) if harness == "claude" else None
         needs_coordinator_bridge = harness == "claude" and peer_harness == "pi"
         bridged_peers = peer_harness == "claude" and (harness == "pi" or own_bridge is not None)
+        node = bridge_node() if needs_coordinator_bridge or bridged_peers else None
         peer_bridge = bridge_script() if bridged_peers else None
         bridge_stop = None
         if needs_coordinator_bridge:
             own_address += " " + ensure_coordinator_bridge(own)["address"]
-            bridge_stop = f"node {shlex.quote(bridge_script())} stop --owner-pid {own['pid']}"
+            bridge_stop = f"{shlex.quote(node)} {shlex.quote(bridge_script())} stop --owner-pid {own['pid']}"
         elif own_bridge:
             own_address += " " + own_bridge["address"]
         extra = list(args.agent_arg) + list(args.claude_arg)
@@ -352,6 +353,8 @@ def main():
     layout = {"placement": args.placement, "tabs": [], "workspaces": [], "panes": []}
     records = []
     print(f"harness {harness}; peer harness {peer_harness}; coordinator {own_address}")
+    if node:
+        print(f"bridge node {node}")
     try:
         if args.placement == "split":
             build_splits(specs, os.environ.get("HERDR_PANE_ID"), args.direction, layout)
