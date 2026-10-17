@@ -1,6 +1,6 @@
 # Agent fleet
 
-Independent, visible coding-agent sessions that one session launches and coordinates, and that stay available for follow-up.
+Independent, visible coding-agent sessions that one session launches and coordinates, and that stay available for follow-up until their work is done.
 
 ## Language
 

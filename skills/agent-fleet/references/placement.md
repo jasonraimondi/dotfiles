@@ -30,7 +30,7 @@ Herdr splits `right` or `down` only. There is no `left` or `up`.
 
 ## Teardown syntax per placement
 
-Teardown is off by default (SKILL.md section 4). These are the commands you hand the user, and the commands you run once the user asks. Refresh identities before using saved PIDs and confirm process exit before closing layout.
+Teardown is the default once the fleet's work is done (SKILL.md section 4); the user can ask to keep the fleet instead. These are the commands you run, and the commands you hand the user when they keep the fleet. Refresh identities before using saved PIDs and confirm process exit before closing layout.
 
 The spawn script prints the exact teardown with the ids it created. When you must write it by hand:
 

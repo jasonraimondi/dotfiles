@@ -152,8 +152,8 @@ def print_cleanup(records, layout, harness="claude", bridge_stop=None):
     pids = sorted(
         {record.get("pid") for record in records if isinstance(record.get("pid"), int)}
     )
-    print("\nTeardown is off by default: hand this block to the user, and run it")
-    print("only when they ask. Recheck addresses/PIDs before use; PIDs can be reused.")
+    print("\nTear the fleet down when its work is done, unless the user asked to keep it.")
+    print("Recheck addresses/PIDs before use; PIDs can be reused.")
     print("Kill the processes before closing their panes:")
     if pids:
         print("  kill " + " ".join(str(pid) for pid in pids))

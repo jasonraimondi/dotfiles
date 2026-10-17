@@ -133,7 +133,7 @@ This is the only use of `herdr agent prompt`; it is never a message transport. C
 
 ## Teardown
 
-Teardown stays opt-in (SKILL.md section 4). The launcher's block kills the pi peers, closes the layout it created, and ends with an optional line:
+Teardown is the default once the work is done (SKILL.md section 4). The launcher's block kills the pi peers, closes the layout it created, and ends with an optional line:
 
 ```bash
 node <bridge.ts> stop --owner-pid <coordinator-pid>

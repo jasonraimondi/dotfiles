@@ -47,7 +47,7 @@ herdr agent start alpha --kind claude --pane w1:p4 -- \
 
 `agent start` needs a pane already sitting at its shell prompt, and it returns only once Herdr sees Claude ready for input. It never creates or moves layout — split first, then start. The name binds the Herdr agent; `--name` after `--` binds the Claude session name that `SendMessage` and `peer-addr.py` resolve. Keep them identical.
 
-Teardown stays off by default (SKILL.md section 4). Once the user asks: `herdr pane close <pane_id>`, one call per pane, after you kill the PIDs. Never `tab close` — that tab is the user's.
+Teardown is the default once the work is done (SKILL.md section 4): `herdr pane close <pane_id>`, one call per pane, after you kill the PIDs. Never `tab close` — that tab is the user's.
 
 ## A tab or a workspace of your own
 
