@@ -38,7 +38,7 @@ SendMessage(to: "uds:<coordinator-socket>", message: "reviewer done: <findings>"
 
 ## pi peers
 
-A Claude Code coordinator launches pi peers with `spawn-fleet.py --peer-harness pi`, briefs them with `bridge.ts send`, and is woken by `bridge.ts wait`. Claude peers it launches after that get bridge hooks so pi peers can wake them. Read [cross-harness.md](cross-harness.md) before launching.
+A Claude Code coordinator launches pi peers with `spawn-fleet.py --peer-harness pi`, briefs them with `bridge.ts send`, and is woken by `bridge.ts wait`. Claude peers it launches after that get bridge hooks so pi peers can wake them; a pi coordinator that launches Claude peers follows [cross-harness.md](cross-harness.md#pi-coordinator). Read [cross-harness.md](cross-harness.md) before launching.
 
 ## Troubleshooting and manual layouts
 

@@ -10,7 +10,7 @@ Read this when you choose a `spawn-fleet.py` placement, need a non-default flag,
 - `--prefix <name>` — tab or workspace label prefix (default `fleet`)
 - `--title <words>` — fleet mission, five words or fewer; labels tabs/workspaces `f1: <title>`, `f2: <title>`, … and beats `--prefix` when both are given
 - `--harness pi|claude` — explicit override when coordinator detection is ambiguous
-- `--peer-harness pi|claude` — harness the peers run in (default: the coordinator harness); `pi` from a Claude coordinator starts the coordinator's bridge before any layout, see `references/cross-harness.md`; `claude` from a Claude coordinator that owns a live bridge gives each peer bridge hooks through `--settings` and an `--append-system-prompt` telling it to act on framed pi-peer messages within its own permissions, and its row prints `uds:` and `pi:`; `claude` from a pi coordinator is not supported yet
+- `--peer-harness pi|claude` — harness the peers run in (default: the coordinator harness); `pi` from a Claude coordinator starts the coordinator's bridge before any layout, see `references/cross-harness.md`; `claude` from a Claude coordinator that owns a live bridge gives each peer bridge hooks through `--settings` and an `--append-system-prompt` telling it to act on framed pi-peer messages within its own permissions, and its row prints `uds:` and `pi:`; `claude` from a pi coordinator needs no coordinator bridge and gives each peer the same hooks and system prompt
 - `--model <model>` — model for every session, interpreted by that harness
 - `--agent-arg=<flag>` — repeatable native argument; use `=` for values beginning with `--`
 - `--claude-arg=<flag>` — legacy Claude-only alias for native arguments

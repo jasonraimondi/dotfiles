@@ -155,7 +155,8 @@ test("real Pi runtimes wake on messages, reply through the tool, persist provena
   assert.equal(modelCalls, 2, "one outbound tool call and one reply, without ack loops");
   const entries = await parent.command("get_entries");
   assert.ok(object(entries) && Array.isArray(entries.entries));
-  assert.ok(entries.entries.some((entry: unknown) => object(entry) && entry.type === "custom_message" && entry.customType === "pi-peer" && object(entry.details) && typeof entry.details.messageId === "string"));
+  assert.ok(entries.entries.some((entry: unknown) => object(entry) && entry.type === "custom_message" && entry.customType === "pi-peer" && object(entry.details) && typeof entry.details.messageId === "string"
+    && text(entry.content).split("\n")[0]?.endsWith(` · id ${entry.details.messageId}`)));
   await worker.command("set_session_name", { name: "renamed" });
   assert.equal((await listing()).find((peer) => peer.address === target.address)?.name, "renamed");
   await worker.command("prompt", { message: "/peer-test-reload" });

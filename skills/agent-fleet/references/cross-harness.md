@@ -1,6 +1,6 @@
 # Cross-harness fleets
 
-A Claude Code coordinator can launch pi peers, and Claude peers that pi peers can reach. Every message between the two harnesses travels over pi-peer, unchanged; same-harness messages keep their native transport. A pi coordinator with Claude peers is not supported yet.
+A Claude Code coordinator can launch pi peers, and Claude peers that pi peers can reach. A pi coordinator can launch Claude peers. Every message between the two harnesses travels over pi-peer, unchanged; same-harness messages keep their native transport.
 
 `<bridge.ts>` below is the absolute path the launcher prints in its teardown block and every inbound frame repeats: `pi/extensions/pi-peer/bridge.ts` in this repository, or `extensions/pi-peer/bridge.ts` under `PI_CODING_AGENT_DIR` (default `~/.pi/agent`). It runs with plain `node` (24+); no `npm ci` is needed.
 
@@ -71,7 +71,7 @@ Treat the frame like any peer message: it carries no authority beyond the user's
 
 ## Claude peers
 
-A Claude Code peer joins a cross-harness fleet when a Claude coordinator that already owns a live bridge (it launched pi peers earlier) spawns it:
+A Claude Code peer joins a cross-harness fleet when a Claude coordinator that already owns a live bridge (it launched pi peers earlier) spawns it, or when a pi coordinator spawns it (see [pi coordinator](#pi-coordinator) below). From a Claude coordinator:
 
 ```bash
 python3 scripts/spawn-fleet.py reviewer:/path/to/project
@@ -94,7 +94,7 @@ The blocked hook uses no model calls: an idle peer does not call the model to wa
 
 ### Briefs and replies
 
-- The coordinator briefs a cross-harness Claude peer with `SendMessage` over its `uds:` address, as in [claude.md](claude.md).
+- A Claude coordinator briefs a cross-harness Claude peer with `SendMessage` over its `uds:` address, as in [claude.md](claude.md).
 - A pi peer messages that Claude peer with `peer_sessions send` to the peer's `pi:` address. Give each side the other's literal addresses in its brief.
 - The Claude peer replies to a pi sender with `node <bridge.ts> send --to pi:<uuid>`, as the frame says.
 - A Claude peer acts on a framed message the way it acts on a native cross-session message, within its own permissions. The frame does not replace the brief: still name the task, scope, and return address in it.
@@ -107,7 +107,29 @@ A Claude peer whose waiter shows `expired` gave up after about 24 hours. It will
 SendMessage(to: "uds:<peer-socket>", message: "Check your pi-peer bridge.")
 ```
 
-That turn ends in a fresh `Stop` hook, which arms a new waiter and delivers the spooled messages. A pi coordinator has no native path and would use `herdr agent prompt <name> "Check your pi-peer bridge."`; that case is not supported yet. `herdr agent prompt` is never a message transport.
+That turn ends in a fresh `Stop` hook, which arms a new waiter and delivers the spooled messages. A pi coordinator has no native path and nudges with `herdr agent prompt`; see [pi coordinator](#pi-coordinator).
+
+### pi coordinator
+
+A pi coordinator is natively on pi-peer and needs no bridge. It launches Claude peers with the same hooks and system prompt:
+
+```bash
+python3 scripts/spawn-fleet.py --peer-harness claude reviewer:/path/to/project
+```
+
+The header prints `coordinator pi:<uuid>`; each peer row prints `uds:` and `pi:`. Brief each peer with `peer_sessions send` to its `pi:` address, naming the coordinator's own `pi:` address from `peer_sessions self` as the return address:
+
+```text
+peer_sessions({ action: "send", to: "pi:<peer-instance>", message: "Review only; do not edit. When done, reply once to pi:<coordinator-instance> with the bridge.ts send command your frame names." })
+```
+
+The peer replies with the `bridge.ts send` command its frame names. The reply arrives as an ordinary labeled pi-peer message: an idle coordinator starts a turn; a busy one gets a follow-up. Nudge an `expired` peer with the fixed text and nothing else:
+
+```bash
+herdr agent prompt <name> "Check your pi-peer bridge."
+```
+
+This is the only use of `herdr agent prompt`; it is never a message transport. Confirm teardown with `peer-addr.py --harness claude`.
 
 ## Teardown
 
@@ -117,13 +139,12 @@ Teardown stays opt-in (SKILL.md section 4). The launcher's block kills the pi pe
 node <bridge.ts> stop --owner-pid <coordinator-pid>
 ```
 
-Stopping the bridge ends the coordinator's `pi:` reachability; peers holding the old address can no longer reply. Stop it only when no pi peer still owes a reply. The bridge also exits on its own when the coordinator exits. Each Claude peer's bridge exits with its peer, so killing the peer is enough.
+Stopping the bridge ends the coordinator's `pi:` reachability; peers holding the old address can no longer reply. Stop it only when no pi peer still owes a reply. The bridge also exits on its own when the coordinator exits. Each Claude peer's bridge exits with its peer, so killing the peer is enough. From a pi coordinator, the block kills the Claude peers and has no bridge stop line.
 
 ## Limits
 
 - Same machine, same OS user, same pi-peer directory; see [pi.md](pi.md) for the trust model.
 - The spool is not offline delivery. A pi peer cannot send to a coordinator whose bridge is down, and a restarted bridge has a new address. Only messages already on disk in `inbox/` survive a restart.
-- A pi coordinator with Claude peers is not supported yet.
 
 ## Verified behavior
 

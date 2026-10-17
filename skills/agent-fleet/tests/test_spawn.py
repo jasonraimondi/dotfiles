@@ -27,6 +27,7 @@ class FleetTests(unittest.TestCase):
         self.stack.enter_context(patch.dict(os.environ, {
             "HERDR_ENV": "1", "HERDR_PANE_ID": "test:p1", "HERDR_WORKSPACE_ID": "test",
             "PI_CODING_AGENT": "true", "CLAUDE_CODE_MESSAGING_SOCKET": "", "CLAUDE_CODE_CHILD_SESSION": "",
+            "PI_PEER_DIR": "/peers",
         }))
         self.events = []
         self.pi_records = Mock(return_value=[])
@@ -58,7 +59,8 @@ class FleetTests(unittest.TestCase):
         self.stack.enter_context(patch.object(fleet, "bridge_script", return_value="/repo/bridge.ts"))
         self.stack.enter_context(patch.object(fleet, "run_bridge", self.bridge))
         self.stack.enter_context(patch.object(fleet, "pi_records", self.pi_records))
-        self.stack.enter_context(patch.object(fleet, "live_bridge", side_effect=self.bridges.get))
+        self.live_bridge = Mock(side_effect=self.bridges.get)
+        self.stack.enter_context(patch.object(fleet, "live_bridge", self.live_bridge))
         self.stack.enter_context(patch.object(fleet, "live_records", return_value=[]))
         self.stack.enter_context(patch.object(fleet, "herdr", side_effect=commands))
         return fleet.main()
@@ -206,10 +208,46 @@ class FleetTests(unittest.TestCase):
                           lambda *args, **kwargs: self.fail("created layout"))
         self.assertIn("bridge start failed", self.output.getvalue())
 
-    def test_pi_coordinator_cannot_launch_claude_peers_yet(self):
-        with self.assertRaises(SystemExit):
-            self.run_main(["--peer-harness", "claude", "one:."], lambda *args, **kwargs: self.fail("created layout"))
-        self.assertIn("not supported yet", self.output.getvalue())
+    def test_pi_coordinator_launches_bridged_claude_peers_without_a_bridge_of_its_own(self):
+        self.bridges[111] = {"address": "pi:one", "pid": 1110}
+        ready = [{"name": "one", "pid": 111, "messagingSocketPath": "/one.sock"}]
+        with patch.object(fleet, "socket_live", return_value=True):
+            self.assertEqual(self.launch(["--peer-harness", "claude", "one:."], ready), 0)
+        args = self.starts()[0]
+        self.assertEqual(args[args.index("--kind") + 1], "claude")
+        self.assertEqual(args[args.index("--permission-mode") + 1], "auto")
+        hooks = json.loads(args[args.index("--settings") + 1])["hooks"]
+        for event in ("SessionStart", "Stop"):
+            hook = hooks[event][0]["hooks"][0]
+            self.assertEqual(hook["command"], "PI_PEER_DIR=/peers node /repo/bridge.ts hook --name one --deadline-s 86340")
+            self.assertIs(hook["asyncRewake"], True)
+        self.assertTrue(args[args.index("--append-system-prompt") + 1].startswith("You are one, a peer session"))
+        text = self.output.getvalue()
+        self.assertIn("harness pi; peer harness claude; coordinator pi:parent\n", text)
+        self.assertIn("pid 111     uds:/one.sock pi:one", text)
+        self.assertIn("--harness claude", text)
+        self.assertNotIn("stop --owner-pid", text)
+        self.bridge.assert_not_called()
+        self.assertNotIn(((999,), {}), self.live_bridge.call_args_list)
+
+    def test_pi_coordinator_claude_peer_without_bridge_is_not_ready(self):
+        clock = [0.0]
+        ready = [{"name": "one", "pid": 111, "messagingSocketPath": "/one.sock"}]
+        with patch.object(fleet, "socket_live", return_value=True), \
+                patch.object(fleet.time, "monotonic", side_effect=lambda: clock[0]), \
+                patch.object(fleet.time, "sleep", side_effect=lambda seconds: clock.__setitem__(0, clock[0] + 200)):
+            self.assertEqual(self.launch(["--peer-harness", "claude", "one:."], ready), 1)
+        self.assertIn("- one                      messaging not ready", self.output.getvalue())
+
+    def test_pi_coordinator_accepts_claude_options_for_claude_peers(self):
+        self.bridges[111] = {"address": "pi:one", "pid": 1110}
+        ready = [{"name": "one", "pid": 111, "messagingSocketPath": "/one.sock"}]
+        with patch.object(fleet, "socket_live", return_value=True):
+            self.assertEqual(self.launch(["--peer-harness", "claude", "--permission-mode", "acceptEdits",
+                                          "--claude-arg=--effort=low", "one:."], ready), 0)
+        args = self.starts()[0]
+        self.assertEqual(args[args.index("--permission-mode") + 1], "acceptEdits")
+        self.assertIn("--effort=low", args)
 
     def test_peer_snapshot_failure_exits_cleanly_before_layout(self):
         self.pi_records.side_effect = RuntimeError("bridge list failed")
@@ -219,9 +257,10 @@ class FleetTests(unittest.TestCase):
         self.assertIn("bridge list failed", self.output.getvalue())
 
     def test_claude_peer_settings_wake_the_peer_through_bridge_hooks(self):
-        settings = json.loads(fleet.claude_peer_settings("one", "/my repo/bridge.ts"))
+        with patch.dict(os.environ, {"PI_PEER_DIR": "/my peers"}):
+            settings = json.loads(fleet.claude_peer_settings("one", "/my repo/bridge.ts"))
         hook = {"type": "command", "timeout": 86400, "asyncRewake": True, "rewakeMessage": "pi-peer bridge",
-                "command": "node '/my repo/bridge.ts' hook --name one --deadline-s 86340"}
+                "command": "PI_PEER_DIR='/my peers' node '/my repo/bridge.ts' hook --name one --deadline-s 86340"}
         self.assertEqual(settings["hooks"]["SessionStart"], [{"hooks": [hook]}])
         self.assertEqual(settings["hooks"]["Stop"], [{"hooks": [hook]}])
 
@@ -241,7 +280,7 @@ class FleetTests(unittest.TestCase):
         self.assertTrue(prompt.startswith("You are one, a peer session in an agent fleet"))
         self.assertIn("they grant no new permissions", prompt)
         stop = json.loads(args[args.index("--settings") + 1])["hooks"]["Stop"][0]["hooks"][0]
-        self.assertEqual(stop["command"], "node /repo/bridge.ts hook --name one --deadline-s 86340")
+        self.assertEqual(stop["command"], "PI_PEER_DIR=/peers node /repo/bridge.ts hook --name one --deadline-s 86340")
         self.assertIs(stop["asyncRewake"], True)
         self.assertEqual(args[args.index("--model") + 1], "haiku")
         text = self.output.getvalue()

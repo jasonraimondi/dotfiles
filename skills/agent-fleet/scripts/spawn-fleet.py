@@ -123,7 +123,7 @@ def claude_peer_settings(name, bridge_script):
     """Per-launch hooks that start the peer's bridge and wake it on pi-peer messages."""
     deadline_s = HOOK_TIMEOUT_S - HOOK_DEADLINE_MARGIN_S
     hook = {"type": "command", "timeout": HOOK_TIMEOUT_S, "asyncRewake": True, "rewakeMessage": "pi-peer bridge",
-            "command": f"node {shlex.quote(bridge_script)} hook --name {shlex.quote(name)} --deadline-s {deadline_s}"}
+            "command": f"PI_PEER_DIR={shlex.quote(pi_directory())} node {shlex.quote(bridge_script)} hook --name {shlex.quote(name)} --deadline-s {deadline_s}"}
     return json.dumps({"hooks": {"SessionStart": [{"hooks": [hook]}], "Stop": [{"hooks": [hook]}]}})
 
 
@@ -295,7 +295,7 @@ def main():
     parser.add_argument("--harness", choices=("pi", "claude"))
     parser.add_argument("--peer-harness", choices=("pi", "claude"),
                         help="harness the peers run in (default: the coordinator harness); Claude peers get "
-                        "pi-peer bridge hooks when the coordinator already owns a live bridge")
+                        "pi-peer bridge hooks when the coordinator is pi or already owns a live bridge")
     parser.add_argument("--model")
     parser.add_argument("--agent-arg", action="append", default=[])
     parser.add_argument("--claude-arg", action="append", default=[])
@@ -317,8 +317,6 @@ def main():
     try:
         harness = detect_harness(args.harness)
         peer_harness = args.peer_harness or harness
-        if harness == "pi" and peer_harness == "claude":
-            raise RuntimeError("A pi coordinator with --peer-harness claude is not supported yet")
         if not shutil.which("herdr") or not shutil.which(peer_harness):
             raise RuntimeError(f"Install herdr and {peer_harness} before spawning")
         if peer_harness == "pi" and (args.permission_mode or args.claude_arg):
@@ -326,10 +324,11 @@ def main():
         own = coordinator(harness)
         own_address = own["address"] if harness == "pi" else f"uds:{own['messagingSocketPath']}"
         own_bridge = live_bridge(own["pid"]) if harness == "claude" else None
-        bridged_peers = peer_harness == "claude" and own_bridge is not None
+        needs_coordinator_bridge = harness == "claude" and peer_harness == "pi"
+        bridged_peers = peer_harness == "claude" and (harness == "pi" or own_bridge is not None)
         peer_bridge = bridge_script() if bridged_peers else None
         bridge_stop = None
-        if harness != peer_harness:
+        if needs_coordinator_bridge:
             own_address += " " + ensure_coordinator_bridge(own)["address"]
             bridge_stop = f"node {shlex.quote(bridge_script())} stop --owner-pid {own['pid']}"
         elif own_bridge:
