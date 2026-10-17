@@ -37,7 +37,7 @@ python3 scripts/spawn-fleet.py reviewer:/path/to/project researcher:/path/to/pro
 python3 scripts/spawn-fleet.py --peer-harness pi reviewer:/path/to/project
 ```
 
-Each argument is `NAME:DIR`. Names must match `[a-z][a-z0-9_-]{0,31}`. Prefer existing trusted directories; new ones may require a human trust decision. Preserve the current directory unless the task needs another location. Use one writer per checkout; isolate intentionally concurrent writers in worktrees with the user's approval.
+Each argument is `NAME:DIR` or `NAME:DIR@MODEL`; a peer's own model overrides `--model`, and the peer harness interprets it (`haiku` for Claude, `openai-codex/gpt-6-sol` for pi). Names must match `[a-z][a-z0-9_-]{0,31}`. Prefer existing trusted directories; new ones may require a human trust decision. Preserve the current directory unless the task needs another location. Use one writer per checkout; isolate intentionally concurrent writers in worktrees with the user's approval.
 
 The launcher checks coordinator messaging before creating panes, preserves focus, labels each pane, and prints addresses plus teardown instructions. If startup partially fails, it leaves created resources available for inspection and prints cleanup for the resources it recorded. It never answers trust prompts automatically.
 

@@ -53,23 +53,27 @@ def parse_specs(raw):
     fresh = []
     for item in raw:
         if ":" not in item:
-            sys.exit(f"error: '{item}' is not NAME:DIR")
-        name, _, directory = item.partition(":")
+            sys.exit(f"error: '{item}' is not NAME:DIR[@MODEL]")
+        name, _, rest = item.partition(":")
         name = name.strip()
-        directory = os.path.abspath(os.path.expanduser(directory.strip()))
+        directory, at, model = rest.rpartition("@") if "@" in rest else (rest, "", "")
+        model = model.strip()
         if not HERDR_NAME.match(name):
             sys.exit(
                 f"error: '{name}' is not a usable name. Herdr agent names start "
                 "with a lowercase letter and hold up to 32 of [a-z0-9_-]."
             )
-        if not item.partition(":")[2].strip():
+        if not directory.strip():
             sys.exit(f"error: '{item}' has no directory")
-        specs.append((name, directory))
-    names = [name for name, _ in specs]
+        if at and not model:
+            sys.exit(f"error: '{item}' has no model after @")
+        directory = os.path.abspath(os.path.expanduser(directory.strip()))
+        specs.append((name, directory, model))
+    names = [name for name, _, _ in specs]
     duplicates = {name for name in names if names.count(name) > 1}
     if duplicates:
         sys.exit(f"error: duplicate session names: {', '.join(sorted(duplicates))}")
-    for _, directory in specs:
+    for _, directory, _ in specs:
         if not os.path.isdir(directory):
             os.makedirs(directory, exist_ok=True)
             fresh.append(directory)
@@ -178,14 +182,14 @@ def print_cleanup(records, layout, harness="claude", bridge_stop=None):
 
 def label_panes(specs, panes):
     """Label each pane with its session name so the fleet reads at a glance."""
-    for (name, _), pane in zip(specs, panes):
+    for (name, _, _), pane in zip(specs, panes):
         try:
             herdr("pane", "rename", pane, name)
         except RuntimeError as error:
             print(f"note: could not label pane {pane}: {error}", file=sys.stderr)
 
 
-def start_agent(name, pane, harness, permission_mode, extra, timeout_ms, settings=None, system_prompt=None):
+def start_agent(name, pane, harness, permission_mode, extra, timeout_ms, settings=None, system_prompt=None, model=None):
     """Start an independent session without borrowing another harness's flags."""
     native = ["--name", name]
     if harness == "claude":
@@ -194,6 +198,8 @@ def start_agent(name, pane, harness, permission_mode, extra, timeout_ms, setting
         native += ["--settings", settings]
     if system_prompt:
         native += ["--append-system-prompt", system_prompt]
+    if model:
+        native += ["--model", model]
     herdr("agent", "start", name, "--kind", harness, "--pane", pane,
           "--timeout", str(timeout_ms), "--", *native, *extra,
           timeout=timeout_ms / 1000)
@@ -228,7 +234,7 @@ def build_splits(specs, caller_pane, direction, layout):
         )
     panes = layout["panes"]
     anchor = caller_pane
-    for _, directory in specs:
+    for _, directory, _ in specs:
         pane = split_pane(anchor, direction, directory)
         panes.append(pane)
         anchor = pane  # chain, so the panes line up in spec order
@@ -263,7 +269,7 @@ def build_groups(specs, placement, workspace, prefix, per_tab, direction, title,
             tabs.append(id_of(created, "tab"))
         anchor = id_of(created, "root_pane")
         panes.append(anchor)
-        for _, directory in group[1:]:
+        for _, directory, _ in group[1:]:
             anchor = split_pane(anchor, direction, directory)
             panes.append(anchor)
     return layout
@@ -271,7 +277,7 @@ def build_groups(specs, placement, workspace, prefix, per_tab, direction, title,
 
 def main():
     parser = argparse.ArgumentParser(add_help=True)
-    parser.add_argument("specs", nargs="+", metavar="NAME:DIR")
+    parser.add_argument("specs", nargs="+", metavar="NAME:DIR[@MODEL]")
     parser.add_argument(
         "--placement",
         choices=("split", "tab", "workspace"),
@@ -296,7 +302,7 @@ def main():
     parser.add_argument("--peer-harness", choices=("pi", "claude"),
                         help="harness the peers run in (default: the coordinator harness); Claude peers get "
                         "pi-peer bridge hooks when the coordinator is pi or already owns a live bridge")
-    parser.add_argument("--model")
+    parser.add_argument("--model", help="model for every peer without its own NAME:DIR@MODEL, interpreted by the peer harness")
     parser.add_argument("--agent-arg", action="append", default=[])
     parser.add_argument("--claude-arg", action="append", default=[])
     parser.add_argument("--timeout", type=int, default=120)
@@ -336,15 +342,13 @@ def main():
         extra = list(args.agent_arg) + list(args.claude_arg)
         if peer_harness == "pi":
             extra += ["--extension", pi_extension(), "--peer-dir", pi_directory()]
-        if args.model:
-            extra += ["--model", args.model]
         before = ({record["instanceId"] for record in pi_records()} if peer_harness == "pi"
                   else {record_identity(record) for record in live_records()})
     except RuntimeError as error:
         parser.error(str(error))
 
     specs = parse_specs(args.specs)
-    wanted = {name for name, _ in specs}
+    wanted = {name for name, _, _ in specs}
     layout = {"placement": args.placement, "tabs": [], "workspaces": [], "panes": []}
     records = []
     print(f"harness {harness}; peer harness {peer_harness}; coordinator {own_address}")
@@ -358,14 +362,14 @@ def main():
         label_panes(specs, layout["panes"])
 
         deadline = time.monotonic() + args.timeout
-        for (name, _), pane in zip(specs, layout["panes"]):
+        for (name, _, model), pane in zip(specs, layout["panes"]):
             remaining = deadline - time.monotonic()
             if remaining <= 0:
                 raise RuntimeError("Fleet startup deadline expired")
             settings = claude_peer_settings(name, peer_bridge) if bridged_peers else None
             system_prompt = claude_peer_system_prompt(name) if bridged_peers else None
             start_agent(name, pane, peer_harness, args.permission_mode, extra, max(1, int(remaining * 1000)),
-                        settings, system_prompt)
+                        settings, system_prompt, model or args.model)
 
         while True:
             records = new_matching_records(before, wanted, peer_harness, layout["panes"])
@@ -374,7 +378,7 @@ def main():
                 break
             time.sleep(min(1, max(0, deadline - time.monotonic())))
 
-        for name, _ in specs:
+        for name, _, _ in specs:
             if name in ready:
                 record = ready[name]
                 address = record["address"] if peer_harness == "pi" else f"uds:{record['messagingSocketPath']}"

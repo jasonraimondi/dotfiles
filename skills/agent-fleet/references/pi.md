@@ -28,7 +28,7 @@ python3 scripts/spawn-fleet.py --peer-harness claude reviewer:/path/to/project
 
 The second line launches Claude Code peers reachable over pi-peer; read [cross-harness.md](cross-harness.md) first.
 
-The script launches `herdr agent start ... --kind pi`, passes the local extension explicitly, and waits for a protocol handshake from peers in the panes it created. `--model` selects a pi model; `--agent-arg=<flag>` passes native options. Claude-only permission flags are rejected for pi peers. The launcher does not set `--approve` or weaken tool restrictions.
+The script launches `herdr agent start ... --kind pi`, passes the local extension explicitly, and waits for a protocol handshake from peers in the panes it created. `--model` or `NAME:DIR@MODEL` selects a pi model (`provider/id`, optionally `:thinking`); `--agent-arg=<flag>` passes native options. Claude-only permission flags are rejected for pi peers. The launcher does not set `--approve` or weaken tool restrictions.
 
 Pi project trust, tool allowlists, and any permission extensions continue to apply. `peer_sessions` must be active. If it is excluded at startup, the session does not register. If disabled later, inbound messages are rejected. Do not alter restrictions merely to make a denied task run elsewhere.
 

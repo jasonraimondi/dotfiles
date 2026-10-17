@@ -306,6 +306,23 @@ class FleetTests(unittest.TestCase):
                 patch.object(fleet, "live_bridge", side_effect=self.bridges.get):
             self.assertEqual(fleet.ready_by_name(records, "claude", bridged=True), {})
 
+    def test_parse_specs_reads_an_optional_model_after_at(self):
+        specs = fleet.parse_specs(["one:.", "two:.@haiku", "three:.@openai-codex/gpt-6-sol:high"])
+        self.assertEqual([spec[2] for spec in specs], ["", "haiku", "openai-codex/gpt-6-sol:high"])
+        self.assertEqual(specs[1][1], os.path.abspath("."))
+        with self.assertRaises(SystemExit):
+            fleet.parse_specs(["four:.@"])
+
+    def test_per_peer_model_overrides_the_fleet_model(self):
+        ready = [{"name": "one", "pid": 111, "address": "pi:one"}, {"name": "two", "pid": 222, "address": "pi:two"}]
+        self.assertEqual(self.launch(["--model", "anthropic/claude-haiku-4-5", "one:.", "two:.@openai-codex/gpt-6-sol:high"], ready), 0)
+        models = [args[args.index("--model") + 1] for args in self.starts()]
+        self.assertEqual(models, ["anthropic/claude-haiku-4-5", "openai-codex/gpt-6-sol:high"])
+
+    def test_peer_without_a_model_gets_no_model_flag(self):
+        self.assertEqual(self.launch(["one:."], [{"name": "one", "pid": 111, "address": "pi:one"}]), 0)
+        self.assertNotIn("--model", self.starts()[0])
+
 
 if __name__ == "__main__":
     unittest.main()
