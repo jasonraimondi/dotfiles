@@ -2,7 +2,7 @@
 
 A Claude Code coordinator can launch pi peers, and Claude peers that pi peers can reach. A pi coordinator can launch Claude peers. Every message between the two harnesses travels over pi-peer, unchanged; same-harness messages keep their native transport.
 
-`<bridge.ts>` below is the absolute path the launcher prints in its teardown block and every inbound frame repeats: `pi/extensions/pi-peer/bridge.ts` in this repository, or `extensions/pi-peer/bridge.ts` under `PI_CODING_AGENT_DIR` (default `~/.pi/agent`). `<node>` is the absolute Node path the launcher prints in its header (`bridge node /abs/node`); the bridge needs Node 22.18+ (unflagged type stripping). By default it is `node` from PATH at launch, and `PI_PEER_NODE=/abs/node` overrides it: a working directory can pin an older Node, and the launcher bakes the resolved absolute path into peer hooks and the stop line so it does not matter where they run. No `npm ci` is needed.
+`<bridge.ts>` below is the absolute path the launcher prints in its teardown block and every inbound frame repeats: `pi/extensions/pi-peer/bridge.ts` in this repository, or `extensions/pi-peer/bridge.ts` under `PI_CODING_AGENT_DIR` (default `~/.pi/agent`). `<node>` is the absolute Node path the launcher prints in its header (`bridge node /abs/node`) and every inbound frame repeats in its `Reply with:` line; the bridge needs Node 22.18+ (unflagged type stripping). By default it is `node` from PATH at launch, and `PI_PEER_NODE=/abs/node` overrides it: a working directory can pin an older Node, and the launcher bakes the resolved absolute path into peer hooks and the stop line so it does not matter where they run. No `npm ci` is needed.
 
 ## The bridge
 

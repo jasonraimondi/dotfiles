@@ -40,7 +40,7 @@ class PiRecordsTests(unittest.TestCase):
                 with self.assertRaises(RuntimeError):
                     harness.pi_records()
 
-    def test_missing_node_raises(self):
+    def test_spawn_oserror_raises(self):
         with patch.object(harness.subprocess, "run", side_effect=FileNotFoundError("node")):
             with self.assertRaises(RuntimeError):
                 harness.pi_records()
@@ -55,10 +55,11 @@ class BridgeNodeTests(unittest.TestCase):
         self.root = directory.name
         self.calls = Path(self.root) / "calls"
 
-    def fake_node(self, directory, version):
+    def fake_node(self, directory, version, exec_path=None, body=None):
         path = Path(self.root) / directory / "node"
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(f"#!/bin/sh\necho x >> '{self.calls}'\necho {version}\n")
+        body = body or f"echo '{exec_path or path}'\necho {version}"
+        path.write_text(f"#!/bin/sh\n[ \"$1\" = -p ] || exit 9\necho x >> '{self.calls}'\n{body}\n")
         path.chmod(0o755)
         return str(path)
 
@@ -73,39 +74,76 @@ class BridgeNodeTests(unittest.TestCase):
             os.environ.pop("PI_PEER_NODE", None)
 
     def test_resolves_path_node_to_absolute_path(self):
-        node_path = self.fake_node("bin", "v22.18.0")
+        node_path = self.fake_node("bin", "22.18.0")
         self.env("bin")
         self.assertEqual(harness.bridge_node(), node_path)
         self.assertTrue(os.path.isabs(harness.bridge_node()))
 
     def test_checks_the_version_once_per_process(self):
-        self.fake_node("bin", "v22.18.0")
+        self.fake_node("bin", "22.18.0")
         self.env("bin")
         harness.bridge_node()
         harness.bridge_node()
         self.assertEqual(self.calls.read_text().count("x"), 1)
 
     def test_pi_peer_node_wins_over_older_path_node(self):
-        self.fake_node("bin", "v20.0.0")
-        newer = self.fake_node("newer", "v24.3.0")
+        self.fake_node("bin", "20.0.0")
+        newer = self.fake_node("newer", "24.3.0")
         self.env("bin", newer)
         self.assertEqual(harness.bridge_node(), newer)
 
     def test_accepts_boundary_and_newer_versions(self):
-        for version in ("v22.18.0", "v22.19.1", "v24.0.0", "v25.1.0"):
+        for version in ("22.18.0", "22.19.1", "24.0.0", "25.1.0"):
             with self.subTest(version=version):
                 harness.bridge_node.cache_clear()
                 node_path = self.fake_node(version, version)
                 self.env("none", node_path)
                 self.assertEqual(harness.bridge_node(), node_path)
 
-    def test_old_node_raises_naming_path_version_and_override(self):
-        node_path = self.fake_node("bin", "v22.15.0")
-        self.env("bin")
+    def test_returns_the_binary_a_shim_runs_not_the_shim(self):
+        real = self.fake_node("tools/node/24.3.0/bin", "24.3.0")
+        self.fake_node("shims", "24.3.0", exec_path=real)
+        self.env("shims")
+        self.assertEqual(harness.bridge_node(), real)
+
+    def test_shim_reports_old_binary_by_its_real_path(self):
+        self.fake_node("shims", "22.15.0", exec_path="/tools/node/22.15.0/bin/node")
+        self.env("shims")
         with self.assertRaises(RuntimeError) as caught:
             harness.bridge_node()
-        self.assertEqual(str(caught.exception),
-                         f"pi-peer bridge needs Node 22.18+; {node_path} is v22.15.0. Set PI_PEER_NODE to a newer node.")
+        self.assertEqual(str(caught.exception), "pi-peer bridge needs Node 22.18+; /tools/node/22.15.0/bin/node is v22.15.0. "
+                         "Set PI_PEER_NODE to a newer node.")
+
+    def test_failed_node_reports_its_stderr(self):
+        shim = self.fake_node("shims", "", body="echo 'node 24 is not installed' >&2\nexit 1")
+        self.env("shims")
+        with self.assertRaises(RuntimeError) as caught:
+            harness.bridge_node()
+        self.assertEqual(str(caught.exception), f"pi-peer bridge needs Node 22.18+; {shim} could not report its version: "
+                         "node 24 is not installed. Set PI_PEER_NODE to a newer node.")
+
+    def test_probe_that_hangs_or_cannot_start_reports_the_error(self):
+        node_path = self.fake_node("hang", "24.3.0")
+        self.env("hang")
+        for error in (subprocess.TimeoutExpired(cmd=node_path, timeout=10), OSError("Exec format error")):
+            with self.subTest(error=type(error).__name__):
+                harness.bridge_node.cache_clear()
+                with patch.object(harness.subprocess, "run", side_effect=error):
+                    with self.assertRaises(RuntimeError) as caught:
+                        harness.bridge_node()
+                self.assertEqual(str(caught.exception), f"pi-peer bridge needs Node 22.18+; {node_path} could not report its version: "
+                                 f"{error}. Set PI_PEER_NODE to a newer node.")
+
+    def test_old_node_raises_naming_path_version_and_override(self):
+        for version in ("22.15.0", "22.17.9"):
+            with self.subTest(version=version):
+                harness.bridge_node.cache_clear()
+                node_path = self.fake_node(version, version)
+                self.env("none", node_path)
+                with self.assertRaises(RuntimeError) as caught:
+                    harness.bridge_node()
+                self.assertEqual(str(caught.exception),
+                                 f"pi-peer bridge needs Node 22.18+; {node_path} is v{version}. Set PI_PEER_NODE to a newer node.")
 
     def test_missing_node_raises(self):
         for peer_node, named in ((None, "node"), ("/nowhere/node", "/nowhere/node")):

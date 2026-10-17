@@ -218,6 +218,12 @@ class FleetTests(unittest.TestCase):
         self.assertIn("/old/node is v22.15.0", self.output.getvalue())
         self.bridge.assert_not_called()
 
+    def test_old_bridge_node_fails_before_layout_for_bridged_claude_peers(self):
+        self.node.side_effect = RuntimeError("pi-peer bridge needs Node 22.18+; /old/node is v22.15.0.")
+        with self.assertRaises(SystemExit):
+            self.run_main(["--peer-harness", "claude", "one:."], lambda *args, **kwargs: self.fail("created layout"))
+        self.assertIn("/old/node is v22.15.0", self.output.getvalue())
+
     def test_pi_coordinator_launches_bridged_claude_peers_without_a_bridge_of_its_own(self):
         self.bridges[111] = {"address": "pi:one", "pid": 1110}
         ready = [{"name": "one", "pid": 111, "messagingSocketPath": "/one.sock"}]

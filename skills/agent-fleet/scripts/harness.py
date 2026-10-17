@@ -30,19 +30,28 @@ def pi_directory():
 @functools.cache
 def bridge_node():
     """Absolute path of the Node that runs bridge.ts: PI_PEER_NODE, else PATH's node. Raises RuntimeError when missing or older than 22.18."""
-    needs = "pi-peer bridge needs Node 22.18+"
+    minimum = ".".join(map(str, MIN_BRIDGE_NODE))
+    needs = f"pi-peer bridge needs Node {minimum}+"
     candidate = os.environ.get("PI_PEER_NODE") or "node"
     found = shutil.which(candidate)
     if not found:
-        raise RuntimeError(f"{needs}; {candidate} not found. Set PI_PEER_NODE to a Node 22.18+ binary.")
-    path = os.path.abspath(found)
+        raise RuntimeError(f"{needs}; {candidate} not found. Set PI_PEER_NODE to a Node {minimum}+ binary.")
+    found = os.path.abspath(found)
+    # Version-manager shims choose a Node per working directory, so keep the binary this one chose.
+    probe = [found, "-p", "process.execPath + '\\n' + process.versions.node"]
     try:
-        version = subprocess.run([path, "--version"], capture_output=True, text=True, timeout=10).stdout.strip()
+        result = subprocess.run(probe, capture_output=True, text=True, timeout=10)
+        reason = result.stderr.strip() or f"exit {result.returncode}"
     except (OSError, subprocess.TimeoutExpired) as error:
-        raise RuntimeError(f"{needs}; {path} --version failed: {error}. Set PI_PEER_NODE to a newer node.") from error
-    match = re.match(r"v(\d+)\.(\d+)\.", version)
-    if not match or (int(match[1]), int(match[2])) < MIN_BRIDGE_NODE:
-        raise RuntimeError(f"{needs}; {path} is {version or 'unknown'}. Set PI_PEER_NODE to a newer node.")
+        reason = str(error)
+        result = None
+    lines = result.stdout.splitlines() if result and result.returncode == 0 else []
+    match = re.fullmatch(r"(\d+)\.(\d+)\.\d+", lines[1]) if len(lines) == 2 else None
+    if not match:
+        raise RuntimeError(f"{needs}; {found} could not report its version: {reason}. Set PI_PEER_NODE to a newer node.")
+    path, version = lines
+    if (int(match[1]), int(match[2])) < MIN_BRIDGE_NODE:
+        raise RuntimeError(f"{needs}; {path} is v{version}. Set PI_PEER_NODE to a newer node.")
     return path
 
 
