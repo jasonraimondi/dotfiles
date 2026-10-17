@@ -59,8 +59,12 @@ export function peerDirectory(): string {
 async function privateDirectory(directory: string): Promise<void> {
   if (!process.getuid) throw new Error("pi-peer currently requires macOS or Linux (Unix sockets)");
   await mkdir(directory, { recursive: true, mode: 0o700 });
+  await checkPrivate(directory);
+}
+
+async function checkPrivate(directory: string): Promise<void> {
   const stat = await lstat(directory);
-  if (!stat.isDirectory() || stat.uid !== process.getuid() || (stat.mode & 0o077) !== 0) {
+  if (!stat.isDirectory() || stat.uid !== process.getuid?.() || (stat.mode & 0o077) !== 0) {
     throw new Error(`pi-peer directory must be owned by you, not a symlink, and mode 0700: ${directory}`);
   }
 }
@@ -140,6 +144,21 @@ async function liveRecord(directory: string, id: string): Promise<PeerInfo> {
   return live;
 }
 
+export async function listPeers(directory: string): Promise<PeerInfo[]> {
+  try { await checkPrivate(directory); }
+  catch (error) { if (object(error) && error.code === "ENOENT") return []; throw error; }
+  const results: PeerInfo[] = [];
+  const entries = (await readdir(directory)).filter((file) => file.endsWith(".json") && ID.test(file.slice(0, -5)));
+  for (let index = 0; index < entries.length; index += 32) {
+    const batch = await Promise.all(entries.slice(index, index + 32).map(async (file) => {
+      try { return await liveRecord(directory, file.slice(0, -5)); }
+      catch { return undefined; }
+    }));
+    results.push(...batch.filter((record) => record !== undefined));
+  }
+  return results.sort((a, b) => a.name.localeCompare(b.name) || a.instanceId.localeCompare(b.instanceId));
+}
+
 export async function startPeer(options: Options) {
   const directory = resolve(options.directory || peerDirectory());
   await privateDirectory(directory);
@@ -217,16 +236,7 @@ export async function startPeer(options: Options) {
     rename: (name: string): void => { info.name = (name || "(unnamed)").slice(0, 160); },
     async list(): Promise<PeerInfo[]> {
       if (closed) throw new Error("Peer is closed");
-      const results: PeerInfo[] = [];
-      const entries = (await readdir(directory)).filter((file) => file.endsWith(".json") && ID.test(file.slice(0, -5)));
-      for (let index = 0; index < entries.length; index += 32) {
-        const batch = await Promise.all(entries.slice(index, index + 32).map(async (file) => {
-          try { return await liveRecord(directory, file.slice(0, -5)); }
-          catch { return undefined; }
-        }));
-        results.push(...batch.filter((record) => record !== undefined));
-      }
-      return results.sort((a, b) => a.name.localeCompare(b.name) || a.instanceId.localeCompare(b.instanceId));
+      return listPeers(directory);
     },
     async send({ to, message, messageId = randomUUID() }: { to: string; message: string; messageId?: string }): Promise<Receipt> {
       if (closed) throw new Error("Peer is closed");

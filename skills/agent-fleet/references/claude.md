@@ -36,6 +36,10 @@ SendMessage(to: "uds:<coordinator-socket>", message: "reviewer done: <findings>"
 
 `success: true` confirms delivery, not task completion or model compliance. Send briefs, end the turn, and let replies wake the coordinator.
 
+## pi peers
+
+A Claude Code coordinator launches pi peers with `spawn-fleet.py --peer-harness pi`, briefs them with `bridge.ts send`, and is woken by `bridge.ts wait`. Read [cross-harness.md](cross-harness.md) before launching.
+
 ## Troubleshooting and manual layouts
 
 - [troubleshooting.md](troubleshooting.md): Claude messaging gates, stale sockets, missing replies, transcript recovery.

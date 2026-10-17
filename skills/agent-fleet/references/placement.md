@@ -9,7 +9,8 @@ Read this when you choose a `spawn-fleet.py` placement, need a non-default flag,
 - `--per-tab 1|2` — sessions per tab or workspace (default 2)
 - `--prefix <name>` — tab or workspace label prefix (default `fleet`)
 - `--title <words>` — fleet mission, five words or fewer; labels tabs/workspaces `f1: <title>`, `f2: <title>`, … and beats `--prefix` when both are given
-- `--harness pi|claude` — explicit override when coordinator detection is ambiguous; keep peers on the coordinator's harness
+- `--harness pi|claude` — explicit override when coordinator detection is ambiguous
+- `--peer-harness pi|claude` — harness the peers run in (default: the coordinator harness); `pi` from a Claude coordinator starts the coordinator's bridge before any layout, see `references/cross-harness.md`; `claude` from a pi coordinator is not supported yet
 - `--model <model>` — model for every session, interpreted by that harness
 - `--agent-arg=<flag>` — repeatable native argument; use `=` for values beginning with `--`
 - `--claude-arg=<flag>` — legacy Claude-only alias for native arguments
@@ -40,7 +41,13 @@ herdr pane close <pane_id>           # placement split, one per pane
 herdr tab close <tab_id>             # placement tab
 herdr workspace close <workspace_id> # placement workspace
 
-python3 scripts/peer-addr.py --harness <pi|claude> # confirm gone
+python3 scripts/peer-addr.py --harness <pi|claude> # confirm gone; use the peer harness
+```
+
+A cross-harness fleet's block ends with an optional line. Stopping the bridge ends the coordinator's `pi:` reachability:
+
+```bash
+node <bridge.ts> stop --owner-pid <coordinator-pid>
 ```
 
 Herdr ids (`w1`, `w1:t1`, `w1:p1`) are opaque and stable, and a closed id is never reused. An id you recorded at spawn still names the same thing at teardown, or nothing at all — it cannot drift onto another pane. Read ids from the JSON that created them, never from sidebar order.

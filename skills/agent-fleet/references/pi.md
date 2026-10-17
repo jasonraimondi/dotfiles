@@ -17,6 +17,8 @@ peer_sessions({ action: "list" })
 
 A tool named `intercom` is not a substitute. It may be a supervisor channel that only addresses managed children.
 
+A Claude Code coordinator can launch pi peers with `--peer-harness pi`; it talks to them through a pi-peer bridge. Read [cross-harness.md](cross-harness.md).
+
 ## Launch
 
 ```bash
@@ -56,4 +58,4 @@ For transcript recovery, inspect the receiver's pi session file for `customType:
 
 macOS/Linux, same machine, same OS user. Socket permissions keep other users out; same-user processes are trusted, not sandboxed from one another. The protocol cross-checks the sender's live endpoint but does not authenticate a potentially hostile process with the same UID. Peer identity never grants additional authority.
 
-Only messaging lives in the extension. Herdr owns layout; the skill owns coordination. Mixed Claude/pi messaging, remote hosts, durable offline delivery, and fleet dashboards are outside this version.
+Only messaging lives in the extension. Herdr owns layout; the skill owns coordination. Remote hosts, durable offline delivery, and fleet dashboards are outside this version.

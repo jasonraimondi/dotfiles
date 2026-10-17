@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 import sys
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
 sys.path.insert(0, str(SCRIPTS))
@@ -27,12 +27,35 @@ class FleetTests(unittest.TestCase):
             "HERDR_ENV": "1", "HERDR_PANE_ID": "test:p1", "HERDR_WORKSPACE_ID": "test",
             "PI_CODING_AGENT": "true", "CLAUDE_CODE_MESSAGING_SOCKET": "", "CLAUDE_CODE_CHILD_SESSION": "",
         }))
+        self.events = []
+        self.pi_records = Mock(return_value=[])
+        self.bridge = Mock(side_effect=lambda *args: self.events.append(("bridge", args))
+                           or {"address": "pi:bridge-1", "spool": "/spool"})
+
+    def launch(self, args, ready):
+        """Run a successful launch, recording herdr calls in order with bridge calls."""
+        splits = 1
+        def command(*args, **kwargs):
+            nonlocal splits
+            self.events.append(("herdr", args))
+            if args[:2] == ("pane", "split"):
+                splits += 1
+                return {"pane": f"test:p{splits}"}
+            return {}
+        with patch.object(fleet, "new_matching_records", return_value=ready):
+            return self.run_main(args, command)
+
+    def starts(self):
+        return [args for kind, args in self.events if kind == "herdr" and args[:2] == ("agent", "start")]
 
     def run_main(self, args, commands):
         self.stack.enter_context(patch.object(sys, "argv", ["spawn-fleet.py", *args]))
         self.stack.enter_context(patch.object(fleet.shutil, "which", return_value="/bin/fake"))
-        self.stack.enter_context(patch.object(fleet, "coordinator", return_value={"address": "pi:parent", "messagingSocketPath": "/fake.sock"}))
-        self.stack.enter_context(patch.object(fleet, "pi_records", return_value=[]))
+        self.stack.enter_context(patch.object(fleet, "coordinator", return_value={
+            "address": "pi:parent", "messagingSocketPath": "/fake.sock", "pid": 999, "name": "boss", "sessionId": "sess"}))
+        self.stack.enter_context(patch.object(fleet, "bridge_script", return_value="/repo/bridge.ts"))
+        self.stack.enter_context(patch.object(fleet, "run_bridge", self.bridge))
+        self.stack.enter_context(patch.object(fleet, "pi_records", self.pi_records))
         self.stack.enter_context(patch.object(fleet, "live_records", return_value=[]))
         self.stack.enter_context(patch.object(fleet, "herdr", side_effect=commands))
         return fleet.main()
@@ -134,6 +157,63 @@ class FleetTests(unittest.TestCase):
         ]
         with patch.object(fleet, "pi_records", return_value=records):
             self.assertEqual(fleet.new_matching_records({"old"}, {"one"}, "pi", ["test:p2"]), [records[2]])
+
+    def test_peer_harness_defaults_to_claude_coordinator_harness(self):
+        ready = [{"name": "one", "pid": 111, "messagingSocketPath": "/one.sock"}]
+        with patch.object(fleet, "socket_live", return_value=True):
+            self.assertEqual(self.launch(["--harness", "claude", "one:."], ready), 0)
+        args = self.starts()[0]
+        self.assertEqual(args[args.index("--kind") + 1], "claude")
+        self.assertIn("uds:/one.sock", self.output.getvalue())
+        self.bridge.assert_not_called()
+
+    def test_pi_peer_harness_rejects_claude_options_from_claude_coordinator(self):
+        for option in ("--permission-mode=auto", "--claude-arg=--effort=low"):
+            with self.subTest(option=option):
+                with self.assertRaises(SystemExit):
+                    self.run_main(["--harness", "claude", "--peer-harness", "pi", option, "one:."],
+                                  lambda *args, **kwargs: self.fail("created layout"))
+        self.assertIn("Claude-only", self.output.getvalue())
+        self.bridge.assert_not_called()
+
+    def test_claude_coordinator_starts_bridge_before_layout_and_launches_pi_peers(self):
+        ready = [{"name": "one", "pid": 111, "address": "pi:one"}]
+        self.assertEqual(self.launch(["--harness", "claude", "--peer-harness", "pi", "one:."], ready), 0)
+        self.assertEqual(self.events[0], ("bridge", ("start", "--owner-pid", "999", "--name", "boss", "--session-id", "sess")))
+        args = self.starts()[0]
+        self.assertEqual(args[args.index("--kind") + 1], "pi")
+        self.assertIn("--extension", args)
+        self.assertIn("--peer-dir", args)
+        self.assertNotIn("--permission-mode", args)
+        text = self.output.getvalue()
+        self.assertIn("coordinator uds:/fake.sock pi:bridge-1", text)
+        self.assertIn("pid 111     pi:one", text)
+
+    def test_cross_harness_teardown_offers_optional_coordinator_bridge_stop(self):
+        self.launch(["--harness", "claude", "--peer-harness", "pi", "one:."], [{"name": "one", "pid": 111, "address": "pi:one"}])
+        text = self.output.getvalue()
+        self.assertIn("node /repo/bridge.ts stop --owner-pid 999", text)
+        self.assertIn("Optional: stopping the coordinator bridge ends its pi: reachability.", text)
+        self.assertIn("--harness pi", text)
+
+    def test_bridge_failure_creates_no_layout(self):
+        self.bridge.side_effect = RuntimeError("bridge start failed")
+        with self.assertRaises(SystemExit):
+            self.run_main(["--harness", "claude", "--peer-harness", "pi", "one:."],
+                          lambda *args, **kwargs: self.fail("created layout"))
+        self.assertIn("bridge start failed", self.output.getvalue())
+
+    def test_pi_coordinator_cannot_launch_claude_peers_yet(self):
+        with self.assertRaises(SystemExit):
+            self.run_main(["--peer-harness", "claude", "one:."], lambda *args, **kwargs: self.fail("created layout"))
+        self.assertIn("not supported yet", self.output.getvalue())
+
+    def test_peer_snapshot_failure_exits_cleanly_before_layout(self):
+        self.pi_records.side_effect = RuntimeError("bridge list failed")
+        with self.assertRaises(SystemExit):
+            self.run_main(["--harness", "claude", "--peer-harness", "pi", "one:."],
+                          lambda *args, **kwargs: self.fail("created layout"))
+        self.assertIn("bridge list failed", self.output.getvalue())
 
 
 if __name__ == "__main__":

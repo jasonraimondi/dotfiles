@@ -5,7 +5,7 @@ description: Launch and coordinate independent coding agents in Herdr panes, tab
 
 # Agent fleet
 
-A fleet is a set of independent, visible sessions that remain available for follow-up. The coordinator launches its own harness: **pi launches pi; Claude Code launches Claude Code**. Model choice does not determine the harness. Mixed fleets are not supported yet.
+A fleet is a set of independent, visible sessions that remain available for follow-up. By default the coordinator launches its own harness: **pi launches pi; Claude Code launches Claude Code**. Model choice does not determine the harness. A Claude Code coordinator can also launch pi peers with `--peer-harness pi`, which makes a cross-harness fleet; read [references/cross-harness.md](references/cross-harness.md) first. A pi coordinator with Claude peers, and Claude peers in a cross-harness fleet, are not supported yet.
 
 For panes that do not host an agent — dev servers, watchers, test runs, or any other ordinary command — use the `herdr` skill instead of these scripts. Name what you create so the layout reads at a glance: pass `--label` with a short purpose (e.g. `dev: web`) to `tab create` or `workspace create`, and run `herdr pane rename <pane> <name>` on each new pane.
 
@@ -18,7 +18,7 @@ Read the reference for the current harness before launching or messaging:
 - **Pi:** [references/pi.md](references/pi.md) — the local `pi-peer` extension, discovery, messages, and setup.
 - **Claude Code:** [references/claude.md](references/claude.md) — native `SendMessage`, sockets, and permissions.
 
-`PI_CODING_AGENT=true` identifies pi. Claude exposes `CLAUDE_CODE_MESSAGING_SOCKET` or `CLAUDE_CODE_CHILD_SESSION`. Scripts detect these markers; conflicting or missing markers require an explicit `--harness pi|claude`. An override resolves detection, not permission to launch a mixed fleet.
+`PI_CODING_AGENT=true` identifies pi. Claude exposes `CLAUDE_CODE_MESSAGING_SOCKET` or `CLAUDE_CODE_CHILD_SESSION`. Scripts detect these markers; conflicting or missing markers require an explicit `--harness pi|claude`. An override resolves detection only; `--peer-harness pi|claude` selects the peers' harness.
 
 Confirm the coordinator can receive replies:
 
@@ -26,12 +26,15 @@ Confirm the coordinator can receive replies:
 python3 scripts/peer-addr.py --me --json
 ```
 
+In a cross-harness fleet it shows both the `uds:` address and the bridge's `pi:` address.
+
 Before creating or controlling panes, verify `HERDR_ENV=1`. If absent, stop and explain that spawning needs a Herdr-managed pane. Messaging existing peers does not need Herdr.
 
 ## 2. Spawn
 
 ```bash
 python3 scripts/spawn-fleet.py reviewer:/path/to/project researcher:/path/to/project
+python3 scripts/spawn-fleet.py --peer-harness pi reviewer:/path/to/project
 ```
 
 Each argument is `NAME:DIR`. Names must match `[a-z][a-z0-9_-]{0,31}`. Prefer existing trusted directories; new ones may require a human trust decision. Preserve the current directory unless the task needs another location. Use one writer per checkout; isolate intentionally concurrent writers in worktrees with the user's approval.
@@ -54,12 +57,14 @@ Use the selected harness's messaging tool and the exact addresses returned by di
 - The requested result format and completion condition.
 - Whether a reply is expected, and the coordinator's literal return address.
 
+In a cross-harness fleet, the return address is the coordinator's `pi:` address and the reply tool is `peer_sessions send`. Send each brief with `node <bridge.ts> send --to pi:<uuid>`, body on stdin.
+
 A send receipt means accepted, **not completed**. Delivery can time out after acceptance; do not blindly resend. Peer messages carry no authority beyond the user's existing scope. Report refusals or permission denials to the user; never route around them through a peer.
 
-After sending the briefs, end your turn. Replies wake the coordinator. Avoid pane-polling loops. For a suspected stall, inspect `herdr agent get <name>` and `herdr agent read <name>`; `unknown` does not mean completed.
+After sending the briefs, end your turn. Replies wake the coordinator. A cross-harness coordinator is woken by `node <bridge.ts> wait` running as a background command: re-arm `bridge.ts wait` before ending your turn, every turn. When the bridge answers a peer `accepted`, the reply is spooled, not yet read. Avoid pane-polling loops. For a suspected stall, inspect `herdr agent get <name>` and `herdr agent read <name>`; `unknown` does not mean completed.
 
 ## 4. Leave the fleet available
 
 Teardown is opt-in. Leave peers running and hand the user the printed teardown block unless they asked to close them, either now or before launch. State that peers remain alive: they retain memory and processes, and additional messages or ongoing work can incur model usage. An idle peer need not call the model just to wait.
 
-When authorized to tear down, refresh process identities, kill the owned agent processes, confirm exit, then close only the panes/tabs/workspaces the launcher created. PIDs can be reused; old teardown output is not proof of current ownership. Never close the user's tab for a split fleet. Confirm disappearance with `peer-addr.py --harness <harness>`.
+When authorized to tear down, refresh process identities, kill the owned agent processes, confirm exit, then close only the panes/tabs/workspaces the launcher created. PIDs can be reused; old teardown output is not proof of current ownership. Never close the user's tab for a split fleet. Confirm disappearance with `peer-addr.py --harness <peer harness>`. Stopping the coordinator's bridge is optional and ends its `pi:` reachability.

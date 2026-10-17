@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Launch same-harness agent fleets in Herdr and verify messaging readiness."""
+"""Launch agent fleets in Herdr and verify messaging readiness."""
 
 import argparse
 import json
@@ -12,7 +12,7 @@ import sys
 import time
 
 from peer_registry import live_records, normalized_name, record_identity, socket_live
-from harness import coordinator, detect_harness, pi_directory, pi_extension, pi_records
+from harness import bridge_script, coordinator, detect_harness, pi_directory, pi_extension, pi_records, run_bridge
 
 
 # Herdr agent names and Claude session names come from the same argument, so a
@@ -111,7 +111,18 @@ def ready_by_name(records, harness="claude"):
     return ready
 
 
-def print_cleanup(records, layout, harness="claude"):
+def ensure_coordinator_bridge(own_record):
+    """Give a Claude coordinator a pi: address before any pane exists."""
+    args = ["start", "--owner-pid", str(own_record["pid"]), "--name", normalized_name(own_record)]
+    if own_record.get("sessionId"):
+        args += ["--session-id", own_record["sessionId"]]
+    bridge = run_bridge(*args)
+    if not isinstance(bridge, dict) or not str(bridge.get("address", "")).startswith("pi:"):
+        raise RuntimeError(f"pi-peer bridge start returned no pi: address: {bridge!r}")
+    return bridge
+
+
+def print_cleanup(records, layout, harness="claude", bridge_stop=None):
     pids = sorted(
         {record.get("pid") for record in records if isinstance(record.get("pid"), int)}
     )
@@ -134,6 +145,9 @@ def print_cleanup(records, layout, harness="claude"):
         for pane in layout["panes"]:
             print(f"  herdr pane close {pane}")
     print(f"  python3 {shlex.quote(ADDR_SCRIPT)} --harness {harness}")
+    if bridge_stop:
+        print("Optional: stopping the coordinator bridge ends its pi: reachability.")
+        print(f"  {bridge_stop}")
 
 
 def label_panes(specs, panes):
@@ -249,6 +263,8 @@ def main():
         "labeled 'f1: <title>', 'f2: <title>', … (default: <prefix>-N)",
     )
     parser.add_argument("--harness", choices=("pi", "claude"))
+    parser.add_argument("--peer-harness", choices=("pi", "claude"),
+                        help="harness the peers run in (default: the coordinator harness)")
     parser.add_argument("--model")
     parser.add_argument("--agent-arg", action="append", default=[])
     parser.add_argument("--claude-arg", action="append", default=[])
@@ -269,26 +285,34 @@ def main():
 
     try:
         harness = detect_harness(args.harness)
-        if not shutil.which("herdr") or not shutil.which(harness):
-            raise RuntimeError(f"Install herdr and {harness} before spawning")
-        if harness == "pi" and (args.permission_mode or args.claude_arg):
+        peer_harness = args.peer_harness or harness
+        if harness == "pi" and peer_harness == "claude":
+            raise RuntimeError("A pi coordinator with --peer-harness claude is not supported yet")
+        if not shutil.which("herdr") or not shutil.which(peer_harness):
+            raise RuntimeError(f"Install herdr and {peer_harness} before spawning")
+        if peer_harness == "pi" and (args.permission_mode or args.claude_arg):
             raise RuntimeError("--permission-mode and --claude-arg are Claude-only")
         own = coordinator(harness)
+        own_address = own["address"] if harness == "pi" else f"uds:{own['messagingSocketPath']}"
+        bridge_stop = None
+        if harness != peer_harness:
+            own_address += " " + ensure_coordinator_bridge(own)["address"]
+            bridge_stop = f"node {shlex.quote(bridge_script())} stop --owner-pid {own['pid']}"
         extra = list(args.agent_arg) + list(args.claude_arg)
-        if harness == "pi":
+        if peer_harness == "pi":
             extra += ["--extension", pi_extension(), "--peer-dir", pi_directory()]
         if args.model:
             extra += ["--model", args.model]
+        before = ({record["instanceId"] for record in pi_records()} if peer_harness == "pi"
+                  else {record_identity(record) for record in live_records()})
     except RuntimeError as error:
         parser.error(str(error))
 
     specs = parse_specs(args.specs)
-    before = ({record["instanceId"] for record in pi_records()} if harness == "pi"
-              else {record_identity(record) for record in live_records()})
     wanted = {name for name, _ in specs}
     layout = {"placement": args.placement, "tabs": [], "workspaces": [], "panes": []}
     records = []
-    print(f"harness {harness}; coordinator " + (own["address"] if harness == "pi" else f"uds:{own['messagingSocketPath']}"))
+    print(f"harness {harness}; peer harness {peer_harness}; coordinator {own_address}")
     try:
         if args.placement == "split":
             build_splits(specs, os.environ.get("HERDR_PANE_ID"), args.direction, layout)
@@ -303,11 +327,11 @@ def main():
             remaining = deadline - time.monotonic()
             if remaining <= 0:
                 raise RuntimeError("Fleet startup deadline expired")
-            start_agent(name, pane, harness, args.permission_mode, extra, max(1, int(remaining * 1000)))
+            start_agent(name, pane, peer_harness, args.permission_mode, extra, max(1, int(remaining * 1000)))
 
         while True:
-            records = new_matching_records(before, wanted, harness, layout["panes"])
-            ready = ready_by_name(records, harness)
+            records = new_matching_records(before, wanted, peer_harness, layout["panes"])
+            ready = ready_by_name(records, peer_harness)
             if len(ready) == len(wanted) or time.monotonic() >= deadline:
                 break
             time.sleep(min(1, max(0, deadline - time.monotonic())))
@@ -315,7 +339,7 @@ def main():
         for name, _ in specs:
             if name in ready:
                 record = ready[name]
-                address = record["address"] if harness == "pi" else f"uds:{record['messagingSocketPath']}"
+                address = record["address"] if peer_harness == "pi" else f"uds:{record['messagingSocketPath']}"
                 print(f"+ {name:<24} pid {record['pid']:<7} {address}")
             else:
                 print(f"- {name:<24} messaging not ready")
@@ -329,10 +353,10 @@ def main():
     finally:
         if layout["panes"] or layout["tabs"] or layout["workspaces"]:
             try:
-                records = new_matching_records(before, wanted, harness, layout["panes"])
+                records = new_matching_records(before, wanted, peer_harness, layout["panes"])
             except (RuntimeError, OSError) as error:
                 print(f"warning: could not refresh PIDs: {error}", file=sys.stderr)
-            print_cleanup(records, layout, harness)
+            print_cleanup(records, layout, peer_harness, bridge_stop)
 
 
 if __name__ == "__main__":

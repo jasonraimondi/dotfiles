@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""List reachable same-harness sessions and their peer-messaging addresses."""
+"""List reachable sessions and their peer-messaging addresses."""
 
 import argparse
 import json
 import os
 import sys
 
-from harness import detect_harness, pi_records
+from harness import detect_harness, pi_directory, pi_records
 from peer_registry import (
     load_records,
     normalized_name,
@@ -16,6 +16,29 @@ from peer_registry import (
 
 
 NAME_MAX = 40
+
+
+def bridge_for(pid):
+    try:
+        with open(os.path.join(pi_directory(), "bridges", f"{pid}.json")) as handle:
+            bridge = json.load(handle)
+    except (OSError, ValueError):
+        return None
+    return bridge if isinstance(bridge, dict) and bridge.get("ownerPid") == pid else None
+
+
+def live_bridge(pid):
+    bridge = bridge_for(pid)
+    return bridge if bridge and pid_alive(bridge.get("pid")) else None
+
+
+def bridge_note(pid):
+    bridge = bridge_for(pid)
+    if bridge is None:
+        return None
+    if not pid_alive(bridge.get("pid")):
+        return "bridge dead"
+    return f"waiter {bridge.get('waiter', 'none')}"
 
 
 def row_for(record, own_sock):
@@ -57,6 +80,7 @@ def row_for(record, own_sock):
         "cwd": record.get("cwd"),
         "status": record.get("status"),
         "startedAt": record.get("startedAt"),
+        "bridge": bridge_note(pid),
     }
 
 
@@ -76,14 +100,19 @@ def me(as_json=False):
     record = next(
         (r for r in load_records() if r.get("messagingSocketPath") == own_sock), None
     )
+    bridge = live_bridge(record.get("pid")) if record else None
     payload = {
         "address": f"uds:{own_sock}",
+        "piAddress": bridge.get("address") if bridge else None,
         "sessionId": record.get("sessionId") if record else None,
+        "bridge": bridge,
     }
     if as_json:
         print(json.dumps(payload, indent=2))
     else:
         print(payload["address"])
+        if payload["piAddress"]:
+            print(payload["piAddress"])
         if payload["sessionId"]:
             print(f"session-id: {payload['sessionId']}")
         else:
@@ -136,6 +165,7 @@ def listing(name_filter=None, pid_filter=None, details=False, as_json=False):
         print(
             f"{marks[row['state']]} {name:<{width}}  pid {row['pid']:<7} "
             f"v{row['version']:<9} {row['reason']}"
+            + (f"  {row['bridge']}" if row["bridge"] else "")
         )
         if details:
             print(
