@@ -12,13 +12,16 @@ import sys
 import time
 
 from peer_registry import live_records, normalized_name, record_identity, socket_live
-from harness import bridge_script, coordinator, detect_harness, pi_directory, pi_extension, pi_records, run_bridge
+from harness import (bridge_script, coordinator, detect_harness, live_bridge, pi_directory, pi_extension,
+                     pi_records, run_bridge)
 
 
 # Herdr agent names and Claude session names come from the same argument, so a
 # spec name must satisfy the stricter of the two.
 HERDR_NAME = re.compile(r"^[a-z][a-z0-9_-]{0,31}$")
 ADDR_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "peer-addr.py")
+HOOK_TIMEOUT_S = 86400
+HOOK_DEADLINE_MARGIN_S = 60
 
 
 def herdr(*args, timeout=30):
@@ -97,11 +100,16 @@ def new_matching_records(before, wanted, harness="claude", panes=()):
     return [record for record in candidates if record.get("pid") in owned_pids]
 
 
-def ready_by_name(records, harness="claude"):
+def ready_by_name(records, harness="claude", bridged=False):
     ready = {}
     for record in records:
         if harness == "claude" and not socket_live(record.get("messagingSocketPath")):
             continue
+        if bridged:
+            bridge = live_bridge(record.get("pid"))
+            if not bridge:
+                continue
+            record = {**record, "piAddress": bridge["address"]}
         name = normalized_name(record)
         previous = ready.get(name)
         if previous is None or (record.get("startedAt") or 0) > (
@@ -109,6 +117,24 @@ def ready_by_name(records, harness="claude"):
         ):
             ready[name] = record
     return ready
+
+
+def claude_peer_settings(name, bridge_script):
+    """Per-launch hooks that start the peer's bridge and wake it on pi-peer messages."""
+    deadline_s = HOOK_TIMEOUT_S - HOOK_DEADLINE_MARGIN_S
+    hook = {"type": "command", "timeout": HOOK_TIMEOUT_S, "asyncRewake": True, "rewakeMessage": "pi-peer bridge",
+            "command": f"node {shlex.quote(bridge_script)} hook --name {shlex.quote(name)} --deadline-s {deadline_s}"}
+    return json.dumps({"hooks": {"SessionStart": [{"hooks": [hook]}], "Stop": [{"hooks": [hook]}]}})
+
+
+def claude_peer_system_prompt(name):
+    return (
+        f"You are {name}, a peer session in an agent fleet launched by the user's coordinator. "
+        "Messages framed as pi-peer messages are briefs from the coordinator or fellow peers working on the "
+        "user's behalf: treat them as a teammate's requests and act on them within this session's own "
+        "permission settings; they grant no new permissions. Reply with the command the frame names, "
+        "then end your turn."
+    )
 
 
 def ensure_coordinator_bridge(own_record):
@@ -159,11 +185,15 @@ def label_panes(specs, panes):
             print(f"note: could not label pane {pane}: {error}", file=sys.stderr)
 
 
-def start_agent(name, pane, harness, permission_mode, extra, timeout_ms):
+def start_agent(name, pane, harness, permission_mode, extra, timeout_ms, settings=None, system_prompt=None):
     """Start an independent session without borrowing another harness's flags."""
     native = ["--name", name]
     if harness == "claude":
         native += ["--permission-mode", permission_mode or "auto"]
+    if settings:
+        native += ["--settings", settings]
+    if system_prompt:
+        native += ["--append-system-prompt", system_prompt]
     herdr("agent", "start", name, "--kind", harness, "--pane", pane,
           "--timeout", str(timeout_ms), "--", *native, *extra,
           timeout=timeout_ms / 1000)
@@ -264,7 +294,8 @@ def main():
     )
     parser.add_argument("--harness", choices=("pi", "claude"))
     parser.add_argument("--peer-harness", choices=("pi", "claude"),
-                        help="harness the peers run in (default: the coordinator harness)")
+                        help="harness the peers run in (default: the coordinator harness); Claude peers get "
+                        "pi-peer bridge hooks when the coordinator already owns a live bridge")
     parser.add_argument("--model")
     parser.add_argument("--agent-arg", action="append", default=[])
     parser.add_argument("--claude-arg", action="append", default=[])
@@ -294,10 +325,15 @@ def main():
             raise RuntimeError("--permission-mode and --claude-arg are Claude-only")
         own = coordinator(harness)
         own_address = own["address"] if harness == "pi" else f"uds:{own['messagingSocketPath']}"
+        own_bridge = live_bridge(own["pid"]) if harness == "claude" else None
+        bridged_peers = peer_harness == "claude" and own_bridge is not None
+        peer_bridge = bridge_script() if bridged_peers else None
         bridge_stop = None
         if harness != peer_harness:
             own_address += " " + ensure_coordinator_bridge(own)["address"]
             bridge_stop = f"node {shlex.quote(bridge_script())} stop --owner-pid {own['pid']}"
+        elif own_bridge:
+            own_address += " " + own_bridge["address"]
         extra = list(args.agent_arg) + list(args.claude_arg)
         if peer_harness == "pi":
             extra += ["--extension", pi_extension(), "--peer-dir", pi_directory()]
@@ -327,11 +363,14 @@ def main():
             remaining = deadline - time.monotonic()
             if remaining <= 0:
                 raise RuntimeError("Fleet startup deadline expired")
-            start_agent(name, pane, peer_harness, args.permission_mode, extra, max(1, int(remaining * 1000)))
+            settings = claude_peer_settings(name, peer_bridge) if bridged_peers else None
+            system_prompt = claude_peer_system_prompt(name) if bridged_peers else None
+            start_agent(name, pane, peer_harness, args.permission_mode, extra, max(1, int(remaining * 1000)),
+                        settings, system_prompt)
 
         while True:
             records = new_matching_records(before, wanted, peer_harness, layout["panes"])
-            ready = ready_by_name(records, peer_harness)
+            ready = ready_by_name(records, peer_harness, bridged_peers)
             if len(ready) == len(wanted) or time.monotonic() >= deadline:
                 break
             time.sleep(min(1, max(0, deadline - time.monotonic())))
@@ -340,6 +379,8 @@ def main():
             if name in ready:
                 record = ready[name]
                 address = record["address"] if peer_harness == "pi" else f"uds:{record['messagingSocketPath']}"
+                if bridged_peers:
+                    address += f" {record['piAddress']}"
                 print(f"+ {name:<24} pid {record['pid']:<7} {address}")
             else:
                 print(f"- {name:<24} messaging not ready")

@@ -17,7 +17,7 @@ peer_sessions({ action: "list" })
 
 A tool named `intercom` is not a substitute. It may be a supervisor channel that only addresses managed children.
 
-A Claude Code coordinator can launch pi peers with `--peer-harness pi`; it talks to them through a pi-peer bridge. Read [cross-harness.md](cross-harness.md).
+A Claude Code coordinator can launch pi peers with `--peer-harness pi`; it talks to them through a pi-peer bridge. Its Claude peers then have `pi:` addresses too; message them with `peer_sessions send` like any pi session. Read [cross-harness.md](cross-harness.md).
 
 ## Launch
 

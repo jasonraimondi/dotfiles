@@ -5,6 +5,8 @@ import os
 from pathlib import Path
 import subprocess
 
+from peer_registry import pid_alive
+
 
 def detect_harness(explicit=None):
     if explicit:
@@ -18,6 +20,20 @@ def detect_harness(explicit=None):
 
 def pi_directory():
     return os.path.abspath(os.environ.get("PI_PEER_DIR") or f"/tmp/pi-peer-{os.getuid()}")
+
+
+def bridge_for(pid):
+    try:
+        with open(os.path.join(pi_directory(), "bridges", f"{pid}.json")) as handle:
+            bridge = json.load(handle)
+    except (OSError, ValueError):
+        return None
+    return bridge if isinstance(bridge, dict) and bridge.get("ownerPid") == pid else None
+
+
+def live_bridge(pid):
+    bridge = bridge_for(pid)
+    return bridge if bridge and pid_alive(bridge.get("pid")) else None
 
 
 def run_bridge(*args, timeout=30):

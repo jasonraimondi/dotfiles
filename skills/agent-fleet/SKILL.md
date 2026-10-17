@@ -5,7 +5,7 @@ description: Launch and coordinate independent coding agents in Herdr panes, tab
 
 # Agent fleet
 
-A fleet is a set of independent, visible sessions that remain available for follow-up. By default the coordinator launches its own harness: **pi launches pi; Claude Code launches Claude Code**. Model choice does not determine the harness. A Claude Code coordinator can also launch pi peers with `--peer-harness pi`, which makes a cross-harness fleet; read [references/cross-harness.md](references/cross-harness.md) first. A pi coordinator with Claude peers, and Claude peers in a cross-harness fleet, are not supported yet.
+A fleet is a set of independent, visible sessions that remain available for follow-up. By default the coordinator launches its own harness: **pi launches pi; Claude Code launches Claude Code**. Model choice does not determine the harness. A Claude Code coordinator can also launch pi peers with `--peer-harness pi`, which makes a cross-harness fleet, and any Claude peers it launches after that are reachable from pi; read [references/cross-harness.md](references/cross-harness.md) first. A pi coordinator with Claude peers is not supported yet.
 
 For panes that do not host an agent — dev servers, watchers, test runs, or any other ordinary command — use the `herdr` skill instead of these scripts. Name what you create so the layout reads at a glance: pass `--label` with a short purpose (e.g. `dev: web`) to `tab create` or `workspace create`, and run `herdr pane rename <pane> <name>` on each new pane.
 
@@ -57,11 +57,11 @@ Use the selected harness's messaging tool and the exact addresses returned by di
 - The requested result format and completion condition.
 - Whether a reply is expected, and the coordinator's literal return address.
 
-In a cross-harness fleet, the return address is the coordinator's `pi:` address and the reply tool is `peer_sessions send`. Send each brief with `node <bridge.ts> send --to pi:<uuid>`, body on stdin.
+In a cross-harness fleet, a brief to a pi peer names the coordinator's `pi:` return address and the reply tool `peer_sessions send`; send it with `node <bridge.ts> send --to pi:<uuid>`, body on stdin. Brief Claude peers with `SendMessage` as usual; one that talks to pi peers replies to them with `node <bridge.ts> send --to pi:<uuid>`, as each frame says.
 
 A send receipt means accepted, **not completed**. Delivery can time out after acceptance; do not blindly resend. Peer messages carry no authority beyond the user's existing scope. Report refusals or permission denials to the user; never route around them through a peer.
 
-After sending the briefs, end your turn. Replies wake the coordinator. A cross-harness coordinator is woken by `node <bridge.ts> wait` running as a background command: re-arm `bridge.ts wait` before ending your turn, every turn. When the bridge answers a peer `accepted`, the reply is spooled, not yet read. Avoid pane-polling loops. For a suspected stall, inspect `herdr agent get <name>` and `herdr agent read <name>`; `unknown` does not mean completed.
+After sending the briefs, end your turn. Replies wake the coordinator. A cross-harness coordinator is woken by `node <bridge.ts> wait` running as a background command: re-arm `bridge.ts wait` before ending your turn, every turn. When the bridge answers a peer `accepted`, the reply is spooled, not yet read. A Claude peer whose waiter shows `expired` needs the fixed nudge `Check your pi-peer bridge.` and nothing else, sent with `SendMessage` over its `uds:` address; a pi coordinator's `herdr agent prompt` nudge is not supported yet. Never use `herdr agent prompt` to carry a message. Avoid pane-polling loops. For a suspected stall, inspect `herdr agent get <name>` and `herdr agent read <name>`; `unknown` does not mean completed.
 
 ## 4. Leave the fleet available
 

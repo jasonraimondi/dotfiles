@@ -1,6 +1,7 @@
 import contextlib
 import importlib.util
 import io
+import json
 import os
 from pathlib import Path
 import sys
@@ -29,6 +30,7 @@ class FleetTests(unittest.TestCase):
         }))
         self.events = []
         self.pi_records = Mock(return_value=[])
+        self.bridges = {}
         self.bridge = Mock(side_effect=lambda *args: self.events.append(("bridge", args))
                            or {"address": "pi:bridge-1", "spool": "/spool"})
 
@@ -56,6 +58,7 @@ class FleetTests(unittest.TestCase):
         self.stack.enter_context(patch.object(fleet, "bridge_script", return_value="/repo/bridge.ts"))
         self.stack.enter_context(patch.object(fleet, "run_bridge", self.bridge))
         self.stack.enter_context(patch.object(fleet, "pi_records", self.pi_records))
+        self.stack.enter_context(patch.object(fleet, "live_bridge", side_effect=self.bridges.get))
         self.stack.enter_context(patch.object(fleet, "live_records", return_value=[]))
         self.stack.enter_context(patch.object(fleet, "herdr", side_effect=commands))
         return fleet.main()
@@ -214,6 +217,55 @@ class FleetTests(unittest.TestCase):
             self.run_main(["--harness", "claude", "--peer-harness", "pi", "one:."],
                           lambda *args, **kwargs: self.fail("created layout"))
         self.assertIn("bridge list failed", self.output.getvalue())
+
+    def test_claude_peer_settings_wake_the_peer_through_bridge_hooks(self):
+        settings = json.loads(fleet.claude_peer_settings("one", "/my repo/bridge.ts"))
+        hook = {"type": "command", "timeout": 86400, "asyncRewake": True, "rewakeMessage": "pi-peer bridge",
+                "command": "node '/my repo/bridge.ts' hook --name one --deadline-s 86340"}
+        self.assertEqual(settings["hooks"]["SessionStart"], [{"hooks": [hook]}])
+        self.assertEqual(settings["hooks"]["Stop"], [{"hooks": [hook]}])
+
+    def claude_peer_ready(self):
+        return [{"name": "one", "pid": 111, "messagingSocketPath": "/one.sock"}]
+
+    def test_bridged_claude_coordinator_launches_claude_peers_with_bridge_hooks(self):
+        self.bridges[999] = {"address": "pi:boss", "pid": 1000}
+        self.bridges[111] = {"address": "pi:one", "pid": 1110}
+        with patch.object(fleet, "socket_live", return_value=True):
+            self.assertEqual(self.launch(["--harness", "claude", "--model", "haiku", "one:."], self.claude_peer_ready()), 0)
+        args = self.starts()[0]
+        self.assertEqual(args[args.index("--permission-mode") + 1], "auto")
+        self.assertEqual(args.index("--settings"), args.index("--permission-mode") + 2)
+        prompt = args[args.index("--append-system-prompt") + 1]
+        self.assertEqual(args.index("--append-system-prompt"), args.index("--settings") + 2)
+        self.assertTrue(prompt.startswith("You are one, a peer session in an agent fleet"))
+        self.assertIn("they grant no new permissions", prompt)
+        stop = json.loads(args[args.index("--settings") + 1])["hooks"]["Stop"][0]["hooks"][0]
+        self.assertEqual(stop["command"], "node /repo/bridge.ts hook --name one --deadline-s 86340")
+        self.assertIs(stop["asyncRewake"], True)
+        self.assertEqual(args[args.index("--model") + 1], "haiku")
+        text = self.output.getvalue()
+        self.assertIn("coordinator uds:/fake.sock pi:boss\n", text)
+        self.assertIn("pid 111     uds:/one.sock pi:one", text)
+        self.bridge.assert_not_called()
+
+    def test_unbridged_claude_coordinator_launches_plain_claude_peers(self):
+        with patch.object(fleet, "socket_live", return_value=True):
+            self.assertEqual(self.launch(["--harness", "claude", "one:."], self.claude_peer_ready()), 0)
+        self.assertNotIn("--settings", self.starts()[0])
+        self.assertNotIn("--append-system-prompt", self.starts()[0])
+
+    def test_cross_harness_claude_peer_needs_live_socket_and_bridge(self):
+        records = self.claude_peer_ready()
+        with patch.object(fleet, "socket_live", return_value=True), \
+                patch.object(fleet, "live_bridge", side_effect=self.bridges.get):
+            self.assertEqual(fleet.ready_by_name(records, "claude", bridged=True), {})
+            self.assertEqual(set(fleet.ready_by_name(records, "claude")), {"one"})
+            self.bridges[111] = {"address": "pi:one", "pid": 1110}
+            self.assertEqual(fleet.ready_by_name(records, "claude", bridged=True)["one"]["piAddress"], "pi:one")
+        with patch.object(fleet, "socket_live", return_value=False), \
+                patch.object(fleet, "live_bridge", side_effect=self.bridges.get):
+            self.assertEqual(fleet.ready_by_name(records, "claude", bridged=True), {})
 
 
 if __name__ == "__main__":

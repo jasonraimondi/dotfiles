@@ -6,7 +6,7 @@ import json
 import os
 import sys
 
-from harness import detect_harness, pi_directory, pi_records
+from harness import bridge_for, detect_harness, live_bridge, pi_records
 from peer_registry import (
     load_records,
     normalized_name,
@@ -16,20 +16,6 @@ from peer_registry import (
 
 
 NAME_MAX = 40
-
-
-def bridge_for(pid):
-    try:
-        with open(os.path.join(pi_directory(), "bridges", f"{pid}.json")) as handle:
-            bridge = json.load(handle)
-    except (OSError, ValueError):
-        return None
-    return bridge if isinstance(bridge, dict) and bridge.get("ownerPid") == pid else None
-
-
-def live_bridge(pid):
-    bridge = bridge_for(pid)
-    return bridge if bridge and pid_alive(bridge.get("pid")) else None
 
 
 def bridge_note(pid):

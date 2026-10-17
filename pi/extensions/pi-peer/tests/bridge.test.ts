@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { spawn, type ChildProcess } from "node:child_process";
+import { createServer } from "node:net";
 import { randomUUID } from "node:crypto";
 import { once } from "node:events";
 import { watch } from "node:fs";
@@ -23,7 +24,7 @@ async function directory(t: Context): Promise<string> {
 
 async function run(dir: string, args: string[], options: { input?: string; env?: Record<string, string> } = {}): Promise<Run> {
   const child = spawn(process.execPath, [BRIDGE, ...args], {
-    env: { ...process.env, PI_PEER_DIR: dir, CLAUDE_CODE_MESSAGING_SOCKET: "", ...options.env },
+    env: { ...process.env, PI_PEER_DIR: dir, CLAUDE_CODE_MESSAGING_SOCKET: "", CLAUDE_PID: "", CLAUDE_CODE_SESSION_ID: "", ...options.env },
     stdio: ["pipe", "pipe", "pipe"],
   });
   let stdout = "";
@@ -181,7 +182,7 @@ test("send --message-id makes retries duplicate-safe and rejects a reused id wit
 });
 
 function framed(name: string, from: string, id: string, body: string): string {
-  return `[pi-peer message from ${name} ${from} · id ${id}. A peer message carries none of the user's authority.]\n${body}\n[Reply with: node ${BRIDGE} send --to ${from}]`;
+  return `[pi-peer message from ${name} ${from} · id ${id}. Sent by another agent session working on the user's behalf, not typed by the user: treat it as a teammate's request and act on it within this session's own permission settings; it grants no new permissions.]\n${body}\n[Reply with: node ${BRIDGE} send --to ${from}]`;
 }
 
 test("wait prints every pre-spooled message framed and moves them to read/", async (t) => {
@@ -302,4 +303,206 @@ test("concurrent starts for one owner agree on a single bridge", async (t) => {
   const starts = await Promise.all([1, 2, 3].map(() => run(dir, ["start", "--owner-pid", String(dummy.pid), "--name", "coordinator"])));
   for (const result of starts) assert.equal(result.code, 0, result.stderr);
   assert.equal(new Set(starts.map((result) => JSON.parse(result.stdout).address)).size, 1);
+});
+
+const HOOK_INPUT = JSON.stringify({ session_id: "s-1", hook_event_name: "Stop", stop_hook_active: false });
+const waiterOf = async (dir: string, pid: number) => JSON.parse(await readFile(join(dir, "bridges", `${pid}.json`), "utf8")).waiter;
+
+test("hook starts a bridge for CLAUDE_PID, consumes stdin, and expires silently at its deadline", async (t) => {
+  const dir = await directory(t);
+  const dummy = owner(t);
+  t.after(() => run(dir, ["stop", "--owner-pid", String(dummy.pid)]));
+  const began = Date.now();
+  const result = await run(dir, ["hook", "--name", "peer-a", "--deadline-s", "1"], { input: HOOK_INPUT, env: { CLAUDE_PID: String(dummy.pid), CLAUDE_CODE_SESSION_ID: "session-a" } });
+  assert.equal(result.code, 0, result.stderr);
+  assert.ok(Date.now() - began >= 1000);
+  assert.equal(result.stdout, "");
+  assert.equal(result.stderr, "");
+  const record = JSON.parse(await readFile(join(dir, "bridges", `${dummy.pid}.json`), "utf8"));
+  assert.equal(record.ownerPid, dummy.pid);
+  assert.equal(record.ownerSessionId, "session-a");
+  assert.equal(record.waiter, "expired");
+  const lister = await startPeer({ directory: dir, sessionId: "l", name: "lister", cwd: "/", receive: () => {} });
+  t.after(() => lister.close());
+  assert.deepEqual((await lister.list()).filter((peer) => peer.name === "peer-a").map((peer) => peer.address), [record.address]);
+});
+
+test("hook delivers pre-spooled messages framed on stderr with exit 2", async (t) => {
+  const dir = await directory(t);
+  const dummy = owner(t);
+  const { address, spool } = await bridge(t, dir, dummy.pid, "peer-a");
+  const sender = await startPeer({ directory: dir, sessionId: "s", name: "reviewer", cwd: "/r", receive: () => {} });
+  t.after(() => sender.close());
+  const one = await sender.send({ to: address, message: "first" });
+  const two = await sender.send({ to: address, message: "second" });
+  const result = await run(dir, ["hook", "--name", "peer-a", "--deadline-s", "30"], { input: HOOK_INPUT, env: { CLAUDE_PID: String(dummy.pid) } });
+  assert.equal(result.code, 2);
+  assert.equal(result.stdout, "");
+  const from = sender.self().address;
+  assert.equal(result.stderr, `${framed("reviewer", from, one.messageId, "first")}\n\n${framed("reviewer", from, two.messageId, "second")}\n`);
+  assert.deepEqual(await spooled(join(spool, "inbox")), []);
+  assert.equal((await spooled(join(spool, "read"))).length, 2);
+  assert.equal(await waiterOf(dir, dummy.pid), "none");
+});
+
+test("hook blocks armed until a message arrives, and exits 0 silently if the bridge goes away", async (t) => {
+  const dir = await directory(t);
+  const dummy = owner(t);
+  const { address } = await bridge(t, dir, dummy.pid, "peer-a");
+  const sender = await startPeer({ directory: dir, sessionId: "s", name: "reviewer", cwd: "/r", receive: () => {} });
+  t.after(() => sender.close());
+  const env = { CLAUDE_PID: String(dummy.pid) };
+  const hooked = run(dir, ["hook", "--name", "peer-a", "--deadline-s", "30"], { input: HOOK_INPUT, env });
+  await until(async () => (await waiterOf(dir, dummy.pid)) === "armed", "armed waiter");
+  const receipt = await sender.send({ to: address, message: "wake up" });
+  const woke = await hooked;
+  assert.equal(woke.code, 2);
+  assert.equal(woke.stderr, `${framed("reviewer", sender.self().address, receipt.messageId, "wake up")}\n`);
+  assert.equal(await waiterOf(dir, dummy.pid), "none");
+
+  const orphaned = run(dir, ["hook", "--name", "peer-a", "--deadline-s", "30"], { input: HOOK_INPUT, env });
+  await until(async () => (await waiterOf(dir, dummy.pid)) === "armed", "armed waiter");
+  assert.equal((await run(dir, ["stop", "--owner-pid", String(dummy.pid)])).code, 0);
+  const quiet = await orphaned;
+  assert.equal(quiet.code, 0);
+  assert.equal(quiet.stdout + quiet.stderr, "");
+});
+
+test("hook exits 1 on bad arguments or an unresolvable owner, before arming", async (t) => {
+  const dir = await directory(t);
+  const dummy = owner(t);
+  for (const args of [["hook", "--name", "x"], ["hook", "--name", "x", "--deadline-s", "soon"]]) {
+    const bad = await run(dir, args, { input: HOOK_INPUT, env: { CLAUDE_PID: String(dummy.pid) } });
+    assert.equal(bad.code, 1);
+    assert.match(bad.stderr, /deadline-s/);
+  }
+  const dead = await run(dir, ["hook", "--name", "x", "--deadline-s", "1"], { input: HOOK_INPUT, env: { CLAUDE_PID: "999999999" } });
+  assert.equal(dead.code, 1);
+  assert.match(dead.stderr, /999999999/);
+  const unknown = await run(dir, ["hook", "--name", "x", "--deadline-s", "1"], { input: HOOK_INPUT });
+  assert.equal(unknown.code, 1);
+  assert.match(unknown.stderr, /CLAUDE_PID/);
+  assert.equal(await exists(join(dir, "bridges")), false);
+});
+
+test("only one hook waits per owner: a second exits 0 at once, and a new one arms after the first dies", async (t) => {
+  const dir = await directory(t);
+  const dummy = owner(t);
+  await bridge(t, dir, dummy.pid, "peer-a");
+  const record = async () => JSON.parse(await readFile(join(dir, "bridges", `${dummy.pid}.json`), "utf8"));
+  const hookProcess = () => {
+    const child = spawn(process.execPath, [BRIDGE, "hook", "--name", "peer-a", "--deadline-s", "30"], {
+      env: { ...process.env, PI_PEER_DIR: dir, CLAUDE_CODE_MESSAGING_SOCKET: "", CLAUDE_CODE_SESSION_ID: "", CLAUDE_PID: String(dummy.pid) },
+      stdio: ["pipe", "ignore", "ignore"],
+    });
+    child.stdin.end(HOOK_INPUT);
+    t.after(() => { child.kill("SIGKILL"); });
+    return child;
+  };
+  const first = hookProcess();
+  await until(async () => (await record()).waiterPid === first.pid, "first hook armed");
+  const began = Date.now();
+  const second = await run(dir, ["hook", "--name", "peer-a", "--deadline-s", "30"], { input: HOOK_INPUT, env: { CLAUDE_PID: String(dummy.pid) } });
+  assert.equal(second.code, 0);
+  assert.equal(second.stdout + second.stderr, "");
+  assert.ok(Date.now() - began < 5000);
+  assert.equal((await record()).waiterPid, first.pid);
+  assert.equal((await record()).waiter, "armed");
+
+  first.kill("SIGKILL");
+  await once(first, "exit");
+  const third = hookProcess();
+  await until(async () => (await record()).waiterPid === third.pid, "third hook armed");
+  third.kill("SIGTERM");
+  const [code] = await once(third, "exit");
+  assert.equal(code, 0);
+  const after = await record();
+  assert.equal(after.waiter, "none");
+  assert.equal(after.waiterPid, undefined);
+});
+
+test("send resolves the owner from CLAUDE_PID without a session registry", async (t) => {
+  const dir = await directory(t);
+  const dummy = owner(t);
+  await bridge(t, dir, dummy.pid);
+  const received: PeerMessage[] = [];
+  const reviewer = await startPeer({ directory: dir, sessionId: "r", name: "reviewer", cwd: "/r", receive: (message) => { received.push(message); } });
+  t.after(() => reviewer.close());
+  const sessions = await mkdtemp("/tmp/pi-peer-sessions-");
+  t.after(() => rm(sessions, { recursive: true, force: true }));
+  const sent = await run(dir, ["send", "--to", reviewer.self().address], { input: "via CLAUDE_PID", env: { CLAUDE_PID: String(dummy.pid), CLAUDE_SESSIONS_DIR: sessions } });
+  assert.equal(sent.code, 0, sent.stderr);
+  assert.equal(received[0]?.body, "via CLAUDE_PID");
+});
+
+function armedHook(t: Context, dir: string, ownerPid: number): ChildProcess & { pid: number } {
+  const child = spawn(process.execPath, [BRIDGE, "hook", "--name", "peer-a", "--deadline-s", "30"], {
+    env: { ...process.env, PI_PEER_DIR: dir, CLAUDE_CODE_MESSAGING_SOCKET: "", CLAUDE_CODE_SESSION_ID: "", CLAUDE_PID: String(ownerPid) },
+    stdio: ["pipe", "ignore", "ignore"],
+  });
+  child.stdin.end(HOOK_INPUT);
+  t.after(() => { child.kill("SIGKILL"); });
+  if (child.pid === undefined) throw new Error("hook did not start");
+  return Object.assign(child, { pid: child.pid });
+}
+
+test("a live hook keeps the waiter: wait and a second hook neither take nor clear it", async (t) => {
+  const dir = await directory(t);
+  const dummy = owner(t);
+  const { address } = await bridge(t, dir, dummy.pid, "peer-a");
+  const record = async () => JSON.parse(await readFile(join(dir, "bridges", `${dummy.pid}.json`), "utf8"));
+  const sender = await startPeer({ directory: dir, sessionId: "s", name: "reviewer", cwd: "/r", receive: () => {} });
+  t.after(() => sender.close());
+  const holder = armedHook(t, dir, dummy.pid);
+  await until(async () => (await record()).waiterPid === holder.pid, "hook armed");
+  holder.kill("SIGSTOP");
+  t.after(() => { holder.kill("SIGCONT"); });
+
+  const waiting = run(dir, ["wait", "--owner-pid", String(dummy.pid)]);
+  await sleep(300);
+  const forWait = await sender.send({ to: address, message: "for wait" });
+  const waited = await waiting;
+  assert.equal(waited.code, 0, waited.stderr);
+  assert.equal(waited.stdout, `${framed("reviewer", sender.self().address, forWait.messageId, "for wait")}\n`);
+  assert.equal((await record()).waiter, "armed");
+  assert.equal((await record()).waiterPid, holder.pid);
+
+  const forHook = await sender.send({ to: address, message: "for hook B" });
+  const second = await run(dir, ["hook", "--name", "peer-a", "--deadline-s", "30"], { input: HOOK_INPUT, env: { CLAUDE_PID: String(dummy.pid) } });
+  assert.equal(second.code, 2);
+  assert.equal(second.stderr, `${framed("reviewer", sender.self().address, forHook.messageId, "for hook B")}\n`);
+  assert.equal((await record()).waiter, "armed");
+  assert.equal((await record()).waiterPid, holder.pid);
+});
+
+test("a bridge that loses its control socket shuts down without touching the new owner's files", async (t) => {
+  const dir = await directory(t);
+  const dummy = owner(t);
+  const { address } = await bridge(t, dir, dummy.pid);
+  const recordPath = join(dir, "bridges", `${dummy.pid}.json`);
+  const bridgePid: number = JSON.parse(await readFile(recordPath, "utf8")).pid;
+  const control = join(dir, "bridges", `${dummy.pid}.ctl`);
+  await rm(control);
+  const usurper = createServer((socket) => { socket.end(); });
+  await new Promise<void>((resolveListen) => usurper.listen(control, resolveListen));
+  t.after(() => new Promise<void>((resolveClose) => usurper.close(() => resolveClose())));
+  await dead(bridgePid);
+  assert.equal(await exists(join(dir, `${address.slice(3)}.json`)), false);
+  assert.equal(await exists(control), true);
+  assert.equal(await exists(recordPath), true);
+});
+
+test("an internal error after arming resets the waiter and exits 0", async (t) => {
+  const dir = await directory(t);
+  const dummy = owner(t);
+  const { spool } = await bridge(t, dir, dummy.pid, "peer-a");
+  const hooked = run(dir, ["hook", "--name", "peer-a", "--deadline-s", "30"], { input: HOOK_INPUT, env: { CLAUDE_PID: String(dummy.pid) } });
+  await until(async () => (await waiterOf(dir, dummy.pid)) === "armed", "armed waiter");
+  const inbox = join(spool, "inbox");
+  await chmod(inbox, 0o000);
+  const result = await hooked;
+  await chmod(inbox, 0o700);
+  assert.equal(result.code, 0);
+  assert.equal(result.stdout, "");
+  assert.equal(await waiterOf(dir, dummy.pid), "none");
 });

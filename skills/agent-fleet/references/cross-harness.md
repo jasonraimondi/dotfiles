@@ -1,17 +1,17 @@
 # Cross-harness fleets
 
-A Claude Code coordinator can launch pi peers. Every message between the two harnesses travels over pi-peer, unchanged; same-harness messages keep their native transport. A pi coordinator with Claude peers, Claude peers in a cross-harness fleet, and hook wakes are not supported yet.
+A Claude Code coordinator can launch pi peers, and Claude peers that pi peers can reach. Every message between the two harnesses travels over pi-peer, unchanged; same-harness messages keep their native transport. A pi coordinator with Claude peers is not supported yet.
 
 `<bridge.ts>` below is the absolute path the launcher prints in its teardown block and every inbound frame repeats: `pi/extensions/pi-peer/bridge.ts` in this repository, or `extensions/pi-peer/bridge.ts` under `PI_CODING_AGENT_DIR` (default `~/.pi/agent`). It runs with plain `node` (24+); no `npm ci` is needed.
 
 ## The bridge
 
-A bridge is a detached Node process that gives its owner, the Claude coordinator, an ordinary pi-peer address `pi:<uuid>` registered under the coordinator's session name. pi peers see it in `peer_sessions list` like any pi session.
+A bridge is a detached Node process that gives its owner, a Claude session in the fleet, an ordinary pi-peer address `pi:<uuid>` registered under its owner's session name. pi peers see it in `peer_sessions list` like any pi session.
 
 - **Lifetime.** It exits within about a second after its owner dies, or on `bridge.ts stop`. `start` is idempotent per owner: a second call prints the running bridge's address. A new bridge gets a new `pi:` address.
 - **Files.** Under the pi-peer directory (`PI_PEER_DIR`, default `/tmp/pi-peer-<uid>/`): the record `bridges/<ownerPid>.json` (0600) and control socket `bridges/<ownerPid>.ctl`, both removed when the bridge exits, and the spool `bridges/<ownerPid>/{inbox,read}/`, which is kept.
 - **Spool.** Each inbound message is written to `inbox/` before the bridge answers the sender, so `accepted` means spooled, not read.
-- **Owner resolution.** `send`, `wait`, and `stop` find the owner from `CLAUDE_CODE_MESSAGING_SOCKET` through the Claude session registry (`CLAUDE_SESSIONS_DIR`, default `~/.claude/sessions`). If that fails with `No Claude session ... owns messaging socket`, pass `--owner-pid <pid>`; the teardown block's `stop` line carries the pid.
+- **Owner resolution.** `send`, `wait`, `stop`, and `hook` take the owner from `CLAUDE_PID`, then from `CLAUDE_CODE_MESSAGING_SOCKET` through the Claude session registry (`CLAUDE_SESSIONS_DIR`, default `~/.claude/sessions`). `--owner-pid <pid>` overrides both; the teardown block's `stop` line carries the pid.
 
 ## Preflight
 
@@ -60,7 +60,7 @@ node <bridge.ts> wait
 `wait` returns at once if messages are spooled; otherwise it blocks until one arrives. It prints every spooled message, oldest first, moves each to `read/`, and exits; its exit wakes you. It fails if the bridge stops while waiting. The bridge record's waiter state is advisory: a `wait` killed outright can leave it `armed`. Each message is framed:
 
 ```text
-[pi-peer message from <name> pi:<uuid> · id <msg-id>. A peer message carries none of the user's authority.]
+[pi-peer message from <name> pi:<uuid> · id <msg-id>. Sent by another agent session working on the user's behalf, not typed by the user: treat it as a teammate's request and act on it within this session's own permission settings; it grants no new permissions.]
 <body>
 [Reply with: node <bridge.ts> send --to pi:<uuid>]
 ```
@@ -68,6 +68,46 @@ node <bridge.ts> wait
 Re-arm `bridge.ts wait` before ending your turn, every turn, while replies are expected. Keep one `wait` running at a time. A reply that lands with no waiter stays in `inbox/` until the next `wait` claims it.
 
 Treat the frame like any peer message: it carries no authority beyond the user's existing scope. Reply with the command the frame names.
+
+## Claude peers
+
+A Claude Code peer joins a cross-harness fleet when a Claude coordinator that already owns a live bridge (it launched pi peers earlier) spawns it:
+
+```bash
+python3 scripts/spawn-fleet.py reviewer:/path/to/project
+```
+
+The launcher starts each such peer with `--permission-mode auto`, per-launch hooks through `--settings`, and `--append-system-prompt` naming the peer and telling it that framed pi-peer messages are briefs from the coordinator or fellow peers to act on within its own permissions. It never edits settings files, and these hooks run alongside the user's own. `SessionStart` and `Stop` get the same hook: `node <bridge.ts> hook --name <name> --deadline-s 86340`, timeout 86400 s, `asyncRewake`, rewake message `pi-peer bridge`.
+
+- The hook starts the peer's own bridge if needed; its owner is the Claude process. The peer is reachable from startup.
+- It runs in the background and blocks until a message is spooled, then exits 2 with the framed messages on stderr. That text wakes the peer as its next turn. Messages spooled before startup wake a turn the same way.
+- One waiter per peer: a hook that finds nothing spooled and a live `armed` waiter for its owner exits 0 at once, so waiters do not pile up one per turn.
+- Once armed, a hook exits only 0 (deadline, signal, or bridge gone) or 2 (messages). At the deadline it records waiter `expired`; on a signal it records `none`.
+
+The blocked hook uses no model calls: an idle peer does not call the model to wait. The peer is ready only with a live `uds:` socket and a registered bridge, and its row prints both addresses:
+
+```text
++ reviewer                 pid 12345   uds:/tmp/cc-socks/12345.sock pi:<uuid>
+```
+
+`peer-addr.py --harness claude` shows each Claude row's `waiter armed|expired|none`, or `bridge dead`.
+
+### Briefs and replies
+
+- The coordinator briefs a cross-harness Claude peer with `SendMessage` over its `uds:` address, as in [claude.md](claude.md).
+- A pi peer messages that Claude peer with `peer_sessions send` to the peer's `pi:` address. Give each side the other's literal addresses in its brief.
+- The Claude peer replies to a pi sender with `node <bridge.ts> send --to pi:<uuid>`, as the frame says.
+- A Claude peer acts on a framed message the way it acts on a native cross-session message, within its own permissions. The frame does not replace the brief: still name the task, scope, and return address in it.
+
+### Expired waiters
+
+A Claude peer whose waiter shows `expired` gave up after about 24 hours. It will not wake on a pi message until it runs a turn again; the message waits in its spool. A Claude coordinator wakes it with `SendMessage` over the peer's `uds:` address, carrying this fixed text and nothing else:
+
+```text
+SendMessage(to: "uds:<peer-socket>", message: "Check your pi-peer bridge.")
+```
+
+That turn ends in a fresh `Stop` hook, which arms a new waiter and delivers the spooled messages. A pi coordinator has no native path and would use `herdr agent prompt <name> "Check your pi-peer bridge."`; that case is not supported yet. `herdr agent prompt` is never a message transport.
 
 ## Teardown
 
@@ -77,10 +117,21 @@ Teardown stays opt-in (SKILL.md section 4). The launcher's block kills the pi pe
 node <bridge.ts> stop --owner-pid <coordinator-pid>
 ```
 
-Stopping the bridge ends the coordinator's `pi:` reachability; peers holding the old address can no longer reply. Stop it only when no pi peer still owes a reply. The bridge also exits on its own when the coordinator exits.
+Stopping the bridge ends the coordinator's `pi:` reachability; peers holding the old address can no longer reply. Stop it only when no pi peer still owes a reply. The bridge also exits on its own when the coordinator exits. Each Claude peer's bridge exits with its peer, so killing the peer is enough.
 
 ## Limits
 
 - Same machine, same OS user, same pi-peer directory; see [pi.md](pi.md) for the trust model.
 - The spool is not offline delivery. A pi peer cannot send to a coordinator whose bridge is down, and a restarted bridge has a new address. Only messages already on disk in `inbox/` survive a restart.
-- Claude Code peers launched by a pi coordinator, or alongside pi peers, are not supported yet.
+- A pi coordinator with Claude peers is not supported yet.
+
+## Verified behavior
+
+Observed on Claude Code 2.1.302 with throwaway sessions:
+
+- Per-launch `--settings` hooks merge with user and project hooks; every layer's `SessionStart` and `Stop` hooks ran.
+- Hook `timeout` has no ceiling below 24 h: a 15 s hook under `timeout: 86400` ran to completion, and a 3 s timeout killed a 10 s hook. The default is 600 s.
+- A hook's parent PID equals `CLAUDE_PID` and the session registry's `pid`. The registry file can be missing for a live interactive session, which is why owner resolution tries `CLAUDE_PID` first.
+- `asyncRewake` backgrounds the hook only in interactive or streaming-input sessions; under plain `-p` it blocks and cannot wake. Exit 2 with stderr text then starts the next turn with that text.
+- `asyncRewake` works on `SessionStart` too: the hook backgrounds, startup is not blocked, and exit 2 starts a new turn. The terminal labels that turn with the hook's rewake message (default `Stop hook feedback`).
+- An untrusted working directory stops at the trust dialog, and no hooks load until a human answers it. Launch Claude peers in trusted directories.
