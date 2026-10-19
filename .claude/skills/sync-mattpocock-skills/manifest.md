@@ -29,7 +29,6 @@ Paths are relative to this repo (local) and to the upstream repo root (upstream)
 
 ## Related, not tracked
 
-- `vendor/design-interface`: forked from upstream's former `design-an-interface`. Upstream folded it into `skills/engineering/codebase-design/DESIGN-IT-TWICE.md`. Compare for ideas, never overwrite.
 - `vendor-auto/resolving-merge-conflicts`: upstream removed it in v1.3. Kept locally on purpose.
 - `vendor/show-me`: credited to humanlayer, not upstream. Upstream's `skills/engineering/pr` adapts its Summary visuals and overlaps `skills/pr-template`. Compare for ideas.
 - `skills/agent-fleet`: overlaps upstream's `skills/in-progress/chief-of-staff` (one session coordinating subagents toward a long-running goal). Compare for ideas.
