@@ -1,79 +1,89 @@
 ---
 name: review-code
-description: "Reviews a diff. `quick` (default) fans out five parallel reviewers — correctness, tests, intent, standards & smells, modularity — and ends in a verdict with findings ranked by severity; use it for \"review this branch / these changes\" and after implementing work, before committing. `full` is eight reviewers plus a verifier, run only when named, for a final PR review. Single lenses: `security`, `architecture`, `merge-risk`, `intent`. Invoke as /review-code [<mode>] [<scope>]."
-argument-hint: "[quick|full|security|architecture|merge-risk|intent] [<scope>]"
+description: "Review the changes since a fixed point (commit, branch, tag, or merge-base) along two axes: Standards (does the code follow this repo's documented coding standards?) and Spec (does the code match what the originating issue/spec asked for?). Runs both reviews in parallel sub-agents and reports them side by side. Use when the user wants to review a branch, a PR, work-in-progress changes, or asks to \"review since X\"."
 ---
 
-# Code Review
+Two-axis review of the diff between `HEAD` and a fixed point the user supplies:
 
-A **mode** owns how the review runs. A **lens** owns what to look for. `report.md` owns what the report looks like. Modes compose lenses; four lenses are also worth running alone.
+- **Standards**: does the code conform to this repo's documented coding standards?
+- **Spec**: does the code faithfully implement the originating issue / spec?
 
-| Mode | Question it answers | File |
-|---|---|---|
-| `quick` *(default)* | what must I fix before I commit this | `modes/quick.md` |
-| `full` *(alias `multi`)* | is this pull request ready, verified | `modes/full.md` |
+Both axes run as **parallel sub-agents** so they don't pollute each other's context, then this skill aggregates their findings.
 
-| Lens | Question it answers | File |
-|---|---|---|
-| `security` | exploitable OWASP-style vulnerabilities, high-confidence only | `lenses/security.md` |
-| `architecture` | module depth, coupling, abstraction boundaries, layering | `lenses/architecture.md` |
-| `merge-risk` | shippability and reversibility — SHIP / SHIP WITH MITIGATIONS / HOLD / DO NOT MERGE | `lenses/merge-risk.md` |
-| `intent` *(alias `adversarial`)* | did the diff deliver what the contract promised | `lenses/intent.md` |
+The issue tracker should have been provided to you. If not, tell the user to run `/setup-matt-pocock-skills`.
 
-The other four lenses — `correctness`, `tests`, `standards`, `modularity` — run inside the modes.
+## Process
 
-## Dispatch
+### 1. Pin the fixed point
 
-`/review-code [<mode>] [<scope>]`. **No mode means `quick`.**
+Whatever the user said is the fixed point (a commit SHA, branch name, tag, `main`, `HEAD~5`, etc.). If they didn't specify one, ask for it.
 
-Match the user's phrasing to a mode or lens:
+Capture the diff command once: `git diff <fixed-point>...HEAD` (three-dot, so the comparison is against the merge-base). Also note the list of commits via `git log <fixed-point>..HEAD --oneline`.
 
-- "review this branch" / "review my changes" / finishing an implementation → `quick`
-- "full review" / "multi-agent" / final review of a PR → `full`
-- "security review" / "find vulnerabilities" → `security`
-- "architecture review" → `architecture`
-- "is this safe to merge" → `merge-risk`
-- "audit against the PR description" / "adversarial review" → `intent`
+Before going further, confirm the fixed point resolves (`git rev-parse <fixed-point>`) and the diff is non-empty. A bad ref or empty diff should fail here, not inside two parallel sub-agents.
 
-Then **load the file and follow it**. If the phrasing is genuinely ambiguous, run `quick` and say so — it's the cheap answer, and it names what it skipped.
+### 2. Identify the spec source
 
-## Shared: Resolve scope
+Look for the originating spec, in this order:
 
-Resolve once, and pass the resolution verbatim to every agent a mode dispatches, so they all review the same code at the same ref.
+1. Issue references in the commit messages (`#123`, `Closes #45`, GitLab `!67`, etc.), fetched via the workflow in the tracker doc.
+2. A path the user passed as an argument.
+3. A spec file under `docs/`, `specs/`, or `.scratch/` matching the branch name or feature.
+4. If nothing is found, ask the user where the spec is. If they say there isn't one, the **Spec** sub-agent will skip and report "no spec available".
 
-1. **Explicit argument** — a PR number or URL (see *Pull requests* below); a branch or commit ref (`git diff $(git merge-base HEAD <ref>)...HEAD`); or file paths, taken as given.
-2. **No argument, dirty working tree** — `git diff`, `git diff --staged`, and the untracked files from `git ls-files --others --exclude-standard`. A new file appears in no diff, and it's the code most worth reviewing.
-3. **No argument, clean tree** — the branch against its base: detect the default branch (`gh repo view --json defaultBranchRef -q .defaultBranchRef.name`, else `git symbolic-ref refs/remotes/origin/HEAD`), then `git diff $(git merge-base HEAD <base>)...HEAD`.
+### 3. Identify the standards sources
 
-**Pull requests** are read at their head, from a ref, with the working tree left as it is — the checkout holds some other branch, and a file opened from disk is the wrong code.
+Search the repo for every file that documents how code should be written. When `CODING_STANDARDS.md` or `CONTRIBUTING.md` exists, it must be on the list.
 
-- Metadata: `gh pr view <n> --json title,body,baseRefName,headRefName,headRefOid,files,commits,comments,reviews,mergeStateStatus,statusCheckRollup`. The comments and reviews say what has already been raised.
-- Refs: `git fetch origin <base> +pull/<n>/head:refs/review/pr-<n>`.
-- Diff: `git diff origin/<base>...refs/review/pr-<n>`.
-- Files: `git show refs/review/pr-<n>:<path>`.
+On top of whatever the repo documents, the Standards axis always carries the **smell baseline** below: a fixed set of Fowler code smells (_Refactoring_, ch.3) that applies even when a repo documents nothing. Two rules bind it:
 
-The resolution becomes the report's `Scope:` line: the diff command, the head SHA, the commit and file counts, how the code was read, and what was and was not run. `full` and the single lenses may ask when the scope is genuinely ambiguous.
+- **The repo overrides.** A documented repo standard always wins; where it endorses something the baseline would flag, suppress the smell.
+- **Always a judgement call.** Each smell is a labelled heuristic ("possible Feature Envy"), never a hard violation. Like any standard here, skip anything tooling already enforces.
 
-## Shared: Fan-out
+Each smell reads *what it is* → *how to fix*; match it against the diff:
 
-For the modes that dispatch reviewers:
+- **Mysterious Name**: a function, variable, or type whose name doesn't reveal what it does or holds. → rename it; if no honest name comes, the design's murky.
+- **Duplicated Code**: the same logic shape appears in more than one hunk or file in the change. → extract the shared shape, call it from both.
+- **Feature Envy**: a method that reaches into another object's data more than its own. → move the method onto the data it envies.
+- **Data Clumps**: the same few fields or params keep travelling together (a type wanting to be born). → bundle them into one type, pass that.
+- **Primitive Obsession**: a primitive or string standing in for a domain concept that deserves its own type. → give the concept its own small type.
+- **Repeated Switches**: the same `switch`/`if`-cascade on the same type recurs across the change. → replace with polymorphism, or one map both sites share.
+- **Shotgun Surgery**: one logical change forces scattered edits across many files in the diff. → gather what changes together into one module.
+- **Divergent Change**: one file or module is edited for several unrelated reasons. → split so each module changes for one reason.
+- **Speculative Generality**: abstraction, parameters, or hooks added for needs the spec doesn't have. → delete it; inline back until a real need shows.
+- **Message Chains**: long `a.b().c().d()` navigation the caller shouldn't depend on. → hide the walk behind one method on the first object.
+- **Middle Man**: a class or function that mostly just delegates onward. → cut it, call the real target direct.
+- **Refused Bequest**: a subclass or implementer that ignores or overrides most of what it inherits. → drop the inheritance, use composition.
 
-- **One message, every agent.** Separate messages run sequentially and throw away the parallelism that is the whole point.
-- **Each agent reads its own brief.** Hand it the lens file's path and `report.md`'s, relative to this skill's base directory, rather than pasting the contents — the brief stays out of the dispatcher's context.
-- **The same resolved scope, verbatim, for everyone** — reviewers and verifier alike, so every finding refers to the same code at the same ref.
-- **An agent that fails or returns nothing gets named on the report's `Reviewers:` line.** A missing reviewer reads as a clean axis, which is the one way this can lie.
-- **Without the Agent tool** — you are already inside a subagent — work the briefs one after another in this context and put `Fan-out unavailable — reviewers run sequentially.` on the `Reviewers:` line.
+### 4. Spawn both sub-agents in parallel
 
-## Shared: Report shape
+Issue both sub-agent calls together, in the foreground, and aggregate the reports they return.
 
-`report.md` holds the report shape, the finding anatomy, and the severity scale. Every mode reports in it, and so does a lens invoked directly, unless the lens defines its own template.
+**Standards sub-agent prompt** should include:
 
-## Shared: Common rules
+- The full diff command and commit list.
+- The list of standards-source files you found in step 3, **plus the smell baseline from step 3** pasted in full (the sub-agent has no other access to it).
+- The brief: "Report, per file/hunk where relevant, (a) every place the diff violates a documented standard: cite the standard (file + the rule); and (b) any baseline smell you spot: name it and quote the hunk. Distinguish hard violations from judgement calls: documented-standard breaches can be hard, but baseline smells are always judgement calls, and a documented repo standard overrides the baseline. Skip anything tooling enforces. Under 400 words."
 
-Every mode and lens, unless it overrides:
+**Spec sub-agent prompt** should include:
 
-- **Report only.** Leave the edits, the commit, and the push to the caller — a review that changes the code makes its own findings unfalsifiable.
-- **The user submits reviews, not you.** Never run `gh pr review`, `gh pr comment`, `gh pr merge`, or `gh pr approve`.
-- Cite `file:line` for every code-level claim, and name the symbol or quote the expression the claim rests on.
-- Say what's uncertain rather than guessing past it: inside the finding, or under *Could not verify*.
-- Stay inside the diff. Unchanged code is in scope only where the change makes it wrong.
+- The diff command and commit list.
+- The path or fetched contents of the spec.
+- The brief: "Report: (a) requirements the spec asked for that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep); (c) requirements that look implemented but where the implementation looks wrong. Quote the spec line for each finding. Under 400 words."
+
+If the spec is missing, skip the Spec sub-agent and note this in the final report.
+
+### 5. Aggregate
+
+Present the two reports under `## Standards` and `## Spec` headings, verbatim or lightly cleaned. Do **not** merge or rerank findings, because the two axes are deliberately separate (see _Why two axes_).
+
+End with a one-line summary: total findings per axis, and the worst issue _within each axis_ (if any). Don't pick a single winner across axes: that's the reranking the separation exists to prevent.
+
+## Why two axes
+
+A change can pass one axis and fail the other:
+
+- Code that follows every standard but implements the wrong thing → **Standards pass, Spec fail.**
+- Code that does exactly what the issue asked but breaks the project's conventions → **Spec pass, Standards fail.**
+
+Reporting them separately stops one axis from masking the other.
