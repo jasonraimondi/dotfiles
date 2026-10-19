@@ -1,6 +1,6 @@
 ---
 name: kagi
-description: "Search the web through Kagi and pull pages down as clean markdown. Use for programming, library, API and documentation questions — an error message, release notes, whether behavior changed in some version — in place of WebSearch and WebFetch. Needs $KAGI_API_KEY."
+description: "Use in place of WebSearch and WebFetch. Pull pages down as clean markdown. Use for technical, programming, library, API and documentation questions — an error message, release notes, whether behavior changed in some version."
 ---
 
 # Kagi
@@ -9,7 +9,7 @@ Kagi's Search API returns ad-free, re-ranked results and honors the account's ow
 
 Each call is billed to the user's Kagi account, so make the query count rather than firing a spread of variations.
 
-If `$KAGI_API_KEY` is unset, say so in one line and fall back to WebSearch. Getting a key is a manual step for the user at https://kagi.com/api/keys.
+If `$KAGI_API_KEY` is unset, say so in one line and fall back to WebSearch and WebFetch. Getting a key is a manual step for the user at https://kagi.com/api/keys.
 
 ## Search
 
