@@ -17,10 +17,13 @@ Use the naming rules from `SKILL.md` throughout, so the document, the code, and 
 
 ## Transition table
 
-One row per transition. A transition with a guard gets its own row per guard outcome when the outcomes lead to different states.
+One row per transition. A transition with a guard gets its own row per guard outcome when the outcomes lead to different states. Substates of a composite state are written `Parent.Child`.
 
 | From | Event | Guard | Action | To |
 |------|-------|-------|--------|----|
+| Draft.Empty | itemAdded | | | Draft.HasItems |
+| Draft.HasItems | itemAdded | | | Draft.HasItems |
+| Draft.HasItems | lastItemRemoved | | | Draft.Empty |
 | Draft | orderPlaced | hasItems | | Submitted |
 | Draft | cancellationRequested | | | Cancelled |
 | Submitted | paymentReceived | paymentValid | storePaymentId | Paid |
@@ -46,7 +49,7 @@ Renders inline in GitHub, Linear, and Notion markdown, so it is the default for 
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Draft : orderCreated
+    [*] --> Draft
 
     state Draft {
         direction LR
@@ -87,7 +90,7 @@ Needs a renderer, but carries entry and exit actions inline on the state, so one
 @startuml
 title Order State Machine
 
-[*] --> Draft : orderCreated
+[*] --> Draft
 
 state Draft {
   Draft : entry / initializeOrder

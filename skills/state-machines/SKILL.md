@@ -138,7 +138,7 @@ function transition(current: OrderStatus, event: OrderEvent): OrderStatus {
 
 ### Library Implementations
 
-When the machine needs context, guards with side effects, nested or parallel states, or delayed transitions, implement it with a statechart library. Each library has its own how-to under `libraries/`, covering the machine definition, testing, and a library-specific checklist:
+When the machine needs context, guards over context, nested or parallel states, or delayed transitions, implement it with a statechart library. Each library has its own how-to under `libraries/`, covering the machine definition, testing, and a library-specific checklist:
 
 - [libraries/xstate.md](libraries/xstate.md): XState v5
 

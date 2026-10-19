@@ -1,6 +1,6 @@
 # Design Principles
 
-The ideas behind the rules in `SKILL.md`, with where each comes from. Read when a decision needs more than the rule: whether to nest, whether to split into regions, how to argue a machine is complete, or which implementation shape fits.
+The ideas behind the rules in `SKILL.md`. Read when a decision needs more than the rule: whether to nest, whether to split into regions, how to argue a machine is complete, or which implementation shape fits.
 
 ## State is compressed history
 
@@ -41,15 +41,3 @@ Keep the semantic model (states, events, transitions, actions) as plain data, in
 - **Transition table**: the default. Flat machine, few actions, no per-state behaviour.
 - **State pattern**, one class per state: when behaviour differs per state and states are many or change often. Overkill for a handful of stable states (Gamma et al.).
 - **Statechart library**: when the design uses hierarchy, regions, delays, or guards over context. See `libraries/`.
-
-## Sources
-
-- Harel, *Statecharts: A Visual Formalism for Complex Systems*, Science of Computer Programming 8 (1987). Hierarchy, orthogonal regions, broadcast communication.
-- Samek, *Practical UML Statecharts in C/C++* (2nd ed. 2011). Lecture summary: https://www.cis.upenn.edu/~lee/06cse480/lec-HSM.pdf
-- Lamport, *Computation and State Machines* (2008): https://lamport.azurewebsites.net/pubs/state-machine.pdf
-- Martin, *Pickled State* (2018): https://blog.cleancoder.com/uncle-bob/2018/06/06/PickledState.html. The three-level FSM and the State Machine Compiler are in *Agile Principles, Patterns, and Practices* ch. 15.
-- Gamma, Helm, Johnson, Vlissides, *Design Patterns* (1994), State. Summary: https://refactoring.guru/design-patterns/state
-- Fowler, *Domain-Specific Languages* (2010). The secret-panel state machine is the running example.
-- Yacoub and Ammar, *Finite State Machine Patterns* (EuroPLoP 1998): https://community.wvu.edu/~hhammar/EuroPLoP98.htm. A pattern catalog for implementation decisions.
-- Horrocks, *Constructing the User Interface with Statecharts* (1999). Statecharts as the control layer between UI and model.
-- Stately, *What is a state machine?*: https://stately.ai/blog/2023-10-02-what-is-a-state-machine

@@ -22,6 +22,7 @@ type OrderEvent =
   | { type: 'ORDER_PLACED' }
   | { type: 'PAYMENT_RECEIVED'; paymentId: string }
   | { type: 'CANCELLATION_REQUESTED' }
+  | { type: 'CHANGES_REQUESTED' }
   | { type: 'DISPATCHED'; trackingNumber: string }
   | { type: 'DELIVERY_CONFIRMED' }
   | { type: 'RETURN_REQUESTED' }
@@ -79,6 +80,7 @@ const orderMachine = createMachine({
           target: 'cancelled',
           actions: 'releaseInventory',
         },
+        CHANGES_REQUESTED: 'draft',
       },
     },
 
