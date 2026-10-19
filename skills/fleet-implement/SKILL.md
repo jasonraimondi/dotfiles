@@ -15,14 +15,14 @@ This session is the coordinator. It plans, briefs, relays, integrates, and repor
 
 Claude peers (default harness; the model is the alias after `@`):
 
-- `fable` — ambiguous specs, cross-module design, work where the shape of the interface is still open. One per fleet at most.
+- `fable` — ambiguous specs, cross-module design, work where the shape of the interface is still open.
 - `opus` — default implementer for tracks with design judgment.
 - `sonnet` — well-specified mechanical tracks: a known pattern applied to new files, DTO and schema work, test fixtures.
 - `haiku` — trivial one-file changes and renames. Implementer only.
 
 GPT peers (`--peer-harness pi`; the model is `openai-codex/<id>[:thinking]`):
 
-- `gpt-6-astra:high` — deepest adversarial auditor: plan critique, intent audit of the riskiest track. One per fleet, audit only.
+- `gpt-6-astra:high` — deepest adversarial auditor: plan critique, intent audit of the riskiest track.
 - `gpt-6.1-sol:high` — default auditor: feasibility and fact-checks against the code, 500k context for large diffs, catches invented behaviour and unverified claims.
 - `gpt-5.6-terra` — previous-generation mid tier, the fallback when sol is unavailable.
 - `gpt-6-luna` — cheapest: checklist sweeps, log and output summarising. Implementer-side chores only.
