@@ -12,7 +12,7 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 
 # --- sources -----------------------------------------------------------------
 # Personal skills live under ./skills/, vendored (downloaded) skills under
-# ./vendor/ and ./vendor-auto/. All get linked into the agent skill
+# ./vendor/, ./vendor-auto/ and ./vendor-mattpocock/. All get linked into the agent skill
 # directories. On name collision, the earlier source wins (the later entry is
 # skipped with a warning).
 SKILLS_SOURCES=(
@@ -21,6 +21,7 @@ SKILLS_SOURCES=(
   "$SCRIPT_DIR/skills-for-work"
   "$SCRIPT_DIR/vendor"
   "$SCRIPT_DIR/vendor-auto"
+  "$SCRIPT_DIR/vendor-mattpocock"
 )
 SKILL_MARKER="SKILL.md"                       # a dir is a skill iff it has this
 AGENT_MD_SOURCE="$SCRIPT_DIR/AGENT.md"

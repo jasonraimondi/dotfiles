@@ -12,7 +12,7 @@ Clone upstream with full history into the scratchpad: `git clone --filter=blob:n
 
 ## 2. Classify drift
 
-For each manifest row, `diff -r` the upstream folder against the local one, then subtract the row's listed divergences and the bucket invariant below. What remains is **drift**. Read `git log <last-synced>..origin/main` and the `.changeset/` and `CHANGELOG.md` entries for the intent behind each drift.
+For each manifest row, `diff -r` the upstream folder against the local one, then subtract the row's listed divergences and the invocation invariant below. What remains is **drift**. Read `git log <last-synced>..origin/main` and the `.changeset/` and `CHANGELOG.md` entries for the intent behind each drift.
 
 Also report, without acting:
 
@@ -24,13 +24,13 @@ Stop here and present the report: per skill, the drift and the upstream reason. 
 
 ## 3. Apply
 
-For each skill taken, copy the upstream files over the local folder, then reapply that row's divergences and the bucket invariant. A divergence that no longer applies upstream (the change landed there) comes out of the manifest.
+For each skill taken, copy the upstream files over the local folder, then reapply that row's divergences and the invocation invariant. A divergence that no longer applies upstream (the change landed there) comes out of the manifest.
 
-**Bucket invariant**: `vendor/` skills are user-invoked and carry `disable-model-invocation: true` in `SKILL.md` and `policy.allow_implicit_invocation: false` in `agents/openai.yaml`. `vendor-auto/` skills carry neither. Upstream's own invocation choice never overrides the bucket.
+**Invocation invariant**: everything lives in `vendor-mattpocock/`, and `setup.sh` leaves its frontmatter alone, so each skill keeps the invocation choice it has locally. User-invoked skills (`grill-me`, `grill-with-docs`, `teach`, `to-questionnaire`, `wait-what`, `wizard`) carry `disable-model-invocation: true` in `SKILL.md` and `policy.allow_implicit_invocation: false` in `agents/openai.yaml`. The rest carry neither. Upstream's own invocation choice never overrides the local one.
 
 Rewrite operative skill-to-skill references to local names where they differ (upstream `code-review` is `review-code` here).
 
-A new skill goes in `vendor/` or `vendor-auto/` by invocation policy, with a new manifest row.
+A new skill goes in `vendor-mattpocock/` with its invocation choice set in the frontmatter, and a new manifest row.
 
 ## 4. Record
 
