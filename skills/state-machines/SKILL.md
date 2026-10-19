@@ -136,13 +136,14 @@ function transition(current: OrderStatus, event: OrderEvent): OrderStatus {
 }
 ```
 
-### Library Implementations
+### Framework and Library How-tos
 
-When the machine needs context, guards over context, nested or parallel states, or delayed transitions, implement it with a statechart library. Each library has its own how-to under `libraries/`, covering the machine definition, testing, and a library-specific checklist:
+The transition map above covers a flat machine with no context. Beyond that, each target has its own how-to under `libraries/`, covering the machine definition, testing, and a target-specific checklist:
 
-- [libraries/xstate.md](libraries/xstate.md): XState v5
+- [libraries/react.md](libraries/react.md): React `useReducer`, no library. Context, guards, and nesting in a plain reducer.
+- [libraries/xstate.md](libraries/xstate.md): XState v5. Parallel states, delayed transitions, actors.
 
-Add a new library as `libraries/<name>.md` with the same three sections, built on the same order lifecycle so the how-tos stay comparable.
+Add a new target as `libraries/<name>.md` with the same three sections, built on the same order lifecycle so the how-tos stay comparable.
 
 ## Testing State Machines
 
@@ -245,4 +246,4 @@ describe('order state machine', () => {
 4. **Path coverage**: test every reachable path from initial to each final state
 5. **Exhaustive invalid transitions**: for every `(state, event)` pair not in the valid set, assert rejection
 
-Library-specific strategies (action spies, delay overrides, model-based testing) live in the library's how-to under `libraries/`.
+Target-specific strategies (reducer identity checks, action spies, delay overrides, model-based testing) live in the how-tos under `libraries/`.

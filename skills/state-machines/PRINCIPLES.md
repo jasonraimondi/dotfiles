@@ -40,4 +40,4 @@ Keep the semantic model (states, events, transitions, actions) as plain data, in
 
 - **Transition table**: the default. Flat machine, few actions, no per-state behaviour.
 - **State pattern**, one class per state: when behaviour differs per state and states are many or change often. Overkill for a handful of stable states (Gamma et al.).
-- **Statechart library**: when the design uses hierarchy, regions, delays, or guards over context. See `libraries/`.
+- **Reducer or statechart library**: when the design uses context, guards, hierarchy, regions, or delays. A plain reducer carries the first three; regions and delays want a library. See `libraries/`.
