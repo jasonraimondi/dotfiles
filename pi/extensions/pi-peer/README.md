@@ -4,7 +4,7 @@ Small local messaging extension for independent Pi sessions. Uses Pi's first-par
 
 ## Install
 
-Requires macOS/Linux, Node 22.18+, and Pi 0.85.1 (the tested version).
+Requires macOS/Linux, Node 22.18+, and Pi 1.3.0 (the tested version).
 
 From this directory:
 

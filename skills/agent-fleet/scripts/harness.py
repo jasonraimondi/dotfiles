@@ -1,6 +1,7 @@
 """Harness selection and pi-peer discovery; Claude keeps its native registry."""
 
 import functools
+import glob
 import json
 import os
 from pathlib import Path
@@ -27,32 +28,63 @@ def pi_directory():
     return os.path.abspath(os.environ.get("PI_PEER_DIR") or f"/tmp/pi-peer-{os.getuid()}")
 
 
-@functools.cache
-def bridge_node():
-    """Absolute path of the Node that runs bridge.ts: PI_PEER_NODE, else PATH's node. Raises RuntimeError when missing or older than 22.18."""
-    minimum = ".".join(map(str, MIN_BRIDGE_NODE))
-    needs = f"pi-peer bridge needs Node {minimum}+"
-    candidate = os.environ.get("PI_PEER_NODE") or "node"
-    found = shutil.which(candidate)
-    if not found:
-        raise RuntimeError(f"{needs}; {candidate} not found. Set PI_PEER_NODE to a Node {minimum}+ binary.")
-    found = os.path.abspath(found)
+# Where version managers keep Node builds, searched when PATH's node is too old for the bridge.
+NODE_INSTALL_GLOBS = (
+    "~/.proto/tools/node/*/bin/node",
+    "~/.local/share/mise/installs/node/*/bin/node",
+    "~/.nvm/versions/node/*/bin/node",
+    "~/.volta/tools/image/node/*/bin/node",
+    "~/.fnm/node-versions/*/installation/bin/node",
+    "/opt/homebrew/opt/node*/bin/node",
+    "/usr/local/opt/node*/bin/node",
+)
+
+
+def node_version(binary):
+    """(execPath, (major, minor), 'x.y.z') of the Node a binary or shim runs, or None when it cannot say."""
     # Version-manager shims choose a Node per working directory, so keep the binary this one chose.
-    probe = [found, "-p", "process.execPath + '\\n' + process.versions.node"]
+    probe = [binary, "-p", "process.execPath + '\\n' + process.versions.node"]
     try:
         result = subprocess.run(probe, capture_output=True, text=True, timeout=10)
-        reason = result.stderr.strip() or f"exit {result.returncode}"
-    except (OSError, subprocess.TimeoutExpired) as error:
-        reason = str(error)
-        result = None
-    lines = result.stdout.splitlines() if result and result.returncode == 0 else []
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    lines = result.stdout.splitlines() if result.returncode == 0 else []
     match = re.fullmatch(r"(\d+)\.(\d+)\.\d+", lines[1]) if len(lines) == 2 else None
     if not match:
-        raise RuntimeError(f"{needs}; {found} could not report its version: {reason}. Set PI_PEER_NODE to a newer node.")
-    path, version = lines
-    if (int(match[1]), int(match[2])) < MIN_BRIDGE_NODE:
-        raise RuntimeError(f"{needs}; {path} is v{version}. Set PI_PEER_NODE to a newer node.")
-    return path
+        return None
+    return lines[0], (int(match[1]), int(match[2])), lines[1]
+
+
+def installed_nodes():
+    for pattern in NODE_INSTALL_GLOBS:
+        for binary in glob.glob(os.path.expanduser(pattern)):
+            if os.access(binary, os.X_OK):
+                yield binary
+
+
+@functools.cache
+def bridge_node():
+    """Absolute path of the Node that runs bridge.ts.
+
+    PI_PEER_NODE wins when set. Otherwise PATH's node, and when that is missing
+    or older than 22.18, the newest qualifying Node a version manager has
+    installed. Raises RuntimeError when none qualifies.
+    """
+    minimum = ".".join(map(str, MIN_BRIDGE_NODE))
+    needs = f"pi-peer bridge needs Node {minimum}+"
+    pinned = os.environ.get("PI_PEER_NODE")
+    candidate = shutil.which(pinned or "node")
+    probed = node_version(os.path.abspath(candidate)) if candidate else None
+    if probed and probed[1] >= MIN_BRIDGE_NODE:
+        return probed[0]
+    if pinned:
+        reason = f"{candidate or pinned} is v{probed[2]}" if probed else f"{candidate or pinned} is not a usable Node"
+        raise RuntimeError(f"{needs}; {reason}. Set PI_PEER_NODE to a newer node.")
+    qualifying = [found for found in map(node_version, installed_nodes()) if found and found[1] >= MIN_BRIDGE_NODE]
+    if qualifying:
+        return max(qualifying, key=lambda found: tuple(int(part) for part in found[2].split(".")))[0]
+    reason = f"PATH's node is v{probed[2]}" if probed else "no usable node on PATH"
+    raise RuntimeError(f"{needs}; {reason} and no newer install was found. Set PI_PEER_NODE to a Node {minimum}+ binary.")
 
 
 def bridge_for(pid):

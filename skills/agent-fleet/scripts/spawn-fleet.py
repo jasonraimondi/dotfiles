@@ -22,6 +22,7 @@ HERDR_NAME = re.compile(r"^[a-z][a-z0-9_-]{0,31}$")
 ADDR_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "peer-addr.py")
 HOOK_TIMEOUT_S = 86400
 HOOK_DEADLINE_MARGIN_S = 60
+HERDR_AGENT_START_MAX_MS = 300_000
 
 
 def herdr(*args, timeout=30):
@@ -189,8 +190,34 @@ def label_panes(specs, panes):
             print(f"note: could not label pane {pane}: {error}", file=sys.stderr)
 
 
+def shell_at_prompt(pane):
+    """True once the pane's shell is the only foreground process: its startup files have finished."""
+    info = herdr("pane", "process-info", "--pane", pane).get("process_info", {})
+    shell = info.get("shell_pid")
+    foreground = [process.get("pid") for process in info.get("foreground_processes", [])]
+    return bool(shell) and info.get("foreground_process_group_id") == shell and foreground == [shell]
+
+
+def wait_for_shell_prompt(pane, deadline):
+    """Block until the pane is at its interactive prompt, which `herdr agent start` requires.
+
+    Keystrokes typed while the shell is still running its startup files land in
+    the tty's canonical line buffer, which macOS caps at 1024 bytes and silently
+    truncates. A bridged Claude command is longer than that, so typing early
+    leaves a half-typed command at the prompt and no agent.
+    """
+    settled = 0
+    while time.monotonic() < deadline:
+        settled = settled + 1 if shell_at_prompt(pane) else 0
+        if settled == 2:
+            return
+        time.sleep(0.2)
+    raise RuntimeError(f"pane {pane} did not reach its shell prompt in time; inspect it with: herdr pane read {pane}")
+
+
 def start_agent(name, pane, harness, permission_mode, extra, timeout_ms, settings=None, system_prompt=None, model=None):
     """Start an independent session without borrowing another harness's flags."""
+    timeout_ms = min(timeout_ms, HERDR_AGENT_START_MAX_MS)
     native = ["--name", name]
     if harness == "claude":
         native += ["--permission-mode", permission_mode or "auto"]
@@ -371,6 +398,8 @@ def main():
                 raise RuntimeError("Fleet startup deadline expired")
             settings = claude_peer_settings(name, peer_bridge) if bridged_peers else None
             system_prompt = claude_peer_system_prompt(name) if bridged_peers else None
+            wait_for_shell_prompt(pane, deadline)
+            remaining = deadline - time.monotonic()
             start_agent(name, pane, peer_harness, args.permission_mode, extra, max(1, int(remaining * 1000)),
                         settings, system_prompt, model or args.model)
 

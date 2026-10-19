@@ -64,6 +64,10 @@ python3 scripts/peer-inbox.py \
 
 The helper accepts only events marked `origin.kind: peer` with a verified peer PID, and `--from-pid` matches that transport-recorded PID rather than the sender's display name. This is provenance within Claude's transcript, not protection against a local user editing their own files. `peer-addr.py` prints it on every row. Use `--json` when another tool consumes the result, or `--session-id` when the registry entry is already gone.
 
+## The launch timed out and the pane shows a half-typed `claude` command
+
+The command was typed before the shell finished its startup files. Until the shell's line editor takes over, the tty buffers typed input in canonical mode, which macOS caps at 1024 bytes and truncates without a sound. A bridged Claude command is longer than that, so its tail, including the Enter, never arrives, and `herdr agent start` waits for an agent that never starts. `spawn-fleet.py` waits for each pane's prompt before typing. Launching by hand in a pane whose shell runs direnv or dotfiles on startup: wait for the prompt, or press Ctrl-C to clear the fragment and run the command again.
+
 ## CLI traps
 
 - `claude agents` needs a TTY. Use `claude agents --json` for scripts. The list contains your own session — check the pid before you kill a process.

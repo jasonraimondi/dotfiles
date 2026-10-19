@@ -14,7 +14,7 @@ Read this when you choose a `spawn-fleet.py` placement, need a non-default flag,
 - `--model <model>` — model for every peer without its own `NAME:DIR@MODEL`, interpreted by the peer harness
 - `--agent-arg=<flag>` — repeatable native argument; use `=` for values beginning with `--`
 - `--claude-arg=<flag>` — legacy Claude-only alias for native arguments
-- `--timeout <seconds>` — shared agent-startup and messaging-readiness budget (default 120); layout creation uses separate bounded Herdr calls
+- `--timeout <seconds>` — shared budget for waiting on each pane's shell prompt, agent startup, and messaging readiness (default 120); each `herdr agent start` inside it is capped at Herdr's 300 s maximum, and layout creation uses separate bounded Herdr calls
 - `--permission-mode <mode>` — Claude-only, defaults to `auto`; read `references/claude.md` first
 
 Herdr splits `right` or `down` only. There is no `left` or `up`.
