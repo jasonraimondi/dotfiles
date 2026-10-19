@@ -42,7 +42,7 @@ Client state is a **state machine** run through `useReducer`: a discriminated un
 - Each state carries only the data that is meaningful in it: `{ status: "confirming"; inviteId }` has an id because only confirming needs one.
 - Server state and mutation status stay in react-query; the machine holds what the user is doing.
 - `useState` is for one independent value, like a search string. The moment a second value depends on it, or a boolean is only meaningful in some modes, it becomes a machine.
-- A machine with nested or parallel states, guards, or a lifecycle that needs specifying gets designed with the `design-state-machine` skill before the reducer is written.
+- A machine with nested or parallel states, guards, or a lifecycle that needs specifying gets designed with the `state-machines` skill before the reducer is written.
 
 ## Performance
 
