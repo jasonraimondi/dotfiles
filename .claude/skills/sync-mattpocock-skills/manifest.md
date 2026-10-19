@@ -23,6 +23,7 @@ Paths are relative to this repo (local) and to the upstream repo root (upstream)
 | `vendor-mattpocock/prototype` | `skills/engineering/prototype` | none |
 | `vendor-mattpocock/tdd` | `skills/engineering/tdd` | `code-review` reference renamed to `review-code` |
 | `vendor-mattpocock/grilling` | `skills/productivity/grilling` | extended with "Frame the questions that need it", "Keep a decision log" (`references/decision-log.md`) and "Close with a handoff" (`references/handoff.md`) |
+| `vendor-mattpocock/review-code` | `skills/engineering/code-review` | renamed: frontmatter `name` is `review-code` |
 | `vendor-mattpocock/writing-for-agents` | `skills/productivity/writing-for-agents` | none |
 | `dev/research` | `skills/engineering/research` | none |
 
@@ -30,6 +31,5 @@ Paths are relative to this repo (local) and to the upstream repo root (upstream)
 
 - `vendor/design-interface`: forked from upstream's former `design-an-interface`. Upstream folded it into `skills/engineering/codebase-design/DESIGN-IT-TWICE.md`. Compare for ideas, never overwrite.
 - `vendor-auto/resolving-merge-conflicts`: upstream removed it in v1.3. Kept locally on purpose.
-- `skills/review-code`: independent design that took over upstream `code-review`'s role. Compare for ideas, never overwrite.
 - `vendor/show-me`: credited to humanlayer, not upstream. Upstream's `skills/engineering/pr` adapts its Summary visuals and overlaps `skills/pr-template`. Compare for ideas.
 - `skills/agent-fleet`: overlaps upstream's `skills/in-progress/chief-of-staff` (one session coordinating subagents toward a long-running goal). Compare for ideas.
