@@ -1,6 +1,6 @@
 ---
 name: fleet-implement
-description: Implement a spec with an agent fleet in Herdr tabs - Claude implementers running /implement, GPT adversarial auditors, this session as coordinator.
+description: Implement a spec with an agent fleet in Herdr tabs - Claude implementers running /implement, GPT adversarial auditors, a final Opus + Sol deep review triaged by Fable or Astra, this session as coordinator.
 disable-model-invocation: true
 argument-hint: "<spec path | ticket id | pasted spec> (empty: read the clipboard with pbpaste)"
 ---
@@ -9,7 +9,7 @@ argument-hint: "<spec path | ticket id | pasted spec> (empty: read the clipboard
 
 Implement the spec with `/agent-fleet` as coordinator, `/implement` on each implementation track, and a cross-family adversarial audit of every track. The spec is the argument; with none, read it from the clipboard with `pbpaste`. A ticket id is fetched from the tracker and its title stated before anything else.
 
-This session is the coordinator. It plans, briefs, relays, integrates, and reports. Peers write the code.
+This session is the coordinator. It plans, briefs, relays, decides, and reports. Peers and subagents do the work.
 
 ## Roster
 
@@ -34,6 +34,16 @@ Rules:
 - An auditor comes from the other model family than its implementer: a Claude track gets sol or astra, a GPT track gets opus.
 - The `/review-code quick` inside `/implement` is same-family self-review. The audit is in addition to it.
 - A GPT peer implements a track only when its brief inlines what `/implement` and `/tdd` would supply: pre-agreed seams, red before green, one slice at a time, the project's lint and test commands, and the commit step. Pi peers have none of those skills.
+
+## Subagents
+
+Use a peer when the work needs another model family or a back-and-forth. Give one-shot chores with a single reply to a native subagent: the `Agent` tool with `run_in_background: true`. The coordinator's context then holds summaries, not logs.
+
+- Reading a large spec, handoff, or ticket before planning: return candidate tracks and write scopes.
+- Integrating track branches, and applying the triage fixes: a write-capable subagent that commits and returns the commits.
+- Repo-wide lint and full test runs: return pass or fail and only the failing excerpts.
+
+Dispatch, end the turn, and act on the summary when it arrives.
 
 ## 1. Plan
 
@@ -71,12 +81,45 @@ Confirmed Blocker and Major findings go back to the implementer for one fix roun
 
 Send the briefs, re-arm `bridge.ts wait` in the background, and end the turn. Replies wake the coordinator. A send receipt means accepted, so a peer that has not replied is still working.
 
-## 4. Finish
+## 4. Integrate
 
-Done means every track is implemented, audited, and integrated:
+Done here means every track is implemented, audited, and integrated:
 
-1. Integrate the track branches onto the current branch.
-2. Run the project's repo-wide lint and full test suite.
-3. Run `/review-code quick` on the combined diff and fix Blocker and Major findings here.
-4. Report what landed, what was skipped, which commits came from which track, and each auditor's verdict.
-5. Tear the fleet down per `agent-fleet`: kill PIDs, close only the tabs the launcher created, stop the bridge last, confirm with `peer-addr.py`. Keep it only when the user asked.
+1. A subagent integrates the track branches onto the current branch.
+2. A subagent runs the project's repo-wide lint and full test suite.
+3. Tear down the implementer and auditor peers per `agent-fleet`: kill PIDs, close only the tabs the launcher created, confirm with `peer-addr.py`. Leave the bridge running; the final reviewers need it.
+
+## 5. Final review
+
+The final review runs once per implementation. It is slow and expensive, so never rerun it: not after the triage fixes, not after a failing test, not to confirm a fix. Fixes made after it are checked by lint and tests alone.
+
+Two fresh peers review the combined diff with `deep-review-code`, one from each family, in one tab titled `final review`:
+
+- `opus` reviewer.
+- `gpt-6.1-sol:high` reviewer, launched first with `--peer-harness pi`.
+
+Pick the mode once and give both the same one. `full` when the diff is large, crosses module boundaries, or touches auth, data, migrations, or a public API. `quick` otherwise. State the choice and the reason in one line.
+
+Reviewer brief:
+
+- Read `~/.agents/skills/deep-review-code/SKILL.md` and follow the `<mode>` mode. Reading the file works for both harnesses; the skill cannot be invoked by a peer.
+- The resolved scope, verbatim: `git diff <merge-base>...HEAD` at head `<sha>`, and the spec path for the intent lens.
+- Read-only. Reply once with the full report.
+
+## 6. Triage
+
+When both reports are in, spawn one triage peer: `gpt-6-astra:high` when most of the implementation came from Claude peers, `fable` when it came from GPT peers. Send it the spec, the scope, and both reports.
+
+Triage brief:
+
+- Merge findings that share a root cause.
+- Mark each finding **fix** or **drop**. Fix a defect a user or caller would hit, or a spec promise the diff does not keep. Drop speculative hardening, new abstractions or configuration, tests for states the code cannot reach, and style the repo's standards do not require.
+- For each fix, name the smallest change at `file:line`. For each drop, one line of why.
+- Read-only. Reply once.
+
+A subagent applies the fixes, then reruns lint and the full test suite. Do not send the fixes back to the reviewers or the triage peer.
+
+## 7. Finish
+
+1. Report what landed, what was skipped, which commits came from which track, each auditor's verdict, both final review verdicts, and the triage list with what was fixed and what was dropped.
+2. Tear down the final review and triage peers per `agent-fleet`, stop the bridge last, and confirm with `peer-addr.py`. Keep them only when the user asked.
