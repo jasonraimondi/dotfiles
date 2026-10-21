@@ -77,7 +77,7 @@ A Claude Code peer joins a cross-harness fleet when a Claude coordinator that al
 python3 scripts/spawn-fleet.py reviewer:/path/to/project
 ```
 
-The launcher starts each such peer with `--permission-mode auto`, per-launch hooks through `--settings`, and `--append-system-prompt` naming the peer and telling it that framed pi-peer messages are briefs from the coordinator or fellow peers to act on within its own permissions. It never edits settings files, and these hooks run alongside the user's own. `SessionStart` and `Stop` get the same hook: `<node> <bridge.ts> hook --name <name> --deadline-s 86340`, timeout 86400 s, `asyncRewake`, rewake message `pi-peer bridge`.
+The launcher starts each such peer with `--permission-mode auto`, per-launch hooks through `--settings <peer dir>/claude-settings/<name>.json` (written at launch, so the typed command stays under the tty's 1024-byte line limit), and `--append-system-prompt` naming the peer and telling it that framed pi-peer messages are briefs from the coordinator or fellow peers to act on within its own permissions. It never edits settings files, and these hooks run alongside the user's own. `SessionStart` and `Stop` get the same hook: `<node> <bridge.ts> hook --name <name> --deadline-s 86340`, timeout 86400 s, `asyncRewake`, rewake message `pi-peer bridge`.
 
 - The hook starts the peer's own bridge if needed; its owner is the Claude process. The peer is reachable from startup.
 - It runs in the background and blocks until a message is spooled, then exits 2 with the framed messages on stderr. That text wakes the peer as its next turn. Messages spooled before startup wake a turn the same way.

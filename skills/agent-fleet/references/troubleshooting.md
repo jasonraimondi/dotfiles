@@ -66,7 +66,7 @@ The helper accepts only events marked `origin.kind: peer` with a verified peer P
 
 ## The launch timed out and the pane shows a half-typed `claude` command
 
-The command was typed before the shell finished its startup files. Until the shell's line editor takes over, the tty buffers typed input in canonical mode, which macOS caps at 1024 bytes and truncates without a sound. A bridged Claude command is longer than that, so its tail, including the Enter, never arrives, and `herdr agent start` waits for an agent that never starts. `spawn-fleet.py` waits for each pane's prompt before typing. Launching by hand in a pane whose shell runs direnv or dotfiles on startup: wait for the prompt, or press Ctrl-C to clear the fragment and run the command again.
+The command was typed before the shell finished its startup files. Until the shell's line editor takes over, the tty buffers typed input in canonical mode, which macOS caps at 1024 bytes and truncates without a sound, so a long command loses its tail, including the Enter, and `herdr agent start` waits for an agent that never starts. `spawn-fleet.py` waits for each pane's prompt before typing and keeps the typed command short by passing a bridged peer's hooks as a settings file. Launching by hand in a pane whose shell runs direnv or dotfiles on startup: wait for the prompt, or press Ctrl-C to clear the fragment and run the command again.
 
 ## CLI traps
 

@@ -132,6 +132,16 @@ def claude_peer_settings(name, bridge_script):
     return json.dumps({"hooks": {"SessionStart": [{"hooks": [hook]}], "Stop": [{"hooks": [hook]}]}})
 
 
+def write_claude_peer_settings(name, bridge_script):
+    """Hand `--settings` a file path: typed inline, the hook JSON pushes the launch command past the tty's 1024-byte line buffer."""
+    directory = os.path.join(pi_directory(), "claude-settings")
+    os.makedirs(directory, exist_ok=True)
+    path = os.path.join(directory, f"{name}.json")
+    with open(path, "w") as handle:
+        handle.write(claude_peer_settings(name, bridge_script))
+    return path
+
+
 def claude_peer_system_prompt(name):
     return (
         f"You are {name}, a peer session in an agent fleet launched by the user's coordinator. "
@@ -203,8 +213,8 @@ def wait_for_shell_prompt(pane, deadline):
 
     Keystrokes typed while the shell is still running its startup files land in
     the tty's canonical line buffer, which macOS caps at 1024 bytes and silently
-    truncates. A bridged Claude command is longer than that, so typing early
-    leaves a half-typed command at the prompt and no agent.
+    truncates, so typing early leaves a half-typed command at the prompt and no
+    agent.
     """
     settled = 0
     while time.monotonic() < deadline:
@@ -396,7 +406,7 @@ def main():
             remaining = deadline - time.monotonic()
             if remaining <= 0:
                 raise RuntimeError("Fleet startup deadline expired")
-            settings = claude_peer_settings(name, peer_bridge) if bridged_peers else None
+            settings = write_claude_peer_settings(name, peer_bridge) if bridged_peers else None
             system_prompt = claude_peer_system_prompt(name) if bridged_peers else None
             wait_for_shell_prompt(pane, deadline)
             remaining = deadline - time.monotonic()

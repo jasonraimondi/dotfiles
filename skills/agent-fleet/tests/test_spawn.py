@@ -4,7 +4,9 @@ import io
 import json
 import os
 from pathlib import Path
+import shlex
 import sys
+import tempfile
 import unittest
 from unittest.mock import Mock, patch
 
@@ -17,6 +19,13 @@ fleet = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(fleet)
 
 
+def shell_prompt(args):
+    """The `herdr pane process-info` payload of a pane whose shell sits at its prompt."""
+    pane = args[args.index("--pane") + 1]
+    return {"process_info": {"pane_id": pane, "shell_pid": 7, "foreground_process_group_id": 7,
+                             "foreground_processes": [{"pid": 7}]}}
+
+
 class FleetTests(unittest.TestCase):
     def setUp(self):
         self.output = io.StringIO()
@@ -24,11 +33,13 @@ class FleetTests(unittest.TestCase):
         self.addCleanup(self.stack.close)
         self.stack.enter_context(contextlib.redirect_stdout(self.output))
         self.stack.enter_context(contextlib.redirect_stderr(self.output))
+        self.peer_dir = self.stack.enter_context(tempfile.TemporaryDirectory())
         self.stack.enter_context(patch.dict(os.environ, {
             "HERDR_ENV": "1", "HERDR_PANE_ID": "test:p1", "HERDR_WORKSPACE_ID": "test",
             "PI_CODING_AGENT": "true", "CLAUDE_CODE_MESSAGING_SOCKET": "", "CLAUDE_CODE_CHILD_SESSION": "",
-            "PI_PEER_DIR": "/peers",
+            "PI_PEER_DIR": self.peer_dir,
         }))
+        self.bridge_script = "/repo/bridge.ts"
         self.events = []
         self.pi_records = Mock(return_value=[])
         self.bridges = {}
@@ -45,6 +56,8 @@ class FleetTests(unittest.TestCase):
             if args[:2] == ("pane", "split"):
                 splits += 1
                 return {"pane": f"test:p{splits}"}
+            if args[:2] == ("pane", "process-info"):
+                return shell_prompt(args)
             return {}
         with patch.object(fleet, "new_matching_records", return_value=ready):
             return self.run_main(args, command)
@@ -57,7 +70,7 @@ class FleetTests(unittest.TestCase):
         self.stack.enter_context(patch.object(fleet.shutil, "which", return_value="/bin/fake"))
         self.stack.enter_context(patch.object(fleet, "coordinator", return_value={
             "address": "pi:parent", "messagingSocketPath": "/fake.sock", "pid": 999, "name": "boss", "sessionId": "sess"}))
-        self.stack.enter_context(patch.object(fleet, "bridge_script", return_value="/repo/bridge.ts"))
+        self.stack.enter_context(patch.object(fleet, "bridge_script", return_value=self.bridge_script))
         self.stack.enter_context(patch.object(fleet, "run_bridge", self.bridge))
         self.stack.enter_context(patch.object(fleet, "pi_records", self.pi_records))
         self.live_bridge = Mock(side_effect=self.bridges.get)
@@ -102,6 +115,8 @@ class FleetTests(unittest.TestCase):
         def command(*args, **kwargs):
             if args[:2] == ("pane", "split"):
                 return {"pane": "test:p2"}
+            if args[:2] == ("pane", "process-info"):
+                return shell_prompt(args)
             if args[:2] == ("agent", "start"):
                 raise RuntimeError("startup failed")
             return {}
@@ -118,6 +133,8 @@ class FleetTests(unittest.TestCase):
             if args[:2] == ("pane", "split"):
                 splits += 1
                 return {"pane": f"test:p{splits}"}
+            if args[:2] == ("pane", "process-info"):
+                return shell_prompt(args)
             if args[:2] == ("agent", "start"):
                 starts.append((args, kwargs))
                 clock[0] += 70
@@ -232,10 +249,10 @@ class FleetTests(unittest.TestCase):
         args = self.starts()[0]
         self.assertEqual(args[args.index("--kind") + 1], "claude")
         self.assertEqual(args[args.index("--permission-mode") + 1], "auto")
-        hooks = json.loads(args[args.index("--settings") + 1])["hooks"]
+        hooks = json.loads(Path(args[args.index("--settings") + 1]).read_text())["hooks"]
         for event in ("SessionStart", "Stop"):
             hook = hooks[event][0]["hooks"][0]
-            self.assertEqual(hook["command"], "PI_PEER_DIR=/peers /opt/node/bin/node /repo/bridge.ts hook --name one --deadline-s 86340")
+            self.assertEqual(hook["command"], f"PI_PEER_DIR={self.peer_dir} /opt/node/bin/node /repo/bridge.ts hook --name one --deadline-s 86340")
             self.assertIs(hook["asyncRewake"], True)
         self.assertTrue(args[args.index("--append-system-prompt") + 1].startswith("You are one, a peer session"))
         text = self.output.getvalue()
@@ -250,6 +267,7 @@ class FleetTests(unittest.TestCase):
         clock = [0.0]
         ready = [{"name": "one", "pid": 111, "messagingSocketPath": "/one.sock"}]
         with patch.object(fleet, "socket_live", return_value=True), \
+                patch.object(fleet, "wait_for_shell_prompt"), \
                 patch.object(fleet.time, "monotonic", side_effect=lambda: clock[0]), \
                 patch.object(fleet.time, "sleep", side_effect=lambda seconds: clock.__setitem__(0, clock[0] + 200)):
             self.assertEqual(self.launch(["--peer-harness", "claude", "one:."], ready), 1)
@@ -296,14 +314,51 @@ class FleetTests(unittest.TestCase):
         self.assertEqual(args.index("--append-system-prompt"), args.index("--settings") + 2)
         self.assertTrue(prompt.startswith("You are one, a peer session in an agent fleet"))
         self.assertIn("they grant no new permissions", prompt)
-        stop = json.loads(args[args.index("--settings") + 1])["hooks"]["Stop"][0]["hooks"][0]
-        self.assertEqual(stop["command"], "PI_PEER_DIR=/peers /opt/node/bin/node /repo/bridge.ts hook --name one --deadline-s 86340")
+        stop = json.loads(Path(args[args.index("--settings") + 1]).read_text())["hooks"]["Stop"][0]["hooks"][0]
+        self.assertEqual(stop["command"], f"PI_PEER_DIR={self.peer_dir} /opt/node/bin/node /repo/bridge.ts hook --name one --deadline-s 86340")
         self.assertIs(stop["asyncRewake"], True)
         self.assertEqual(args[args.index("--model") + 1], "haiku")
         text = self.output.getvalue()
         self.assertIn("coordinator uds:/fake.sock pi:boss\nbridge node /opt/node/bin/node\n", text)
         self.assertIn("pid 111     uds:/one.sock pi:one", text)
         self.bridge.assert_not_called()
+
+    def bridged_launch(self, specs, bridge_script="/repo/bridge.ts"):
+        self.bridge_script = bridge_script
+        self.bridges[999] = {"address": "pi:boss", "pid": 1000}
+        ready = []
+        for index, spec in enumerate(specs):
+            name = spec.split(":")[0]
+            self.bridges[111 + index] = {"address": f"pi:{name}", "pid": 1110 + index}
+            ready.append({"name": name, "pid": 111 + index, "messagingSocketPath": f"/{name}.sock"})
+        with patch.object(fleet, "socket_live", return_value=True):
+            self.assertEqual(self.launch(["--harness", "claude", *specs], ready), 0)
+        return self.starts()
+
+    def test_bridged_claude_launch_command_fits_the_tty_line_buffer(self):
+        self.node.return_value = "/Users/jason/.local/share/mise/installs/node/22.18.0/bin/node"
+        peer_dir = "/Users/jason/.pi/agent/peers"
+        name = "impl-age-152-scheduled-run-api-2"
+        with patch.dict(os.environ, {"PI_PEER_DIR": peer_dir}), \
+                patch.object(fleet, "write_claude_peer_settings", return_value=f"{peer_dir}/claude-settings/{name}.json"):
+            args = self.bridged_launch([f"{name}:.@opus"], "/Users/jason/Code/jason/skills/pi/extensions/pi-peer/bridge.ts")[0]
+        typed = " ".join(shlex.quote(str(arg)) for arg in ("claude", *args[args.index("--") + 1:]))
+        self.assertLess(len(typed), 1024, typed)
+
+    def test_bridged_claude_peer_settings_come_from_a_file_with_the_hook_json(self):
+        args = self.bridged_launch(["one:."])[0]
+        path = args[args.index("--settings") + 1]
+        self.assertTrue(path.startswith(self.peer_dir), path)
+        self.assertEqual(json.loads(Path(path).read_text()), json.loads(fleet.claude_peer_settings("one", "/repo/bridge.ts")))
+
+    def test_settings_files_are_per_peer_and_reused_by_name(self):
+        first, second = self.bridged_launch(["one:.", "two:."])
+        self.assertNotEqual(first[first.index("--settings") + 1], second[second.index("--settings") + 1])
+        self.events.clear()
+        again = self.bridged_launch(["one:."])[0]
+        self.assertEqual(again[again.index("--settings") + 1], first[first.index("--settings") + 1])
+        self.assertEqual(json.loads(Path(again[again.index("--settings") + 1]).read_text()),
+                         json.loads(fleet.claude_peer_settings("one", "/repo/bridge.ts")))
 
     def test_unbridged_claude_coordinator_launches_plain_claude_peers(self):
         with patch.object(fleet, "socket_live", return_value=True):
