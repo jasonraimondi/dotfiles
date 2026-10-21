@@ -12,10 +12,14 @@ Source: the work in this conversation. If the conversation carries none, use `gi
 
 ## Shape
 
-A flat list of `•` bullets and nothing else: two or three bullets, usually 30 to 60 words in all. A busy day can run longer, but when a post feels long, cut detail before cutting bullets. Order: shipped, then in hand, then next up or a blocker. Each bullet starts on the verb, subject dropped.
+One `•` bullet per workstream, two or three in all, usually 30 to 60 words. Order: shipped, then in hand, then next up or a blocker. Each bullet starts on the verb, subject dropped.
+
+The `•` line is a headline: what changed and why anyone cares, in plain words ("Replaced babel react-compiler with native rust port, frontend builds faster"). Library names, counts, and status go underneath as indented `-` sub-bullets, one fact each. A workstream with only one thing to say stays a single `•` line. When a post feels long, cut sub-bullets before cutting workstreams.
+
+Link a PR or ticket only where a reader would click it: the open PR you want reviewed, the ticket you're blocked on. Shipped chores need no link.
 
 - **Shipped**: past tense. "Deployed out …", "Fixed …", "Merged …". When the fix touches customers or admins, say the effect in their words ("they should no longer be borked").
-- **In hand**: "Working on …", "Finalizing …", "Bringing … to the finish line". Say where it stands ("in review now", "testing on dev-5") and hedge the ETA ("should have a PR up shortly", "trying to get this merged out today ideally").
+- **In hand**: "Working on …", "Finalizing …", "Bringing … to the finish line". Say where it stands ("in review now", "testing on dev-5") and hedge the ETA ("should have a PR up shortly", "trying to get it ready for merge soon!").
 - **Next or blocker**: "After that, …" or "I'm going to look at … after". A blocker is a plain ask naming what is missing ("Going to need additional context on …", "just have a quick question for Hannah about it").
 
 Product terms stay as the team says them (`GLOSSARY.md` if present); jargon is fine, the readers are engineers. At most one emoji, and only where Jason would wince or hope: `:see_no_evil:` after a confession, `:crossed_fingers:` on a long shot.
@@ -24,8 +28,8 @@ Personal logistics are one more bullet with the time window and who covers: "OOO
 
 ## Casing and punctuation
 
-- Every bullet starts with a capital letter and ends with a period.
-- Full sentences. A second thought is a second sentence, not a comma splice.
+- Every bullet starts with a capital letter.
+- A headline is a terse clause and can end bare. A sub-bullet is a full sentence ending in a period; a second thought is a second sentence.
 - Contractions keep their apostrophes ("couldn't", "I'm").
 - Capitalize only proper nouns and product names. A role is lowercase ("admins", not "Admin's").
 - A trailing link sits inside the sentence, before the period: `… date picker tests <url|ENG-1002>.`
@@ -35,10 +39,10 @@ Personal logistics are one more bullet with the time window and who covers: "OOO
 
 The post is Slack mrkdwn, pasted as plain text into the message box:
 
-- One `•` bullet per line, no blank lines between bullets, nothing before or after the list.
+- One `•` headline per line, its sub-bullets on the lines under it as `  - ` (two-space indent). Nothing before or after the list.
 - Links are `<url|label>`: a ticket is its Linear link labelled with the ID, `<url|ENG-1001>`, or the ID with its title, `<url|ENG-1004: Account settings redesign>`. A PR is `<url|pr>` or the bare GitHub URL.
 - Emoji are `:shortcode:`.
-- Emphasis, if any, is Slack's `*bold*` and `_italic_`. No Markdown headers, `-` bullets, or `**double asterisks**`.
+- Emphasis, if any, is Slack's `*bold*` and `_italic_`, never Markdown headers or `**double asterisks**`.
 
 ## Deliver
 
@@ -46,7 +50,8 @@ Copy the post to the clipboard, then show it in the reply so Jason can check it 
 
 ```bash
 pbcopy <<'CLIP_a93b2f'
-• Deployed PR for date picker tests <url|ENG-1002>.
+• Replaced babel react-compiler with native rust port, frontend builds faster
+  - Swapped the eslint-plugin-react-compiler rc for eslint-plugin-react-hooks.
 • Working on improved search indexing <url|ENG-1001>.
 CLIP_a93b2f
 ```
@@ -55,7 +60,15 @@ The reply is the post in a fenced block followed by one line: "Copied to clipboa
 
 ## Samples
 
-From Jason's past posts, with casing and punctuation normalized to the rules above.
+From Jason's past posts, with casing and punctuation normalized to the rules above. The first is the most recent and the closest to how he writes now.
+
+```
+• Replaced babel react-compiler with native rust port, frontend builds faster
+  - Swapped the eslint-plugin-react-compiler rc for eslint-plugin-react-hooks.
+• Atlas staff admin work into one stack PR (<url|pr>)
+  - Sessions now show who started them plus their models and tokens next to cost, and you can filter by person and background runs.
+  - Finishing QA fixes on frontend conventions now, trying to get it ready for merge soon!
+```
 
 ```
 • Deployed out a fix for trialing shops that uninstall and then reinstall. They should no longer be borked.
