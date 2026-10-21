@@ -7,7 +7,7 @@ argument-hint: "<spec path | ticket id | pasted spec> (empty: read the clipboard
 
 # Fleet implement
 
-Implement the spec with `/agent-fleet` as coordinator, `/implement` on each implementation track, and a cross-family adversarial audit of every track. The spec is the argument; with none, read it from the clipboard with `pbpaste`. A ticket id is fetched from the tracker and its title stated before anything else.
+Implement the spec with `/agent-fleet` as coordinator, `/implement` on each implementation track, and a cross-family adversarial audit of every track. The spec is the argument; with none, read it from the clipboard with `pbpaste`. A ticket id is fetched from the tracker and its title stated before anything else. When launched by a lead, the spec, the lead's address, and the integration coordinator's address come from the brief, and STATUS goes to the lead at each phase boundary and as `phase: handoff-written` with the path when this session's context budget sends it to a handoff.
 
 This session is the coordinator. It plans, briefs, relays, decides, and reports. Peers and subagents do the work.
 
@@ -90,7 +90,17 @@ Done here means every track is implemented, audited, and integrated:
 
 1. A subagent integrates the track branches onto the current branch.
 2. A subagent runs the project's repo-wide lint and full test suite.
-3. Tear down the implementer and auditor peers per `agent-fleet`: kill PIDs, close only the tabs the launcher created, confirm with `peer-addr.py`. Leave the bridge running; the final reviewers need it.
+3. When the brief names an integration coordinator, stage (§4a) before the teardown.
+4. Tear down the implementer and auditor peers per `agent-fleet`: kill PIDs, close only the tabs the launcher created, confirm with `peer-addr.py`. Leave the bridge running; the final reviewers need it.
+
+## 4a. Stage
+
+The integration coordinator named in the brief merges the tips into a live environment and reports what it observed. Messages follow `~/.agents/skills/fleet-lead/references/protocol.md`.
+
+- Send STAGE: mode, base, the tips table, the diff range, reload, migration, browser target, caveats, and the known-failures path. End the turn; the integration coordinator replies ACK, then RESULT or DEFECT.
+- Implementers stay alive until RESULT. A DEFECT goes to its authoring implementer for one fix round, then a new STAGE with `supersedes=<old id>`; rewritten SHAs make it `mode: rebuild`. After that round the coordinator decides and records the decision in the report.
+- A command the brief marks as gated goes to the lead as GATE; the lead answers GATE-DONE or GATE-DENIED.
+- After triage, send one more STAGE when the fixes touch served code; lint and tests cover the rest.
 
 ## 5. Final review
 
@@ -128,3 +138,4 @@ A subagent applies the fixes, then reruns lint and the full test suite. Do not s
 
 1. Report what landed, what was skipped, which commits came from which track, each auditor's verdict, both final review verdicts, and the triage list with what was fixed and what was dropped.
 2. Tear down the final review and triage peers per `agent-fleet`, stop the bridge last, and confirm with `peer-addr.py`. Keep them only when the user asked.
+3. Under a lead: send STATUS `phase: Finish` first. Push and open PRs on GO-PUSH; on GO-HOLD the branches stay local. Then reply DONE with the report.

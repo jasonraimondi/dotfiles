@@ -16,6 +16,14 @@ _Avoid_: Parent, supervisor, orchestrator
 A session in a fleet, launched by the coordinator, that carries none of the user's authority when it messages others.
 _Avoid_: Worker, child, subagent
 
+**Lead**:
+A coordinator whose peers are coordinators. It runs in the session the user types into, so it runs gated commands itself on the user's yes instead of relaying authority.
+_Avoid_: Orchestrator of orchestrators, meta-coordinator, conductor
+
+**Gate**:
+An operation that needs the user's own authority, run only in the lead's session after the user's yes.
+_Avoid_: Approval, permission request, escalation
+
 **Harness**:
 The coding-agent program a session runs in, such as Claude Code or pi. Distinct from the model it calls.
 _Avoid_: Agent type, runtime, model
