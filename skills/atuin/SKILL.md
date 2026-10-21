@@ -13,8 +13,10 @@ Atuin records every interactive shell command in a local SQLite database with it
 
    ```bash
    atuin search --search-mode fulltext --limit 20 \
-     --format '{time}\t{exit}\t{duration}\t{directory}\t{command}' WORDS
+     --format '{time}\t{exit}\t{duration}\t{directory}\t{command}' WORDS | cut -c1-200
    ```
+
+   Agent launch lines in history carry inline JSON settings thousands of characters long; the cut keeps a match readable.
 
 2. **Widen** when results are thin: drop the directory filter, swap in fewer or shorter words, raise `--limit`. Narrow when they're noisy: add `--exit 0`, a date bound, or more words.
 3. **Answer** with the command verbatim plus its time, directory, and exit code. Prefer the most recent exit-0 run; say when the only matches failed. Done when you've cited a run, or listed the searches that came up empty.

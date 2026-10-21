@@ -39,7 +39,7 @@ Rules:
 
 Use a peer when the work needs another model family or a back-and-forth. Give one-shot chores with a single reply to a native subagent: the `Agent` tool with `run_in_background: true`. The coordinator's context then holds summaries, not logs.
 
-- Reading a large spec, handoff, or ticket before planning: return candidate tracks and write scopes.
+- Reading a large spec, handoff, or ticket before planning: return candidate tracks with branch, tip SHA and status, write scopes, open defects per track with `file:line`, hard constraints, and the docs still to open, in ≤600 words.
 - Integrating track branches, and applying the triage fixes: a write-capable subagent that commits and returns the commits.
 - Repo-wide lint and full test runs: return pass or fail and only the failing excerpts.
 
@@ -51,10 +51,11 @@ Dispatch, end the turn, and act on the summary when it arrives.
 - Assign each track an implementer and an auditor from the roster, one line of reasoning each.
 - Per `/tdd`, propose the seams each track tests at, one line on what each catches and misses. Agreeing them here keeps every peer from stopping to ask separately.
 - Show the user the tracks, assignments, and seams, then launch. Ask only when the split is genuinely ambiguous.
+- Plan from the spec and handoffs; implementers explore their own tracks. A feasibility question goes to an Explore subagent with a ≤25-line return.
 
 ## 2. Launch
 
-Read the `agent-fleet` skill and follow its preflight. Then spawn with `--placement tab --per-tab 2 --title "<mission in five words or fewer>"`, one `NAME:DIR@MODEL` per peer.
+Follow the `agent-fleet` preflight from its SKILL.md and `references/cross-harness.md` → *Preflight*, *Spawn* and *Send a brief*. Open another reference only for the flag or failure in front of you; a launcher failure goes to a subagent that returns the workaround. Then spawn with `--placement tab --per-tab 2 --title "<mission in five words or fewer>"`, one `NAME:DIR@MODEL` per peer.
 
 Order matters: launch the GPT peers first with `--peer-harness pi`, which starts the bridge, then the Claude peers in a second call. Claude peers launched after the bridge exists get its hooks, so auditors can message them directly.
 
@@ -64,9 +65,11 @@ Peers writing to the same checkout each get their own worktree and branch, initi
 
 Implementer brief:
 
-- The track's slice of the spec, or its path.
+- The track's extract, inlined: scope, acceptance, and the grill decisions that bind it, with the plan path for reference only.
 - Directory, branch, and exact write scope.
 - The agreed seams.
+- Discovery and design go to an Explore subagent.
+- Context budget: when it writes its handoff, it asks the coordinator to respawn it.
 - Run `/implement`: tdd, typecheck and single-file tests as it goes, `/review-code quick`, fix Blocker and Major findings, commit.
 - Reply format: commits, files touched, test results, anything skipped or blocked.
 - The coordinator's literal return address from `peer-addr.py --me`: `uds:` for a Claude peer, `pi:` for a GPT peer, which replies with `bridge.ts send`.
@@ -75,7 +78,7 @@ Auditor brief, sent when its implementer replies:
 
 - The spec slice and the commit range.
 - The intent question: did the diff deliver what the spec promised, what did it invent, what did it skip.
-- Read-only. Findings ranked Blocker, Major, Minor with `file:line`. Reply once.
+- Read-only. Findings ranked Blocker, Major, Minor with `file:line`. Reply once, ≤600 words.
 
 Confirmed Blocker and Major findings go back to the implementer for one fix round. After that the coordinator decides and records the decision in the report.
 
@@ -104,11 +107,13 @@ Reviewer brief:
 
 - Read `~/.agents/skills/deep-review-code/SKILL.md` and follow the `<mode>` mode. Reading the file works for both harnesses; the skill cannot be invoked by a peer.
 - The resolved scope, verbatim: `git diff <merge-base>...HEAD` at head `<sha>`, and the spec path for the intent lens.
-- Read-only. Reply once with the full report.
+- Read-only. Write the full report to `<scratchpad>/final-review-<family>.md` and reply with its path and a 10-line verdict.
+
+While they run, the coordinator waits for the two paths; the reports go to triage by path and stay unread here.
 
 ## 6. Triage
 
-When both reports are in, spawn one triage peer: `gpt-6-astra:high` when most of the implementation came from Claude peers, `fable` when it came from GPT peers. Send it the spec, the scope, and both reports.
+When both reports are in, spawn one triage peer: `gpt-6-astra:high` when most of the implementation came from Claude peers, `fable` when it came from GPT peers. Send it the spec, the scope, and both report paths.
 
 Triage brief:
 

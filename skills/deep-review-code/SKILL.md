@@ -62,12 +62,14 @@ For the modes that dispatch reviewers:
 - **One message, every agent.** Separate messages run sequentially and throw away the parallelism that is the whole point.
 - **Each agent reads its own brief.** Hand it the lens file's path and `report.md`'s, relative to this skill's base directory, rather than pasting the contents — the brief stays out of the dispatcher's context.
 - **The same resolved scope, verbatim, for everyone** — reviewers and verifier alike, so every finding refers to the same code at the same ref.
+- **The dispatcher waits while reviewers run.** Its spot check is `git diff --stat` or one file with offset and limit; the reviewers read the diff.
+- **Every reviewer brief caps its return**: findings in the anatomy, *Could not verify* prose only where it changes the verdict, ≤600 words.
 - **An agent that fails or returns nothing gets named on the report's `Reviewers:` line.** A missing reviewer reads as a clean axis, which is the one way this can lie.
 - **Without the Agent tool** — you are already inside a subagent — work the briefs one after another in this context and put `Fan-out unavailable — reviewers run sequentially.` on the `Reviewers:` line.
 
 ## Shared: Report shape
 
-`report.md` holds the report shape, the finding anatomy, and the severity scale. Every mode reports in it, and so does a lens invoked directly, unless the lens defines its own template.
+`report.md` holds the report shape, the finding anatomy, and the severity scale. Every mode reports in it, and so does a lens invoked directly, unless the lens defines its own template. In `full` mode the verifier reads it; the dispatcher passes its path.
 
 ## Shared: Common rules
 

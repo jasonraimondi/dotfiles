@@ -28,7 +28,7 @@ Agent 8's SHIP/HOLD verdict is qualitative and passes through unchanged — the 
 
 ## Step 2 — Verifier (sequential, after fan-out completes)
 
-Dispatch a ninth Agent. Give it the resolved scope verbatim (it needs this to open files at the correct ref), the path to `report.md`, the seven reviewer finding lists, and Agent 8's report.
+Dispatch a ninth Agent. Give it the resolved scope verbatim (it needs this to open files at the correct ref), the path to `report.md`, the seven reviewer finding lists, and Agent 8's report. The verifier writes the final report to `<scratchpad>/review-<head-sha>.md` and returns its path plus the verdict and the Blocker/Major list in 10 lines; the dispatcher forwards the path as the report.
 
 For each finding:
 

@@ -4,6 +4,8 @@ Five reviewers, one round trip, one report. This is the mode a coding agent runs
 
 ## Workflow
 
+A **fix round** (re-review after fixing an earlier review's findings) dispatches one agent over the fix commits only, with the earlier findings as its contract. Otherwise:
+
 1. **Resolve scope** (see `../SKILL.md` → *Shared: Resolve scope*). Quick takes the first thing that resolves and states it; a question here stalls the caller.
 2. **Fan out** the five axes below (see `../SKILL.md` → *Shared: Fan-out*).
 3. **Assemble** the report (see `../report.md`).

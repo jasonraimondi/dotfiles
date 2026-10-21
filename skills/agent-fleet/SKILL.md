@@ -5,7 +5,7 @@ description: Launch and coordinate independent coding agents in Herdr panes, tab
 
 # Agent fleet
 
-A fleet is a set of independent, visible sessions that stay available for follow-up until their work is done. By default the coordinator launches its own harness: **pi launches pi; Claude Code launches Claude Code**. Model choice does not determine the harness. A Claude Code coordinator can also launch pi peers with `--peer-harness pi`, which makes a cross-harness fleet, and any Claude peers it launches after that are reachable from pi. A pi coordinator can launch Claude peers with `--peer-harness claude`. Read [references/cross-harness.md](references/cross-harness.md) first.
+A fleet is a set of independent, visible sessions that stay available for follow-up until their work is done. By default the coordinator launches its own harness: **pi launches pi; Claude Code launches Claude Code**. Model choice does not determine the harness. A Claude Code coordinator can also launch pi peers with `--peer-harness pi`, which makes a cross-harness fleet, and any Claude peers it launches after that are reachable from pi. A pi coordinator can launch Claude peers with `--peer-harness claude`. For a cross-harness fleet, read [references/cross-harness.md](references/cross-harness.md) → *Preflight*, *Spawn*, *Send a brief*, *Receive replies*.
 
 For panes that do not host an agent — dev servers, watchers, test runs, or any other ordinary command — use the `herdr` skill instead of these scripts. Name what you create so the layout reads at a glance: pass `--label` with a short purpose (e.g. `dev: web`) to `tab create` or `workspace create`, and run `herdr pane rename <pane> <name>` on each new pane.
 
@@ -47,7 +47,7 @@ The launcher checks coordinator messaging before creating panes, preserves focus
 | `tab` | Larger fleets or long work, when that layout suits the user's request |
 | `workspace` | A separate workspace explicitly requested by the user |
 
-For tabs/workspaces, provide `--title` with the mission in five words or fewer. For flags and teardown syntax, read [references/placement.md](references/placement.md).
+For tabs/workspaces, provide `--title` with the mission in five words or fewer. [references/placement.md](references/placement.md) holds the flags beyond `--placement`, `--title`, `--per-tab` and the teardown syntax; read it to use one.
 
 ## 3. Send briefs and yield
 
@@ -56,6 +56,8 @@ Use the selected harness's messaging tool and the exact addresses returned by di
 - The task, working directory, and write scope.
 - The requested result format and completion condition.
 - Whether a reply is expected, and the coordinator's literal return address.
+
+Inline the facts a peer needs (scope, seams, ports, SHAs) and cite plans by path; a peer reading the whole plan pays for every other peer's part.
 
 In a cross-harness fleet, a brief to a pi peer names the coordinator's `pi:` return address and the reply tool `peer_sessions send`; send it with `<node> <bridge.ts> send --to pi:<uuid>`, body on stdin. A Claude coordinator briefs Claude peers with `SendMessage` as usual; a pi coordinator briefs them with `peer_sessions send` to their `pi:` addresses and is woken natively by their replies. A Claude peer that talks to pi peers replies to them with `<node> <bridge.ts> send --to pi:<uuid>`, as each frame says.
 
