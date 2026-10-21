@@ -40,7 +40,7 @@ AI_LINKS=(
   "$AGENT_MD_SOURCE|$HOME/.cursor/rules/agent.md"
   "$AGENT_MD_SOURCE|$HOME/.codeium/windsurf/memories/global_rules.md"
   "$AGENT_MD_SOURCE|$HOME/.junie/guidelines.md"
-  "$AGENT_MD_SOURCE|$HOME/.pi/agent/AGENT.md"
+  "$AGENT_MD_SOURCE|$HOME/.pi/agent/AGENTS.md"
   "$PI_EXTENSIONS_SOURCE|$HOME/.pi/agent/extensions"
   "$PI_SETTINGS_SOURCE|$HOME/.pi/agent/settings.json"
 )
@@ -228,7 +228,10 @@ write_manifest() {
 }
 
 link_ai_config() {
-  local pair source destination
+  local pair source destination legacy_pi_agent="$HOME/.pi/agent/AGENT.md"
+  if [[ -L "$legacy_pi_agent" && "$(readlink "$legacy_pi_agent")" == "$AGENT_MD_SOURCE" ]]; then
+    unlink_path "$legacy_pi_agent"
+  fi
   for pair in "${AI_LINKS[@]}"; do
     source="${pair%%|*}"
     destination="${pair#*|}"
