@@ -22,7 +22,7 @@ Paths are relative to this repo (local) and to the upstream repo root (upstream)
 | `vendor-mattpocock/implement` | `skills/engineering/implement` | model-invoked locally: upstream's `disable-model-invocation` dropped. Adds "Use /agent-fleet when the work splits into independent tracks." Review step calls the Skill tool with `review-code` in `quick` mode, passing the spec path, and fixes every Blocker and Major finding |
 | `vendor-mattpocock/prototype` | `skills/engineering/prototype` | none |
 | `vendor-mattpocock/tdd` | `skills/engineering/tdd` | `code-review` reference renamed to `review-code` |
-| `vendor-mattpocock/grilling` | `skills/productivity/grilling` | extended with "Frame the questions that need it", "Keep a decision log" (`references/decision-log.md`) and "Close with a handoff" (`references/handoff.md`) |
+| `vendor-mattpocock/grilling` | `skills/productivity/grilling` | extended with "Frame the questions that need it", "Keep a decision log" (`references/decision-log.md`) and "Close with a handoff" (`references/handoff.md`). Upstream's "Word each question so \"yes\" accepts your recommended answer." stays out on every sync: the user takes recommendations by saying "accept recommendations", so questions keep whatever wording fits them |
 | `vendor-mattpocock/review-code` | `skills/engineering/code-review` | renamed: frontmatter `name` is `review-code` |
 | `vendor-mattpocock/writing-for-agents` | `skills/productivity/writing-for-agents` | none |
 | `dev/research` | `skills/engineering/research` | none |
