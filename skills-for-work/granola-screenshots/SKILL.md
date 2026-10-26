@@ -1,6 +1,7 @@
 ---
 name: granola-screenshots
 description: Cross-reference local screenshots taken during a call with that call's Granola transcript, so each screenshot's clock time anchors what was being said. Use when the user asks to combine, line up, or make sense of screenshots and meeting notes/transcripts, or to find what was on screen when something was said.
+disable-model-invocation: true
 ---
 
 # Granola x screenshots
