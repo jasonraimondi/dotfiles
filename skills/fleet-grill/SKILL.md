@@ -14,9 +14,12 @@ This session is the coordinator. It computes the frontier, briefs the panel, mer
 ## 1. Start
 
 - A path under the notebook's `decisions/grills/` resumes that grill: read the log, rebuild the tree from its Decisions, and take its Open questions as the frontier.
-- Anything else is a new grill on that topic. With no argument, read it with `pbpaste`.
+- No argument with a grill already running in this conversation: take it over at its current frontier and keep its decision log.
+- Anything else is a new grill on that topic. With no argument and no running grill, read it with `pbpaste`.
 
 Keep one decision log per `grilling`. Tag each decision with who settled it: `(panel)` or `(user)`.
+
+When `domain-modeling` is loaded, as in a `/grill-with-docs` session, keep its duties in this session: it alone edits `GLOSSARY.md` and ADRs, and peers only flag terms.
 
 ## 2. Launch the panel
 
@@ -36,6 +39,7 @@ Send each peer one standing brief:
 - Answer independently. Reply only to the coordinator.
 - Per question: an answer, confidence (high, medium, low), `file:line` evidence for every fact, and `needs-user: <reason>` when the call belongs to the user under the escalation rule below (inline the rule).
 - Then any branches the tree is missing, one line each.
+- With `domain-modeling` loaded: the glossary path, and a one-line flag for each term an answer or question uses that conflicts with the glossary or is used loosely.
 - ≤400 words per reply.
 - The coordinator's literal return address and reply tool, per `agent-fleet`.
 
