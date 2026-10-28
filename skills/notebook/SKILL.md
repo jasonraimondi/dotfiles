@@ -67,12 +67,14 @@ Sections, in order:
 
 A lookup that synthesizes several notes to answer a question is itself a finding: write it into the wiki page, so the next session reads it there instead of rebuilding it.
 
+`wiki/backlog.md` holds parked work: researched or designed, with a handoff written, and not being done now. One entry per item, newest first: when parked and why, the note to resume from, the first action, and the topic page. Park there whenever a session ends with a handoff nobody is picking up, and keep `index.md`'s backlog line current. When the item starts, delete its entry; the notes and topic page stay.
+
 ## Reading
 
 Read down the ladder: `index.md`, then the wiki page, then the notes it cites. Filenames sort chronologically, so `ls "$NOTEBOOK/handoff" | tail` is the latest handoff and `ls "$NOTEBOOK/research" | tail` the latest research.
 
 - Ticket or topic: `index.md` first, then its wiki page. When there is no page: `grep -rli "eng-1006" "$NOTEBOOK" --include='*.md'`, and when that turns up two or more notes, create the page before going on.
-- Continuing work: the wiki page's Open and Decisions, then the newest matching note in `handoff/`, then its links.
+- Continuing work: the wiki page's Open and Decisions, then the newest matching note in `handoff/`, then its links. Picking up parked work: its `wiki/backlog.md` entry, then the note it names.
 - Obsidian's index skips `prototypes/`, `node_modules/`, and raw audit output, so search those with grep.
 
 ## Lint
