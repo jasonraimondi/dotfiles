@@ -59,7 +59,9 @@ Follow the `agent-fleet` preflight from its SKILL.md and `references/cross-harne
 
 Order matters: launch the GPT peers first with `--peer-harness pi`, which starts the bridge, then the Claude peers in a second call. Claude peers launched after the bridge exists get its hooks, so auditors can message them directly.
 
-Peers writing to the same checkout each get their own worktree and branch, initialized the way the project's `AGENTS.md` says.
+The current worktree's branch is the top of the gh-stack, and the fleet's work lands there. Before spawning, confirm with `gh stack view --json` that it is the topmost branch; when it sits mid-stack or outside a stack, ask the user (under a lead, the lead) before going on.
+
+Peers writing to the same checkout each get their own worktree and a track branch cut from that top, initialized the way the project's `AGENTS.md` says. Track branches are scaffolding: they merge back into the top in §4 and stay out of the stack, with no PRs of their own.
 
 ## 3. Brief
 
@@ -88,7 +90,7 @@ Send the briefs, re-arm `bridge.ts wait` in the background, and end the turn. Re
 
 Done here means every track is implemented, audited, and integrated:
 
-1. A subagent integrates the track branches onto the current branch.
+1. A subagent integrates the track branches onto the stack top, the current branch.
 2. A subagent runs the project's repo-wide lint and full test suite.
 3. When the brief names an integration coordinator, stage (§4a) before the teardown.
 4. Tear down the implementer and auditor peers per `agent-fleet`: kill PIDs, close only the tabs the launcher created, confirm with `peer-addr.py`. Leave the bridge running; the final reviewers need it.
@@ -138,4 +140,4 @@ A subagent applies the fixes, then reruns lint and the full test suite. Do not s
 
 1. Report what landed, what was skipped, which commits came from which track, each auditor's verdict, both final review verdicts, and the triage list with what was fixed and what was dropped.
 2. Tear down the final review and triage peers per `agent-fleet`, stop the bridge last, and confirm with `peer-addr.py`. Keep them only when the user asked.
-3. Under a lead: send STATUS `phase: Finish` first. Push and open PRs on GO-PUSH; on GO-HOLD the branches stay local. Then reply DONE with the report.
+3. Under a lead: send STATUS `phase: Finish` first. On GO-PUSH, a subagent loads `gh-stack` and `pr-template`, submits the stack from the current worktree with its branch as the top, and returns the PR URLs; on GO-HOLD the branches stay local. Then reply DONE with the report.
