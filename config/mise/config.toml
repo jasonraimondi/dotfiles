@@ -5,6 +5,7 @@ PROJECT_NAME = "{{ config_root | basename }}"
 
 [tools]
 awscli    = "2"
+crane     = "0.20.6"
 deno      = "2"
 node      = "24"
 pnpm      = "12"
