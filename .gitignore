@@ -1,4 +1,5 @@
 .idea
+.serena
 
 aws/dot-aws/credentials
 aws/dot-aws/config
