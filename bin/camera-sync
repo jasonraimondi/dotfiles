@@ -10,7 +10,7 @@ if [ -z "$IMMICH_SERVER" ]; then
     exit 1
 fi
 
-# Search desktop for folders starting with or equal to 100MSDCF
+# Search desktop for folders named 10*MSDCF*
 DESKTOP="$HOME/Desktop"
 LOGROOT="/tmp/camera-sync"
 
@@ -19,7 +19,7 @@ echo
 
 
 # Find and process matching folders
-for folder in "$DESKTOP"/100MSDCF*; do
+for folder in "$DESKTOP"/10*MSDCF*; do
     # Check if folder exists (in case no matches found)
     [ -d "$folder" ] || continue
 
@@ -39,12 +39,38 @@ for folder in "$DESKTOP"/100MSDCF*; do
 
 done
 
-for folder in "$DESKTOP"/100MSDCF*; do
+NAS_HOST="${NAS_SERVER%%:*}"
+NAS_DIR="${NAS_SERVER#*:}"
+
+# Cameras reuse file numbers, so a name already on the NAS can belong to a different photo.
+# Those local photos (and their sidecars) get a free name so they are added, not skipped.
+rename_conflicts() {
+    local dir="$1"
+    local -a conflicts taken
+    conflicts=(${(f)"$(rsync -ani --existing -e ssh "$dir/" "$NAS_SERVER" | awk '/^>f/ && tolower($2) ~ /\.arw$/ {print $2}')"})
+    (( ${#conflicts} )) || return 0
+
+    taken=(${(f)"$(ssh "$NAS_HOST" "ls -A '$NAS_DIR'")"} "$dir"/*(:t))
+    local file stem n src
+    for file in $conflicts; do
+        stem="${file:r}"
+        n=1
+        while (( ${taken[(I)${stem}_$n.*]} )); do (( n++ )); done
+        for src in "$dir/$stem".*; do
+            mv -n "$src" "$dir/${stem}_$n.${src:e}"
+            taken+=("${stem}_$n.${src:e}")
+        done
+        echo "  Renamed $stem.* -> ${stem}_$n.* (name already used on NAS)"
+    done
+}
+
+for folder in "$DESKTOP"/10*MSDCF*; do
     [ -d "$folder" ] || continue
     echo "$folder/raw/"
     echo "to"
     echo "$NAS_SERVER"
-    rsync -Pavu -e ssh "$folder/raw/" $NAS_SERVER
+    rename_conflicts "$folder/raw"
+    rsync -av --ignore-existing --partial-dir=.rsync-partial --progress -e ssh "$folder/raw/" $NAS_SERVER
 done
 
 # echo
@@ -53,7 +79,7 @@ done
 
 # mkdir -p "$LOGROOT"
 
-# for folder in "$DESKTOP"/100MSDCF*; do
+# for folder in "$DESKTOP"/10*MSDCF*; do
 #     [ -d "$folder" ] || continue
 
 #     echo "Uploading: $(basename "$folder")"
