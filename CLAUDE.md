@@ -30,6 +30,7 @@ Each directory is a stow package. The `--dotfiles` flag (in `.stowrc`) converts 
 Most packages target `$HOME`. Exceptions with custom targets:
 - `config/` → `~/.config` (XDG apps: atuin, cmux, herdr, karabiner, mise, zed)
 - `ssh/` → `~/.ssh`
+- `gnupg/` → `~/.gnupg`
 - `dictionary/` → `~/Library/Spelling`
 
 ### Shell (ZSH)

@@ -14,6 +14,7 @@ brew         > homebrew all the things
 config       > for the noble apps using .config
 dictionary   > extend the macos dictionary
 git          > global git config and aliases
+gnupg        > gpg and gpg-agent config
 iterm2       > iterm2 utilities
 mise         > mise for maintaining language versions
 obs          > various tools for obs

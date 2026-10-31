@@ -18,6 +18,8 @@ stow "${FLAGS[@]}" aws
 mkdir -p "$HOME/.claude" \
   && stow "${FLAGS[@]}" -t "$HOME/.claude" claude
 stow "${FLAGS[@]}" git
+mkdir -p -m 700 "$HOME/.gnupg" \
+  && stow "${FLAGS[@]}" -t "$HOME/.gnupg" gnupg
 stow "${FLAGS[@]}" iterm2
 stow "${FLAGS[@]}" -t "$HOME/Library/Spelling" dictionary
 stow "${FLAGS[@]}" mise
