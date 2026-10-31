@@ -15,7 +15,6 @@ config       > for the noble apps using .config
 dictionary   > extend the macos dictionary
 git          > global git config and aliases
 iterm2       > iterm2 utilities
-mackup       > mackup config
 mise         > mise for maintaining language versions
 obs          > various tools for obs
 ruby         > ruby config

@@ -20,7 +20,6 @@ mkdir -p "$HOME/.claude" \
 stow "${FLAGS[@]}" git
 stow "${FLAGS[@]}" iterm2
 stow "${FLAGS[@]}" -t "$HOME/Library/Spelling" dictionary
-stow "${FLAGS[@]}" mackup
 stow "${FLAGS[@]}" mise
 stow "${FLAGS[@]}" ruby
 stow "${FLAGS[@]}" tmux
