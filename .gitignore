@@ -10,6 +10,7 @@ brew/Brewfile.lock.json
 
 config/karabiner/automatic_backups/
 config/herdr/release-notes.json
+config/gh/hosts.yml
 
 git/dot-git-authors
 git/dot-git-user
