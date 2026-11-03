@@ -1,6 +1,6 @@
 # Manifest
 
-Last-synced upstream commit: `49dd158` (post-v1.3.1, 2026-10-09)
+Last-synced upstream commit: `4ae2317` (post-v1.3.2, 2026-10-31)
 
 Paths are relative to this repo (local) and to the upstream repo root (upstream).
 
@@ -8,7 +8,7 @@ Paths are relative to this repo (local) and to the upstream repo root (upstream)
 
 | Local | Upstream | Kept divergence |
 |---|---|---|
-| `pending/claude-handoff` | `skills/in-progress/claude-handoff` | parked in `pending/` (not installed) |
+| `vendor-pending/claude-handoff` | `skills/in-progress/claude-handoff` | parked in `vendor-pending/` (not installed) |
 | `vendor-mattpocock/grill-me` | `skills/productivity/grill-me` | none |
 | `vendor-mattpocock/grill-with-docs` | `skills/engineering/grill-with-docs` | none |
 | `vendor-mattpocock/handoff` | `skills/productivity/handoff` | none |
@@ -17,7 +17,7 @@ Paths are relative to this repo (local) and to the upstream repo root (upstream)
 | `vendor-mattpocock/wait-what` | `skills/productivity/wait-what` | none |
 | `vendor-mattpocock/wizard` | `skills/engineering/wizard` | none |
 | `vendor-mattpocock/codebase-design` | `skills/engineering/codebase-design` | none |
-| `vendor-mattpocock/diagnosing-bugs` | `skills/engineering/diagnosing-bugs` | Phase 1's "Be aggressive. Be creative. Refuse to give up." replaced with a concrete try-several-loops instruction |
+| `vendor-mattpocock/diagnosing-bugs` | `skills/engineering/diagnosing-bugs` | Phase 1's "Be aggressive. Be creative. Refuse to give up." replaced with: try at least two more loops from the list before falling back to reading code |
 | `vendor-mattpocock/domain-modeling` | `skills/engineering/domain-modeling` | none |
 | `vendor-mattpocock/implement` | `skills/engineering/implement` | model-invoked locally: upstream's `disable-model-invocation` dropped. Adds "Use /agent-fleet when the work splits into independent tracks." Review step calls the Skill tool with `review-code` in `quick` mode, passing the spec path, and fixes every Blocker and Major finding |
 | `vendor-mattpocock/prototype` | `skills/engineering/prototype` | none |
@@ -25,7 +25,7 @@ Paths are relative to this repo (local) and to the upstream repo root (upstream)
 | `vendor-mattpocock/grilling` | `skills/productivity/grilling` | extended with "Frame the questions that need it", "Keep a decision log" (`references/decision-log.md`) and "Close with a handoff" (`references/handoff.md`). Upstream's "Word each question so \"yes\" accepts your recommended answer." stays out on every sync: the user takes recommendations by saying "accept recommendations", so questions keep whatever wording fits them |
 | `vendor-mattpocock/review-code` | `skills/engineering/code-review` | renamed: frontmatter `name` is `review-code` |
 | `vendor-mattpocock/writing-for-agents` | `skills/productivity/writing-for-agents` | none |
-| `dev/research` | `skills/engineering/research` | none |
+| `vendor-mattpocock/research` | `skills/engineering/research` | none |
 
 ## Related, not tracked
 
