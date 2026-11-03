@@ -106,7 +106,7 @@ Sent after a spawn or respawn, so the receiver addresses its peer coordinator by
 
 ```
 [fleet-lead] STATUS id=... from=... reply-to=<addr>
-phase: <Plan | Launch | Brief | Integrate | Stage | Final review | Triage | Finish | handoff-written>
+phase: <Plan | Launch | Brief | Integrate | Stage | PR | Final review | Triage | Finish | handoff-written>
 line: <one line>
 ```
 
@@ -126,7 +126,7 @@ said: "<the user's words verbatim>" at <timestamp>
 said: "<the user's words verbatim>" at <timestamp>
 ```
 
-Sent when the impl coordinator reports STATUS `phase: Finish`. On GO-PUSH it pushes and opens PRs; on GO-HOLD the branches stay local and DONE lists them. Either way it tears down its fleet and replies DONE.
+Sent when the impl coordinator reports STATUS `phase: PR`, before its final review. On GO-PUSH it pushes and opens PRs; on GO-HOLD the branches stay local and DONE lists them. Either way it finishes the final review and triage, tears down its fleet, and replies DONE.
 
 ### DONE (impl → lead)
 

@@ -57,7 +57,7 @@ Dispatch, end the turn, and act on the summary when it arrives.
 
 Follow the `agent-fleet` preflight from its SKILL.md and `references/cross-harness.md` → *Preflight*, *Spawn* and *Send a brief*. Open another reference only for the flag or failure in front of you; a launcher failure goes to a subagent that returns the workaround. Then spawn with `--placement tab --per-tab 2 --title "<mission in five words or fewer>"`, one `NAME:DIR@MODEL` per peer.
 
-Order matters: launch the GPT peers first with `--peer-harness pi`, which starts the bridge, then the Claude peers in a second call. Claude peers launched after the bridge exists get its hooks, so auditors can message them directly.
+Spawn each peer just in time, when its work is ready. Launch only the implementers here: GPT implementers in one call with `--peer-harness pi`, Claude implementers in another. Each auditor spawns when its implementer replies (§3), and the final reviewers and triage peer spawn in their own phases. Auditors reply to the coordinator, which relays their findings, so a Claude implementer launched before the bridge exists needs no bridge hooks.
 
 The current worktree's branch is the top of the gh-stack, and the fleet's work lands there. Before spawning, confirm with `gh stack view --json` that it is the topmost branch; when it sits mid-stack or outside a stack, ask the user (under a lead, the lead) before going on.
 
@@ -76,7 +76,7 @@ Implementer brief:
 - Reply format: commits, files touched, test results, anything skipped or blocked.
 - The coordinator's literal return address from `peer-addr.py --me`: `uds:` for a Claude peer, `pi:` for a GPT peer, which replies with `bridge.ts send`.
 
-Auditor brief, sent when its implementer replies:
+When an implementer replies, spawn its auditor with the §2 spawn command (`--peer-harness pi` for a GPT auditor) and send it the auditor brief:
 
 - The spec slice and the commit range.
 - The intent question: did the diff deliver what the spec promised, what did it invent, what did it skip.
@@ -84,7 +84,7 @@ Auditor brief, sent when its implementer replies:
 
 Confirmed Blocker and Major findings go back to the implementer for one fix round. After that the coordinator decides and records the decision in the report.
 
-Send the briefs, re-arm `bridge.ts wait` in the background, and end the turn. Replies wake the coordinator. A send receipt means accepted, so a peer that has not replied is still working.
+Send the briefs, re-arm `bridge.ts wait` in the background while a GPT peer is live, and end the turn. Replies wake the coordinator. A send receipt means accepted, so a peer that has not replied is still working.
 
 ## 4. Integrate
 
@@ -104,7 +104,13 @@ The integration coordinator named in the brief merges the tips into a live envir
 - A command the brief marks as gated goes to the lead as GATE; the lead answers GATE-DONE or GATE-DENIED.
 - After triage, send one more STAGE when the fixes touch served code; lint and tests cover the rest.
 
-## 5. Final review
+## 5. Open the PR
+
+The PR goes up before the final review, so CI runs alongside it. A subagent loads `gh-stack` and `pr-template`, submits the stack from the current worktree with its branch as the top, and returns the PR URLs.
+
+Under a lead, this is the push gate: send STATUS `phase: PR` and start §6 in the same turn. On GO-PUSH, dispatch the PR subagent; on GO-HOLD the branches stay local.
+
+## 6. Final review
 
 The final review runs once per implementation. It is slow and expensive, so never rerun it: not after the triage fixes, not after a failing test, not to confirm a fix. Fixes made after it are checked by lint and tests alone.
 
@@ -123,7 +129,7 @@ Reviewer brief:
 
 While they run, the coordinator waits for the two paths; the reports go to triage by path and stay unread here.
 
-## 6. Triage
+## 7. Triage
 
 When both reports are in, spawn one triage peer: `gpt-6-astra:high` when most of the implementation came from Claude peers, `fable` when it came from GPT peers. Send it the spec, the scope, and both report paths.
 
@@ -134,10 +140,10 @@ Triage brief:
 - For each fix, name the smallest change at `file:line`. For each drop, one line of why.
 - Read-only. Reply once.
 
-A subagent applies the fixes, then reruns lint and the full test suite. Do not send the fixes back to the reviewers or the triage peer.
+A subagent applies the fixes, reruns lint and the full test suite, and pushes the fixes to the open PR. Do not send the fixes back to the reviewers or the triage peer.
 
-## 7. Finish
+## 8. Finish
 
-1. Report what landed, what was skipped, which commits came from which track, each auditor's verdict, both final review verdicts, and the triage list with what was fixed and what was dropped.
+1. Report the PR URLs (or the local branches on GO-HOLD), what landed, what was skipped, which commits came from which track, each auditor's verdict, both final review verdicts, and the triage list with what was fixed and what was dropped.
 2. Tear down the final review and triage peers per `agent-fleet`, stop the bridge last, and confirm with `peer-addr.py`. Keep them only when the user asked.
-3. Under a lead: send STATUS `phase: Finish` first. On GO-PUSH, a subagent loads `gh-stack` and `pr-template`, submits the stack from the current worktree with its branch as the top, and returns the PR URLs; on GO-HOLD the branches stay local. Then reply DONE with the report.
+3. Under a lead: reply DONE with the report.

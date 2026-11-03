@@ -68,7 +68,7 @@ Then end the turn. Replies wake the lead.
 
 - **GATE**: ask Jason one numbered line with the command, `cwd`, and blast radius. On yes, run the command here and reply GATE-DONE with the output tail; otherwise GATE-DENIED with Jason's words. Log both in the ledger.
 - **PRIORITY**: Jason's words verbatim with a timestamp, plus the preset `demo` or `checkpoint` where one fits, to both coordinators.
-- **STATUS**: on Jason's ask, answer from the roster and the ledger tail. Rows from STATUS, STAGE, RESULT, and DEFECT go to the ledger with their superseded-by links. STATUS `phase: Finish` from an impl coordinator is the push gate: ask Jason one line, then send GO-PUSH on yes or GO-HOLD otherwise; the coordinator replies DONE.
+- **STATUS**: on Jason's ask, answer from the roster and the ledger tail. Rows from STATUS, STAGE, RESULT, and DEFECT go to the ledger with their superseded-by links. STATUS `phase: PR` from an impl coordinator is the push gate: ask Jason one line, then send GO-PUSH on yes or GO-HOLD otherwise; the coordinator replies DONE after its final review and triage.
 - **SAID**: log it; act on it only where it changes a gate or the priority.
 - Herdr notification (`herdr notification show`) for GATE and DONE only.
 
