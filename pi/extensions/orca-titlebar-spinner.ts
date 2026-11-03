@@ -38,18 +38,14 @@ const BRAILLE_FRAMES = [
 ]
 
 const FRAME_INTERVAL_MS = 80
-// Why: pi repaints the title from its own writers (session_info_changed, the win32
-// update-check restore) with no event we observe, so the marker has to be re-asserted
-// even when no spinner frame is due. Coarse on purpose: it only rewrites one string.
+// Pi rewrites titles without observable events; reassert markers even without spinner frames.
 const MARKER_REASSERT_MS = 1000
 const AGENT_END_IDLE_RECHECK_MS = 25
 const AGENT_END_IDLE_RECHECK_MAX_MS = 250
-// Why: a failed idle compaction can end without auto_compaction_end, and no agent turn will
-// close a maintenance spinner — cap it so idle maintenance cannot strand a working title.
+// Failed idle compaction may never send end; cap its spinner without relying on an agent turn.
 const IDLE_COMPACTION_MAX_FRAMES = Math.ceil(300000 / FRAME_INTERVAL_MS)
 
-// Why: `-` is the plain separator; `!` is the state marker Orca reads as needs-input
-// (src/shared/pi-state-title-marker.ts), so mobile and the CLI see the wait too.
+// The ! marker reports needs-input to mobile/CLI; - is only a separator.
 function getMarkedTitle(pi, marker) {
   const cwd = process.cwd().split(/[\\/]/).filter(Boolean).at(-1) || process.cwd()
   const session = pi.getSessionName()
@@ -62,9 +58,7 @@ function getBaseTitle(pi) {
   return getMarkedTitle(pi, '-')
 }
 
-// Why: the ctx.ui pi passes is a getter that calls assertActive() and throws once a
-// session-replacing dialog invalidates the runner; optional chaining cannot screen
-// that out. Read it behind a try and never mutate state before a paint has succeeded.
+// ctx.ui getters throw after session replacement; optional chaining cannot replace this guarded read.
 function resolvePainter(ctx) {
   try {
     return typeof ctx?.ui?.setTitle === 'function' ? ctx : null
@@ -75,17 +69,14 @@ function resolvePainter(ctx) {
 
 export default function (pi) {
   if (!process.env.ORCA_PANE_KEY) return
-  // Why: child agents inherit the pane env, and the spinner is harmlessly
-  // per-process — but the needs-input marker is status the pane reports, so only
-  // one process may assert it. Mirrors ORCA_PI_STATUS_OWNED in the status hook.
+  // Child processes inherit pane identity; only the owner may report the pane's needs-input marker.
   const markerOwnerPid = process.env.ORCA_PI_TITLE_MARKER_OWNED
   const ownsMarker = !markerOwnerPid || markerOwnerPid === String(process.pid)
   if (ownsMarker) process.env.ORCA_PI_TITLE_MARKER_OWNED = String(process.pid)
-  // Why: replacement factories share the process realm; retire the old owner before painting.
+  // Factories share the process realm; retire old ownership before painting.
   const ownersKey = Symbol.for('orca.pi.titlebar.owners')
   const owners = globalThis[ownersKey] ??= new Map()
   const paneKey = process.env.ORCA_PANE_KEY
-  owners.get(paneKey)?.()
   let disposed = false
   function clearOwnedTimers() {
     clearPendingAgentEndCheck()
@@ -99,37 +90,42 @@ export default function (pi) {
     resetPromptState()
     if (owners.get(paneKey) === dispose) owners.delete(paneKey)
   }
-  owners.set(paneKey, dispose)
+  if (!owners.has(paneKey)) owners.set(paneKey, dispose)
+
+  // Pi subagents start in-process with reason startup; only lead replacements (reload/new/resume/fork) take over.
+  function claimTitle(event) {
+    const owner = owners.get(paneKey)
+    if (owner === dispose) return
+    if (owner && event?.reason === 'startup') {
+      disposed = true
+      return
+    }
+    owner?.()
+    owners.set(paneKey, dispose)
+  }
 
   function on(name, handler) {
     pi.on(name, (event, ctx) => {
+      if (name === 'session_start' && !disposed) claimTitle(event)
       if (!disposed) return handler(event, ctx)
     })
   }
 
   let timer = null
   let frameIndex = 0
-  // Why: only idle maintenance owns a spinner of its own. A threshold compaction runs
-  // inside an agent turn, whose spinner must outlive it, and any newer start clears the
-  // marker so a late idle completion cannot stop current work (#16470).
+  // Only idle maintenance owns a separate spinner; late compaction completion cannot stop a newer turn (#16470).
   let idleCompactionOwnsSpinner = false
-  // Why: pi already collapses nested prompts into one start/end pair, so this counter
-  // guards a close that never arrives, not nesting. A new turn cannot start under a
-  // dialog holding input focus, so agent_start doubles as recovery.
+  // A new turn proves no dialog holds input; recover when its close never arrived.
   let promptDepth = 0
   let markerPainted = false
   let promptCtx = null
-  // Why: a separate handle from `timer`, which clearAnimation() nulls — the marker must
-  // survive a turn settling, a shutdown of the spinner, and the idle-maintenance cap.
+  // Keep marker timers separate so turn settlement and idle-spinner caps cannot clear active dialog state.
   let markerTimer = null
   let pendingAgentEndCheck = null
   let pendingAgentEndContext = null
   let agentEndIdleRecheckMs = AGENT_END_IDLE_RECHECK_MS
 
-// Why: buildTitle runs inside the try because it is not safe either — getSessionName()
-// calls assertActive() and process.cwd() throws ENOENT once the worktree is deleted.
-// Most call sites are timer callbacks, where an escape is an uncaught exception and pi
-// exits(1) through its own uncaughtException handler.
+// Both stale getSessionName and deleted-worktree cwd can throw; timer callback escapes would terminate Pi.
   function paintTitle(ctx, buildTitle) {
     if (disposed || !ctx) return false
     try {
@@ -177,24 +173,17 @@ export default function (pi) {
   function stopAnimation(ctx) {
     clearPendingAgentEndCheck()
     clearAnimation()
-    // Why: settling under an open dialog still leaves the pane waiting on the user, so
-    // the idle title must not retire the marker the dialog is holding.
+    // Settling a turn cannot retire an unanswered dialog marker.
     paintTitle(ctx, () => (markerPainted ? getMarkedTitle(pi, '!') : getBaseTitle(pi)))
   }
 
   function renderFrame(ctx) {
-    // Why: the maintenance cap runs before the dialog guard so a dialog left open
-    // cannot suspend it; stopAnimation keeps the marker while a dialog is open.
+    // Apply the maintenance cap before dialog guards so open dialogs cannot suspend it.
     if (idleCompactionOwnsSpinner && frameIndex >= IDLE_COMPACTION_MAX_FRAMES) {
       stopAnimation(ctx)
       return
     }
-    // Why: an 80ms working frame would repaint over the needs-input marker within one
-    // tick, so a mid-turn dialog would still look busy everywhere the title is the
-    // only evidence. Re-assert rather than skip: pi repaints the title on its own
-    // (session_info_changed, resetExtensionUI, rebindCurrentSession) and would
-    // otherwise wipe the marker with nothing to restore it. The frame still counts,
-    // so the cap above keeps accruing in wall-clock.
+    // Reassert dialog markers against Pi's independent title writes while still accruing frames toward the maintenance cap.
     if (markerPainted) {
       const painted = paintTitle(ctx, () => getMarkedTitle(pi, '!'))
       frameIndex++
@@ -241,16 +230,14 @@ export default function (pi) {
     startAnimation(ctx)
   })
 
-  // Why: pi drops an open dialog through resetExtensionUI without resolving its promise,
-  // so a replaced or reloaded session never sends the matching close. Both boundaries
-  // prove no dialog from the old session is still on screen.
-  on('session_start', async () => {
+  // Reset/reload hides dialogs without resolving promises; both session boundaries clear the missing close.
+  on('session_start', async (_event, ctx) => {
     clearOwnedTimers()
     resetPromptState()
+    if (!isOmpRuntime()) paintTitle(resolvePainter(ctx), () => getBaseTitle(pi))
   })
 
-  // Why: modern Pi emits agent_end mid-run and only settle later, so settlement is the
-  // authoritative completion boundary. Legacy runtimes never emit it, so agent_end stays.
+  // Modern Pi can emit agent_end mid-run; prefer agent_settled while retaining the legacy fallback.
   on('agent_settled', async (_event, ctx) => {
     stopAnimation(ctx)
   })
@@ -274,12 +261,10 @@ export default function (pi) {
   on('ui_prompt_start', async (_event, ctx) => {
     if (isOmpRuntime() || !ownsMarker) return
     promptDepth++
-    // Why: retry on every open rather than only the outermost, so an outer ctx
-    // that could not paint cannot decide the whole stack stays unmarked.
+    // Retry every open; an outer dialog's invalid context cannot suppress the whole stack.
     if (markerPainted) return
     const painter = resolvePainter(ctx)
-    // Why: only hold the spinner off once the marker is actually up, or a ctx
-    // that cannot paint would freeze the title on its last working frame.
+    // Suppress spinner frames only after painting the marker, or the working title would freeze.
     if (!paintTitle(painter, () => getMarkedTitle(pi, '!'))) return
     markerPainted = true
     promptCtx = painter
@@ -290,14 +275,11 @@ export default function (pi) {
     if (isOmpRuntime() || !ownsMarker || promptDepth === 0) return
     promptDepth--
     if (promptDepth > 0) return
-    // Why: the opening ctx already painted once, so a close whose own ctx is stale
-    // does not leave the needs-input marker up until the next turn.
+    // Reuse the opening painter if close arrives with a stale context.
     const painter = resolvePainter(ctx) ?? promptCtx
     markerPainted = false
     promptCtx = null
     stopMarkerReassert()
-    // Why: a still-live turn resumes its spinner in place; otherwise the pane is idle
-    // and must drop the needs-input marker rather than keep asking for attention.
     if (timer) {
       renderFrame(painter)
       return
@@ -307,9 +289,7 @@ export default function (pi) {
 
   on('auto_compaction_start', async (event, ctx) => {
     if (event?.reason !== 'idle') return
-    // Why: the idle worker can fire against a turn that just started, and reason alone does
-    // not prove the pane is idle. Adopting a live agent spinner would let the matching
-    // auto_compaction_end mark the pane idle mid-run — the inverse of #16470.
+    // Idle compaction can race a new turn; never take ownership of its live spinner (#16470).
     if (timer && !idleCompactionOwnsSpinner) return
     startAnimation(ctx)
     idleCompactionOwnsSpinner = true

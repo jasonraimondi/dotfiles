@@ -1,12 +1,8 @@
 // @orca-managed-pi-extension
-// Why: no package-specific type import here. Pi and OMP expose the same
-// extension API, but publish their types under different package names.
-// Why: warn-once so a recurring parse error on a malformed endpoint
-// file does not spam stderr inside the pi TUI on every event.
+// Pi/OMP share APIs but publish types under different package names.
+// Warn once so malformed endpoint files cannot flood the TUI on every event.
 let warnedBadEndpoint = false
-// Why: Pi awaits extension handlers. Status delivery stays off that
-// critical path, and the latest-only pending slot prevents a stalled
-// Orca receiver from building an unbounded queue of obsolete snapshots.
+// Pi awaits handlers; deliver asynchronously with bounded pending state to avoid blocking turns.
 const HOOK_POST_TIMEOUT_MS = 1000
 type HookPost = { hookEventName: string; extra: Record<string, unknown>; metadata: Record<string, unknown>; ompRuntime: boolean; revision: number; attempts: number; delivered: boolean; final?: boolean }
 type HookPostQueue = { activePost: HookPost | null; pendingPost: HookPost | null; latestPost: HookPost | null; finalPosts: HookPost[]; finalRetryTimer: ReturnType<typeof setTimeout> | null; postRevision: number; retryTimer: ReturnType<typeof setTimeout> | null }
@@ -18,7 +14,7 @@ function cancelPostRetry(): void {
   postQueue.retryTimer = null
 }
 
-// Why: a queued or scheduled post builds its body later, so it already carries newer state.
+// Queued posts build their body later and already include newer state.
 function hasQueuedPost(): boolean {
   return postQueue.pendingPost !== null || postQueue.retryTimer !== null
 }
@@ -99,16 +95,14 @@ let modelMetadata: Record<string, unknown> = {}
 let ompModelSwitchSupported = false
 let modelSessionId: unknown = undefined
 
-// Why: OMP switches sessions in-process; a model belongs to the session that
-// reported it, so it must not leak onto the first posts of the next one.
+// OMP session switches must not carry the previous session's model.
 function trackModelSession(sessionId: unknown): void {
   if (sessionId === modelSessionId) return
   modelSessionId = sessionId
   modelMetadata = {}
 }
 
-// Why: pi and OMP expose the active model as { provider, id } on both the event
-// context and model_select events; the joined selector is what --model accepts.
+// Join provider/id as the selector accepted by --model.
 function updateModelMetadata(source: unknown): void {
   try {
     if (!source || typeof source !== 'object' || !('model' in source)) return
@@ -118,27 +112,42 @@ function updateModelMetadata(source: unknown): void {
     const id = 'id' in model && typeof model.id === 'string' ? model.id : ''
     if (provider && id) modelMetadata = { model: provider + '/' + id, ...(ompModelSwitchSupported ? { model_switch_command: 'orca-model' } : {}) }
   } catch {
-    // Why: a throwing model getter must never break status delivery.
+    // Throwing model getters cannot interrupt status delivery.
   }
 }
 
 type SubagentDetail = { agentType?: string; description?: string; startedAt: number; workflow?: boolean; parent?: string; registration?: object }
 type SubagentRoster = { active: Set<string>; exited?: Set<string>; details?: Map<string, SubagentDetail>; waiting: boolean; ownsPane?: boolean; runGeneration?: number; endedRunGeneration?: number; completionPostedGeneration?: number; parked?: Map<string, Map<string, SubagentDetail>>; onEvent?: (event: unknown, forcedStatus?: string) => void; listener?: (event: unknown) => void; onRunnerExit?: (event: unknown) => void; runnerExitListener?: (event: unknown) => void; runnerExitCheck?: ReturnType<typeof setTimeout> | null; onRunnerExitSettled?: () => void }
-const MAX_SUBAGENT_SNAPSHOT = 32
+const HOOK_BODY_BUDGET_BYTES = 500000
+const SUBAGENTS_FIELD_BYTES = Buffer.byteLength(',"subagents":[]')
 let subagentRoster: SubagentRoster | null = null
 
 function isVisibleSubagent(roster: SubagentRoster, id: string): boolean {
   return roster.active.has(id) && !roster.exited?.has(id) && roster.details?.get(id)?.workflow !== true
 }
 
-function subagentPayload(): Record<string, unknown> {
+function subagentPreview(value: string | undefined, maxLength: number): string | undefined {
+  if (typeof value !== 'string') return undefined
+  let preview = value.slice(0, maxLength * 8 + 64).trimStart().replace(/[\r\n\u2028\u2029]+/g, ' ').slice(0, maxLength)
+  if (preview.length < maxLength) preview = preview.trimEnd()
+  else if (/[\ud800-\udbff]$/.test(preview)) preview = preview.slice(0, -1)
+  return preview || undefined
+}
+
+function subagentPayload(byteBudget: number): Record<string, unknown> {
   if (!subagentRoster) return {}
   const subagents: Record<string, unknown>[] = []
+  let bytes = SUBAGENTS_FIELD_BYTES
   for (const id of subagentRoster.active) {
     if (!isVisibleSubagent(subagentRoster, id)) continue
     const detail = subagentRoster.details?.get(id)
-    subagents.push({ id, state: 'working', startedAt: detail?.startedAt ?? 0, ...(detail?.agentType ? { agentType: detail.agentType } : {}), ...(detail?.description ? { description: detail.description } : {}) })
-    if (subagents.length >= MAX_SUBAGENT_SNAPSHOT) break
+    const agentType = subagentPreview(detail?.agentType, 40)
+    const description = subagentPreview(detail?.description, 160)
+    const subagent = { id, state: 'working', startedAt: detail?.startedAt ?? 0, ...(agentType ? { agentType } : {}), ...(description ? { description } : {}) }
+    const rowBytes = Buffer.byteLength(JSON.stringify(subagent)) + (subagents.length > 0 ? 1 : 0)
+    if (bytes + rowBytes > byteBudget) continue
+    bytes += rowBytes
+    subagents.push(subagent)
   }
   return subagents.length > 0 ? { subagents } : {}
 }
@@ -175,8 +184,7 @@ function getPersistedSessionMetadata(metadata: Record<string, unknown>): Record<
   if (typeof sessionFile !== 'string' || !sessionFile) return {}
   try {
     const fs = require('fs')
-    // Why: Pi publishes its planned path before creating the transcript;
-    // recheck on every post so the first completed turn becomes resumable.
+    // Pi announces paths before creating transcripts; recheck each post so completed turns become resumable.
     return fs.existsSync(sessionFile) ? metadata : {}
   } catch {
     return {}
@@ -184,9 +192,7 @@ function getPersistedSessionMetadata(metadata: Record<string, unknown>): Record<
 }
 
 
-// Why: re-reading the endpoint file on every event is cheap (small file,
-// rare changes) but stat+mtime caching avoids re-parsing on every event
-// during streaming tool execution. Mirrors the OpenCode plugin cache shape.
+// Stat/mtime caching avoids reparsing endpoint files during streaming events.
 let cachedEndpointKey = ''
 let cachedEndpointValues: Record<string, string> | null = null
 
@@ -204,9 +210,7 @@ function readEndpointFile(): Record<string, string> | null {
       const contents: string = fs.readFileSync(path, 'utf8')
       const out: Record<string, string> = {}
       for (const line of contents.split(/\r?\n/)) {
-        // Why: parse `KEY=VALUE` (POSIX endpoint.env) and `set KEY=VALUE`
-        // (Windows endpoint.cmd) with one regex; strip a trailing CR so
-        // mixed-EOL files do not leak \r into the value.
+        // Accept POSIX KEY=VALUE and Windows set KEY=VALUE; strip mixed-EOL carriage returns.
         const m = line.match(/^(?:set\s+)?([A-Z0-9_]+)=(.*)$/)
         if (m) out[m[1]] = m[2].replace(/\r$/, '')
       }
@@ -264,7 +268,7 @@ function isOmpRuntime(): boolean {
 }
 
 function resolveHookPath(ompRuntime: boolean): string {
-  // Why: runtime detection keeps a bare-shell OMP launch from reporting as Pi.
+  // Bare-shell OMP may run inside a configured Pi pane.
   if (ompRuntime) return '/hook/omp'
   return CONFIGURED_HOOK_PATH
 }
@@ -305,15 +309,17 @@ async function postOnce(
   const paneKey = process.env.ORCA_PANE_KEY
   if (!coords.port || !coords.token || !paneKey) return
   const url = `http://127.0.0.1:${coords.port}${resolveHookPath(ompRuntime)}`
-  const body = JSON.stringify({
+  const bodyWith = (subagents: Record<string, unknown>): string => JSON.stringify({
     paneKey,
     launchToken: process.env.ORCA_AGENT_LAUNCH_TOKEN || '',
     tabId: process.env.ORCA_TAB_ID || '',
     worktreeId: process.env.ORCA_WORKTREE_ID || '',
     env: coords.env,
     version: coords.version,
-    payload: { hook_event_name: hookEventName, ...(ompRuntime ? metadata : getPersistedSessionMetadata(metadata)), ...(final ? {} : subagentPayload()), ...extra },
+    payload: { hook_event_name: hookEventName, ...(ompRuntime ? metadata : getPersistedSessionMetadata(metadata)), ...subagents, ...extra },
   })
+  const bareBody = bodyWith({})
+  const body = final ? bareBody : bodyWith(subagentPayload(HOOK_BODY_BUDGET_BYTES - Buffer.byteLength(bareBody)))
   const controller = typeof AbortController !== 'undefined' ? new AbortController() : null
   let timeout: ReturnType<typeof setTimeout> | undefined
   const timeoutPromise = new Promise<never>((_resolve, reject) => {
@@ -338,8 +344,7 @@ async function postOnce(
     ])
     if (!response.ok) throw new Error('Orca hook HTTP ' + response.status)
   } catch (error) {
-    // Why: status reporting must never fail the pi run just because Orca
-    // is unavailable or the loopback request failed (e.g. Orca restart).
+    // After WSL loopback failure, retry through host curl.exe.
     if (!isWslRuntime()) throw error
     await postViaWindowsCurl(body, ompRuntime)
   } finally {
@@ -347,9 +352,7 @@ async function postOnce(
   }
 }
 
-// Why: WSL-ness and curl.exe presence cannot change within a process
-// lifetime; re-probing /proc and /mnt/c on every failed event would add
-// filesystem work to the per-event path.
+// WSL identity and host curl availability are process-constant; avoid repeated filesystem probes on failed delivery.
 let cachedIsWslRuntime: boolean | null = null
 let cachedWindowsCurlPath: string | null | undefined
 
@@ -368,7 +371,6 @@ function detectWslRuntime(): boolean {
         const contents = String(fs.readFileSync(path, 'utf8'))
         if (/microsoft|wsl/i.test(contents)) return true
       } catch {
-        // Why: probe the next runtime hint when a proc file is absent or unreadable.
       }
     }
   } catch {
@@ -389,13 +391,13 @@ function resolveWindowsCurlPath(): string | null {
   return cachedWindowsCurlPath
 }
 
-// Why: WSL loopback is not the Windows loopback, so use curl.exe on the host.
+// Guest loopback may not reach Windows Orca; retry through host curl.exe.
 async function postViaWindowsCurl(body: string, ompRuntime: boolean): Promise<void> {
   const curlPath = resolveWindowsCurlPath()
   const windowsPort = process.env.ORCA_AGENT_HOOK_PORT
   const windowsToken = process.env.ORCA_AGENT_HOOK_TOKEN
   if (!curlPath || !windowsPort || !windowsToken) throw new Error('Orca WSL hook bridge unavailable')
-  // Why: a stale guest endpoint must fall back to current host coordinates.
+  // Stale guest endpoints must fall back to current host coordinates.
   const windowsUrl = `http://127.0.0.1:${windowsPort}${resolveHookPath(ompRuntime)}`
   await new Promise<void>((resolve, reject) => {
     const { spawn } = require('child_process')
@@ -486,11 +488,7 @@ function sanitizeStatusToolInput(input: unknown): unknown {
   }
   try { return copy(input, 0) } catch { return { redacted: true } }
 }
-// Why: pi assistant messages carry content as an array of parts
-// ({ type: 'text', text } / tool_use / tool_result / reasoning). We only
-// surface the concatenated text parts as the visible 'last assistant
-// message' for the dashboard preview — tool_use / reasoning would be
-// noise (the dashboard already shows the active tool name + input).
+// Preview only assistant text; reasoning and tool parts have separate surfaces.
 function extractAssistantText(message: unknown): string {
   if (!message || typeof message !== 'object') return ''
   const content = (message as { content?: unknown }).content
@@ -506,13 +504,7 @@ function extractAssistantText(message: unknown): string {
   return out
 }
 
-// Preserve ordinary preview data; credential references never leave the agent host.
-// Why: a restarted agent inherits the previous owner PID through env, so a
-// dead owner must be claimable or the pane goes silent for good. Only ESRCH
-// proves the owner is gone -- every other probe result keeps suppression, so
-// a live foreign owner still cannot double-report. Mirrors the tri-state in
-// main/agent-hooks/managed-hook-owner-identity.ts, which this runtime cannot
-// import (the extension loads inside pi/omp with no Orca deps).
+// Reclaim inherited dead owner PIDs only on ESRCH; all other probe results must suppress duplicate reporting.
 function isStatusOwnerAlive(pid: string): boolean {
   const parsed = Number(pid)
   if (!Number.isSafeInteger(parsed) || parsed < 1 || parsed > 0x7fffffff) return false
@@ -525,8 +517,7 @@ function isStatusOwnerAlive(pid: string): boolean {
   }
 }
 
-// Why: child agents inherit the lead's pane env; only its process may
-// register status hooks. PID identity keeps in-process reloads reporting.
+// Inherited pane identity permits only the lead process; PID equality retains in-process reloads.
 export default function (pi): void {
   const ownerPid = process.env.ORCA_PI_STATUS_OWNED
   const selfPid = String(process.pid)
@@ -572,28 +563,13 @@ export default function (pi): void {
     return { manager, id, file, parent: typeof header?.parentSession === "string" ? header.parentSession : undefined }
   }
 
-  function normalizeSessionPath(file): string {
-    const normalized = file.replace(/\\/g, "/")
-    return /^[A-Za-z]:\//.test(normalized) ? normalized.toLowerCase() : normalized
-  }
-
-  function isNestedTaskTranscript(parentFile, candidateFile): boolean {
-    if (typeof parentFile !== "string" || typeof candidateFile !== "string") return false
-    const parent = normalizeSessionPath(parentFile)
-    const candidate = normalizeSessionPath(candidateFile)
-    const root = parent.endsWith(".jsonl") ? parent.slice(0, -6) : parent
-    return candidate.startsWith(`${root}/`) && candidate !== parent
-  }
-
-  function ownsSessionStatus(ctx): boolean {
-    if (!isOmpRuntime()) return true
-    // Newer OMP builds may expose this computed runtime provenance directly.
-    if (ctx?.agentKind === "sub") return false
+  function ownsSessionStatus(ctx, event?, name?): boolean {
+    const omp = isOmpRuntime()
+    if (omp && ctx?.agentKind === "sub") return false
     const current = sessionProvenance(ctx)
     if (!current) return true
-    // A task transcript is never the pane's resumable root, even when its
-    // callback arrives before the root session reports on the shared hook.
-    if (current.parent) return false
+    // Child transcripts cannot become the pane resume root, even when their callbacks arrive first.
+    if (omp && current.parent) return false
     // Keep ownership through module reload and shutdown while child sessions drain.
     const key = Symbol.for('orca.omp.status-session-owners')
     let owners = Reflect.get(globalThis, key)
@@ -603,11 +579,11 @@ export default function (pi): void {
     }
     const pane = JSON.stringify([process.env.ORCA_PANE_KEY, process.env.ORCA_AGENT_LAUNCH_TOKEN])
     const owner = owners.get(pane)
-    if (owner) {
-      if (owner.manager === current.manager) return true
-      if (current.parent === owner.file || current.parent === owner.id) return false
-      if (isNestedTaskTranscript(owner.file, current.file)) return false
-      return false
+    if (owner && owner.manager !== current.manager) {
+      if (omp) return false
+      // Only the lead runtime replaces its SessionManager for /new, /resume and /fork; Pi subagents start with reason startup.
+      const replaced = name === "session_start" && ["new", "resume", "fork"].includes(event?.reason)
+      if (!replaced && (current.id === undefined || current.id !== owner.id)) return false
     }
     owners.set(pane, current)
     return true
@@ -615,7 +591,7 @@ export default function (pi): void {
 
   function onStatus(name, handler): void {
     pi.on(name, (event, ctx) => {
-      if (!ownsSessionStatus(ctx)) return
+      if (!ownsSessionStatus(ctx, event, name)) return
       lifecycleState.ownsPane = true
       return handler(event, ctx)
     })
@@ -681,10 +657,10 @@ export default function (pi): void {
   onStatus('session_start', (event, ctx) => {
     updateSessionMetadata(ctx)
     piUiPromptDepth = 0
-    // Why: /reload re-registers the active session, but it is not a
-    // turn boundary and must not clear the visible status or unread state.
+    // Reload replaces registration without ending the turn; preserve status and unread state.
     if (event.reason === 'reload') return
     post('session_start')
+    replyFinishedAt = undefined
     restoreParkedSubagents()
     if (lifecycleState.waiting) post('agent_start')
   })
@@ -701,6 +677,7 @@ export default function (pi): void {
     lifecycleState.runGeneration += 1
     piUiPromptDepth = 0
     piTurnInFlight = true
+    replyFinishedAt = undefined
     post('agent_start')
   })
 
@@ -746,6 +723,44 @@ export default function (pi): void {
     })
   })
 
+  const OMP_PLAN_REVIEW_ANSWER_PREFIX = "\u001b]7503;orca-plan-review;"
+  const OMP_PLAN_REVIEW_DISMISS = "dismiss"
+  let ompPlanReview: { reviewId: string; stopInput: () => void } | null = null
+
+  onStatus('plan_review_requested', (event, ctx) => {
+    updateRuntimeOmpSessionMetadata(ctx)
+    ompPlanReview?.stopInput()
+    ompPlanReview = null
+    if (!isOmpRuntime() || typeof ctx?.resolvePlanReview !== 'function' || typeof ctx?.ui?.onTerminalInput !== 'function') return
+    const reviewId = event.reviewId
+    const stopInput = ctx.ui.onTerminalInput((data) => {
+      if (typeof data !== 'string' || !data.startsWith(OMP_PLAN_REVIEW_ANSWER_PREFIX)) return undefined
+      const [answerId, choice] = data.slice(OMP_PLAN_REVIEW_ANSWER_PREFIX.length).replace(/\x07$/, '').split(';')
+      if (answerId !== reviewId) return { consume: true }
+      if (choice === OMP_PLAN_REVIEW_DISMISS) return { data: '\x1b' }
+      ctx.resolvePlanReview(reviewId, choice)
+      return { consume: true }
+    })
+    ompPlanReview = { reviewId, stopInput }
+    post('plan_review_requested', {
+      review_id: reviewId,
+      plan: event.planContent,
+      options: (event.options ?? []).filter((option) => !option.disabled).map((option) => ({ id: option.id, label: option.label })),
+    })
+  })
+
+  onStatus('plan_review_resolved', (event, ctx) => {
+    updateRuntimeOmpSessionMetadata(ctx)
+    if (!ompPlanReview || ompPlanReview.reviewId !== event.reviewId) return
+    ompPlanReview.stopInput()
+    ompPlanReview = null
+    let isIdle = true
+    try {
+      if (typeof ctx?.isIdle === 'function') isIdle = ctx.isIdle() === true
+    } catch {}
+    post('plan_review_resolved', { is_idle: isIdle })
+  })
+
   onStatus('ui_prompt_start', () => {
     // Idle utility dialogs are not agent work; do not create a completion boundary for them.
     if (isOmpRuntime() || !piTurnInFlight) return
@@ -758,19 +773,42 @@ export default function (pi): void {
     if (isOmpRuntime() || piUiPromptDepth === 0) return
     piUiPromptDepth--
     if (piUiPromptDepth > 0) return
-    // Why: ctx.isIdle throws outright once a session-switching modal invalidates the
-    // runner (it calls assertActive), so local turn state is the floor, not a fallback:
-    // with no turn in flight, no later event is coming to correct a working verdict, so
-    // only consult ctx when this process believes work is running.
+    // Session-switching dialogs can invalidate ctx.isIdle; trust local no-turn state when no later end event can correct it.
     let isIdle = !piTurnInFlight
     try {
       if (!isIdle && typeof ctx?.isIdle === 'function') isIdle = ctx.isIdle() === true
     } catch {
-      // Why: a runner this very modal invalidated cannot answer; keep the local verdict.
+      // Invalidated runners cannot answer; retain local state.
     }
-    // Why: Pi reports idle once its own turn settles, but children still hold the run open.
+    // Pi can be idle while its children still own the run.
     isIdle &&= !isHeldByChildren()
     post('ui_prompt_end', { is_idle: isIdle })
+  })
+
+  // Why: set only from a finished reply until its settle post, so a later /compact names no old turn.
+  let replyFinishedAt: number | undefined
+
+  function takeCompletedReplyFields(): Record<string, unknown> {
+    const fields = replyFinishedAt === undefined ? {} : { turn_completed_at: replyFinishedAt }
+    replyFinishedAt = undefined
+    return fields
+  }
+
+  // Why: a run cut off mid-tool, failed or aborted has no finished reply to announce.
+  function recordReplyFinish(event): void {
+    let reply: { stopReason?: unknown } | undefined
+    for (const message of Array.isArray(event?.messages) ? event.messages : []) {
+      if (message?.role === 'assistant') reply = message
+    }
+    const finished = reply?.stopReason === 'stop' || reply?.stopReason === 'length'
+    replyFinishedAt = finished && !isOmpRuntime() ? Date.now() : undefined
+  }
+
+  onStatus('session_before_compact', (event, ctx) => {
+    if (replyFinishedAt === undefined || isHeldByChildren()) return
+    if (event?.willRetry === true || event?.reason === 'overflow') return
+    if (typeof ctx?.hasPendingMessages === 'function' && ctx.hasPendingMessages()) return
+    post('compaction_start', { turn_completed_at: replyFinishedAt })
   })
 
   pi.on('model_select', (event, ctx) => {
@@ -780,10 +818,7 @@ export default function (pi): void {
     post('model_select')
   })
 
-  // Why: capture the assistant's final text on each completed message
-  // so the dashboard preview reflects the most recent reply even before
-  // agent_end fires. message_end is the right hook because pi guarantees
-  // it fires after the message is finalized (post-streaming).
+  // message_end finalizes preview text before agent_end, so dashboards see the latest reply sooner.
   onStatus('message_end', (event, ctx) => {
     updateRuntimeOmpSessionMetadata(ctx)
     if (event.message?.role !== 'assistant') return
@@ -792,10 +827,7 @@ export default function (pi): void {
     post('message_end', { role: 'assistant', text })
   })
 
-  // Why: modern Pi stays non-idle across retry/compaction/follow-up work,
-  // while legacy Pi becomes idle after its final agent_end handlers.
-  // OMP instead marks non-terminal agent_end events with willContinue, so it
-  // returns before the recheck timer is ever armed.
+  // Modern Pi stays busy through retry/compaction; OMP willContinue bypasses this legacy-idle recheck.
   const AGENT_END_IDLE_RECHECK_MS = 25
   const AGENT_END_IDLE_RECHECK_MAX_MS = 250
   let agentSettledSupported = false
@@ -821,17 +853,44 @@ export default function (pi): void {
   function postSubagentsUpdate(): void {
     if (!hasQueuedPost()) post('subagents_update')
   }
+  function forgetFinishedOmpSubagents(ctx): boolean {
+    const live = new Set<unknown>()
+    try {
+      const running = ctx?.getAsyncJobSnapshot?.()?.running
+      if (!Array.isArray(running)) return false
+      for (const job of running) {
+        if (job?.type !== 'task') continue
+        if (typeof job.agentId !== 'string') return false
+        live.add(job.agentId)
+      }
+      const registry = pi.pi?.AgentRegistry?.global?.()
+      if (typeof registry?.get !== 'function') return false
+      for (const id of lifecycleState.active) {
+        const session = registry.get(id)?.session
+        if (session?.isStreaming === true || session?.hasPendingAsyncWork?.() === true) live.add(id)
+      }
+    } catch {
+      return false
+    }
+    let wasVisible = false
+    for (const id of lifecycleState.active) {
+      if (live.has(id)) continue
+      wasVisible ||= isVisibleSubagent(lifecycleState, id)
+      forgetSubagent(id)
+    }
+    return wasVisible
+  }
   const readLabel = (value: unknown): string | undefined => typeof value === 'string' && value.trim() ? value : undefined
   lifecycleState.onEvent = (event: unknown, forcedStatus?: string): void => {
     if (!event || typeof event !== 'object') return
-    const record = event as { id?: unknown; runId?: unknown; agent?: unknown; description?: unknown; mode?: unknown; parentWorkflowRunId?: unknown }
+    const record = event as { id?: unknown; runId?: unknown; agent?: unknown; description?: unknown; workflowKey?: unknown; mode?: unknown; parentWorkflowRunId?: unknown }
     const id = typeof record.id === 'string' && record.id ? record.id : typeof record.runId === 'string' ? record.runId : ''
     const status = forcedStatus ?? (event as { status?: unknown }).status
     if (!id) return
     if (isOmpRuntime() && !lifecycleState.ownsPane) return
     if (status === 'started') {
       lifecycleState.active.add(id)
-      if (!subagentDetails.has(id)) subagentDetails.set(id, { agentType: readLabel(record.agent), description: readLabel(record.description), startedAt: Date.now(), workflow: record.mode === 'workflow', parent: readLabel(record.parentWorkflowRunId), registration })
+      if (!subagentDetails.has(id)) subagentDetails.set(id, { agentType: readLabel(record.agent), description: readLabel(record.description) ?? readLabel(record.workflowKey) ?? (isOmpRuntime() ? id : undefined), startedAt: Date.now(), workflow: record.mode === 'workflow', parent: readLabel(record.parentWorkflowRunId), registration })
       if (!isTurnInFlight() && (isOmpRuntime() || lifecycleState.runGeneration === 0 || lifecycleState.completionPostedGeneration === lifecycleState.runGeneration)) {
         lifecycleState.waiting = true
         lifecycleState.completionPostedGeneration = -1
@@ -886,7 +945,8 @@ export default function (pi): void {
     if (lifecycleState.completionPostedGeneration === lifecycleState.endedRunGeneration) return false
     lifecycleState.completionPostedGeneration = lifecycleState.endedRunGeneration
     piTurnInFlight = false
-    post('agent_end', final ? { session_boundary: true } : {}, final)
+    const replyFields = takeCompletedReplyFields()
+    post('agent_end', final ? { session_boundary: true } : replyFields, final)
     return true
   }
 
@@ -958,8 +1018,10 @@ export default function (pi): void {
       return
     }
     lifecycleState.endedRunGeneration = lifecycleState.runGeneration
+    recordReplyFinish(event)
     if (isOmpRuntime()) {
-      postAgentEndOnce()
+      const prunedVisible = forgetFinishedOmpSubagents(ctx)
+      if (!postAgentEndOnce() && prunedVisible) postSubagentsUpdate()
       return
     }
     if (agentSettledSupported) return
