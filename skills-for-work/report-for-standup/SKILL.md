@@ -8,11 +8,11 @@ disable-model-invocation: true
 
 Jason pastes this into the async standup thread in Slack. Teammates skim it between their own posts, so it reads like one of theirs: a few terse bullets, in Jason's own voice. The samples at the bottom are the spec; the rules only name what they show.
 
-Source: the work in this conversation. If the conversation carries none, use `git log --author=jason --since=yesterday` across the repo.
+Source: the work in this conversation. If the conversation carries none, use `git log --author=jason --since=yesterday` across the repo, plus `gh pr list --author @me` for open PRs.
 
 ## Shape
 
-One `•` bullet per workstream, two or three in all, usually 30 to 60 words. Order: shipped, then in hand, then next up or a blocker. Each bullet starts on the verb, subject dropped.
+One `•` bullet per workstream, two or three in all. Every line, headline or sub-bullet, is 3 to 8 words; a link label doesn't count. Cut a line to fit rather than split it. Order: shipped, then in hand, then next up or a blocker. Each bullet starts on the verb, subject dropped.
 
 The `•` line is a headline: what changed and why anyone cares, in plain words ("Replaced babel react-compiler with native rust port, frontend builds faster"). Library names, counts, and status go underneath as indented `-` sub-bullets, one fact each. A workstream with only one thing to say stays a single `•` line. When a post feels long, cut sub-bullets before cutting workstreams.
 
@@ -32,7 +32,7 @@ Personal logistics are one more bullet with the time window and who covers: "OOO
 - A headline is a terse clause and can end bare. A sub-bullet is a full sentence ending in a period; a second thought is a second sentence.
 - Contractions keep their apostrophes ("couldn't", "I'm").
 - Capitalize only proper nouns and product names. A role is lowercase ("admins", not "Admin's").
-- A trailing link sits inside the sentence, before the period: `… date picker tests <url|ENG-1002>.`
+- A trailing link is a bare URL ending the line: `… date picker tests https://linear.app/…/ENG-1002`
 - An emoji sits after the sentence it reacts to, then the next sentence starts: `… the day the sub ends. :see_no_evil: Trying to …`
 
 ## Slack formatting
@@ -40,7 +40,7 @@ Personal logistics are one more bullet with the time window and who covers: "OOO
 The post is Slack mrkdwn, pasted as plain text into the message box:
 
 - One `•` headline per line, its sub-bullets on the lines under it as `  - ` (two-space indent). Nothing before or after the list.
-- Links are `<url|label>`: a ticket is its Linear link labelled with the ID, `<url|ENG-1001>`, or the ID with its title, `<url|ENG-1004: Account settings redesign>`. A PR is `<url|pr>` or the bare GitHub URL.
+- Links are bare URLs. Slack's message box doesn't parse `<url|label>` when pasted as plain text; it turns the whole string into one broken link. A ticket is its bare Linear URL, a PR its bare GitHub URL.
 - Emoji are `:shortcode:`.
 - Emphasis, if any, is Slack's `*bold*` and `_italic_`, never Markdown headers or `**double asterisks**`.
 
@@ -52,7 +52,7 @@ Copy the post to the clipboard, then show it in the reply so Jason can check it 
 pbcopy <<'CLIP_a93b2f'
 • Replaced babel react-compiler with native rust port, frontend builds faster
   - Swapped the eslint-plugin-react-compiler rc for eslint-plugin-react-hooks.
-• Working on improved search indexing <url|ENG-1001>.
+• Working on improved search indexing https://linear.app/acme/issue/ENG-1001
 CLIP_a93b2f
 ```
 
@@ -65,7 +65,7 @@ From Jason's past posts, with casing and punctuation normalized to the rules abo
 ```
 • Replaced babel react-compiler with native rust port, frontend builds faster
   - Swapped the eslint-plugin-react-compiler rc for eslint-plugin-react-hooks.
-• Atlas staff admin work into one stack PR (<url|pr>)
+• Atlas staff admin work into one stack PR https://github.com/acme-org/app/pull/1234
   - Sessions now show who started them plus their models and tokens next to cost, and you can filter by person and background runs.
   - Finishing QA fixes on frontend conventions now, trying to get it ready for merge soon!
 ```
@@ -81,14 +81,14 @@ From Jason's past posts, with casing and punctuation normalized to the rules abo
 ```
 
 ```
-• Deployed PR for date picker tests <url|ENG-1002>.
-• Working on improved search indexing <url|ENG-1001>.
-• Going to need additional context on the next ticket. I tried to go spelunking but couldn't quite figure it out: <url|ENG-1003>.
+• Deployed PR for date picker tests https://linear.app/acme/issue/ENG-1002
+• Working on improved search indexing https://linear.app/acme/issue/ENG-1001
+• Going to need additional context on the next ticket. I tried to go spelunking but couldn't quite figure it out: https://linear.app/acme/issue/ENG-1003
 ```
 
 ```
-• Fixed sticky header content overlay & out of viewport billing upgrade CTA (<url|pr>).
-• Working on <url|ENG-1004: Account settings redesign>, coming along nicely so far. Doing the first rounds of testing on dev-5.
+• Fixed sticky header content overlay & out of viewport billing upgrade CTA https://github.com/acme-org/app/pull/1234
+• Working on Account settings redesign, coming along nicely so far. Doing the first rounds of testing on dev-5.
 ```
 
 Done when the post sits inside the shape above, every piece of work from the source either has a bullet or was dropped on purpose, and the post is on the clipboard.
