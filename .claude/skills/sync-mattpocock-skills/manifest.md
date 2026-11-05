@@ -26,6 +26,7 @@ Paths are relative to this repo (local) and to the upstream repo root (upstream)
 | `vendor-mattpocock/review-code` | `skills/engineering/code-review` | renamed: frontmatter `name` is `review-code` |
 | `vendor-mattpocock/writing-for-agents` | `skills/productivity/writing-for-agents` | none |
 | `vendor-mattpocock/research` | `skills/engineering/research` | none |
+| `vendor-mattpocock/retro` | `skills/engineering/retro` | none |
 
 ## Related, not tracked
 
