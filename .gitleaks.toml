@@ -1,0 +1,6 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Example tokens in the published OAuth RFC texts"
+paths = ['''best-practices-oauth2-server/rfcs/''']
