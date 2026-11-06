@@ -66,8 +66,3 @@ brew "agavra/tap/tuicr"
 brew "ffmpeg"
 brew "imagemagick"
 brew "librsvg"
-
-# Agent tooling
-brew "anomalyco/tap/opencode"
-brew "graykode/tap/abtop"
-brew "raine/workmux/workmux"
