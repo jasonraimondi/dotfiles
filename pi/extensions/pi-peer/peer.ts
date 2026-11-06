@@ -17,7 +17,7 @@ export type PeerInfo = {
   name: string;
   cwd: string;
   pid: number;
-  paneId: string;
+  terminalId: string;
   socketPath: string;
 };
 export type PeerMessage = { id: string; from: PeerInfo; body: string };
@@ -29,7 +29,7 @@ type Options = {
   sessionId: string;
   name: string;
   cwd: string;
-  paneId?: string;
+  terminalId?: string;
   receive: (message: PeerMessage) => void;
 };
 
@@ -40,14 +40,14 @@ function object(value: unknown): value is Record<string, unknown> {
 function peerInfo(value: unknown): PeerInfo {
   if (!object(value) || value.version !== PROTOCOL || typeof value.instanceId !== "string" || !ID.test(value.instanceId)
     || value.address !== `pi:${value.instanceId}` || typeof value.sessionId !== "string"
-    || typeof value.name !== "string" || typeof value.cwd !== "string" || typeof value.paneId !== "string"
+    || typeof value.name !== "string" || typeof value.cwd !== "string" || typeof value.terminalId !== "string"
     || typeof value.socketPath !== "string" || typeof value.pid !== "number" || !Number.isSafeInteger(value.pid) || value.pid <= 0) {
     throw new Error("Invalid pi-peer registry record");
   }
   return {
     version: PROTOCOL, instanceId: value.instanceId, address: `pi:${value.instanceId}`,
     sessionId: value.sessionId, name: value.name, cwd: value.cwd, pid: value.pid,
-    paneId: value.paneId, socketPath: value.socketPath,
+    terminalId: value.terminalId, socketPath: value.socketPath,
   };
 }
 
@@ -169,7 +169,7 @@ export async function startPeer(options: Options) {
   const info: PeerInfo = {
     version: PROTOCOL, instanceId, address: `pi:${instanceId}`, sessionId: options.sessionId,
     name: (options.name || "(unnamed)").slice(0, 160), cwd: options.cwd, pid: process.pid,
-    paneId: options.paneId || "", socketPath,
+    terminalId: options.terminalId || "", socketPath,
   };
   const sockets = new Set<Socket>();
   const accepted = new Map<string, string>();

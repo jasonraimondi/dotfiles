@@ -1,6 +1,6 @@
 ---
 name: fleet-implement
-description: Implement a spec with an agent fleet in Herdr tabs - Claude implementers running /implement, GPT adversarial auditors, a final Opus + Sol deep review triaged by Fable or Astra, this session as coordinator.
+description: Implement a spec with an agent fleet in herdr-core terminals - Claude implementers running /implement, GPT adversarial auditors, a final Opus + Sol deep review triaged by Fable or Astra, this session as coordinator.
 disable-model-invocation: true
 argument-hint: "<spec path | ticket id | pasted spec> (empty: read the clipboard with pbpaste)"
 ---
@@ -55,7 +55,7 @@ Dispatch, end the turn, and act on the summary when it arrives.
 
 ## 2. Launch
 
-Follow the `agent-fleet` preflight from its SKILL.md and `references/cross-harness.md` → *Preflight*, *Spawn* and *Send a brief*. Open another reference only for the flag or failure in front of you; a launcher failure goes to a subagent that returns the workaround. Then spawn with `--placement tab --per-tab 2 --title "<mission in five words or fewer>"`, one `NAME:DIR@MODEL` per peer.
+Follow the `agent-fleet` preflight from its SKILL.md and `references/cross-harness.md` → *Preflight*, *Spawn* and *Send a brief*. Open another reference only for the flag or failure in front of you; a launcher failure goes to a subagent that returns the workaround. Then spawn with one `NAME:DIR@MODEL` per peer; each opens as its own tab.
 
 Spawn each peer just in time, when its work is ready. Launch only the implementers here: GPT implementers in one call with `--peer-harness pi`, Claude implementers in another. Each auditor spawns when its implementer replies (§3), and the final reviewers and triage peer spawn in their own phases. Auditors reply to the coordinator, which relays their findings, so a Claude implementer launched before the bridge exists needs no bridge hooks.
 
@@ -93,7 +93,7 @@ Done here means every track is implemented, audited, and integrated:
 1. A subagent integrates the track branches onto the stack top, the current branch.
 2. A subagent runs the project's repo-wide lint and full test suite.
 3. When the brief names an integration coordinator, stage (§4a) before the teardown.
-4. Tear down the implementer and auditor peers per `agent-fleet`: kill PIDs, close only the tabs the launcher created, confirm with `peer-addr.py`. Leave the bridge running; the final reviewers need it.
+4. Tear down the implementer and auditor peers per `agent-fleet`: run the printed `hc kill <t> && hc rm <t>` for their terminals, confirm with `peer-addr.py`. Leave the bridge running; the final reviewers need it.
 
 ## 4a. Stage
 
@@ -114,7 +114,7 @@ Under a lead, this is the push gate: send STATUS `phase: PR` and start §6 in th
 
 The final review runs once per implementation. It is slow and expensive, so never rerun it: not after the triage fixes, not after a failing test, not to confirm a fix. Fixes made after it are checked by lint and tests alone.
 
-Two fresh peers review the combined diff with `deep-review-code`, one from each family, in one tab titled `final review`:
+Two fresh peers review the combined diff with `deep-review-code`, one from each family:
 
 - `opus` reviewer.
 - `gpt-6.1-sol:high` reviewer, launched first with `--peer-harness pi`.

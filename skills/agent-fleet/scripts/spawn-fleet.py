@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Launch agent fleets in Herdr and verify messaging readiness."""
+"""Launch agent fleets in herdr-core terminals and verify messaging readiness."""
 
 import argparse
 import json
@@ -16,37 +16,29 @@ from harness import (bridge_node, bridge_script, coordinator, detect_harness, li
                      pi_records, run_bridge)
 
 
-# Herdr agent names and Claude session names come from the same argument, so a
+# hc terminal names and Claude session names come from the same argument, so a
 # spec name must satisfy the stricter of the two.
-HERDR_NAME = re.compile(r"^[a-z][a-z0-9_-]{0,31}$")
+PEER_NAME = re.compile(r"^[a-z][a-z0-9_-]{0,31}$")
 ADDR_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "peer-addr.py")
 HOOK_TIMEOUT_S = 86400
 HOOK_DEADLINE_MARGIN_S = 60
-HERDR_AGENT_START_MAX_MS = 300_000
+# hc gives explicit commands the bare login-session environment; an interactive
+# login shell restores the PATH (mise shims, pnpm) a peer's tools expect.
+EXEC_ARGS = 'exec "$0" "$@"'
 
 
-def herdr(*args, timeout=30):
-    """Run a bounded Herdr command and return its result payload."""
+def hc(*args, timeout=30):
+    """Run a bounded hc command and return its JSON payload."""
     try:
-        result = subprocess.run(["herdr", *args], capture_output=True, text=True, timeout=timeout)
+        result = subprocess.run(["hc", *args], capture_output=True, text=True, timeout=timeout)
     except subprocess.TimeoutExpired as error:
-        raise RuntimeError(f"Herdr command timed out: {' '.join(args)}") from error
+        raise RuntimeError(f"hc command timed out: {' '.join(args)}") from error
     if result.returncode != 0:
-        raise RuntimeError(f"herdr {' '.join(args)}\n  → {result.stderr.strip()}")
+        raise RuntimeError(f"hc {' '.join(args)}\n  → {(result.stderr or result.stdout).strip()}")
     try:
-        return json.loads(result.stdout).get("result", {})
+        return json.loads(result.stdout)
     except ValueError:
-        raise RuntimeError(f"herdr {' '.join(args)}\n  → non-JSON: {result.stdout!r}")
-
-
-def id_of(payload, kind):
-    """Read an opaque id, whether herdr returned the object or the bare id."""
-    value = payload.get(kind)
-    if isinstance(value, dict):
-        value = value.get(f"{kind.rsplit('_', 1)[-1]}_id") or value.get("id")
-    if not isinstance(value, str):
-        raise RuntimeError(f"no {kind} id in herdr result: {payload!r}")
-    return value
+        raise RuntimeError(f"hc {' '.join(args)}\n  → non-JSON: {result.stdout!r}")
 
 
 def parse_specs(raw):
@@ -59,9 +51,9 @@ def parse_specs(raw):
         name = name.strip()
         directory, at, model = rest.rpartition("@") if "@" in rest else (rest, "", "")
         model = model.strip()
-        if not HERDR_NAME.match(name):
+        if not PEER_NAME.match(name):
             sys.exit(
-                f"error: '{name}' is not a usable name. Herdr agent names start "
+                f"error: '{name}' is not a usable name. Peer names start "
                 "with a lowercase letter and hold up to 32 of [a-z0-9_-]."
             )
         if not directory.strip():
@@ -87,21 +79,16 @@ def parse_specs(raw):
     return specs
 
 
-def new_matching_records(before, wanted, harness="claude", panes=()):
+def new_matching_records(before, wanted, harness="claude", terminals=()):
     if harness == "pi":
         return [record for record in pi_records()
-                if record["paneId"] in panes and record["name"] in wanted
+                if record["terminalId"] in terminals and record["name"] in wanted
                 and record["instanceId"] not in before]
     candidates = [record for record in live_records()
                   if record_identity(record) not in before and normalized_name(record) in wanted]
     if not candidates:
         return []
-    owned_pids = set()
-    for pane in panes:
-        info = herdr("pane", "process-info", "--pane", pane).get("process_info", {})
-        if info.get("pane_id") != pane:
-            raise RuntimeError(f"Could not verify process ownership for pane {pane}")
-        owned_pids.update(process.get("pid") for process in info.get("foreground_processes", []))
+    owned_pids = {(hc("get", terminal).get("foreground") or {}).get("pid") for terminal in terminals}
     return [record for record in candidates if record.get("pid") in owned_pids]
 
 
@@ -132,16 +119,6 @@ def claude_peer_settings(name, bridge_script):
     return json.dumps({"hooks": {"SessionStart": [{"hooks": [hook]}], "Stop": [{"hooks": [hook]}]}})
 
 
-def write_claude_peer_settings(name, bridge_script):
-    """Hand `--settings` a file path: typed inline, the hook JSON pushes the launch command past the tty's 1024-byte line buffer."""
-    directory = os.path.join(pi_directory(), "claude-settings")
-    os.makedirs(directory, exist_ok=True)
-    path = os.path.join(directory, f"{name}.json")
-    with open(path, "w") as handle:
-        handle.write(claude_peer_settings(name, bridge_script))
-    return path
-
-
 def claude_peer_system_prompt(name):
     return (
         f"You are {name}, a peer session in an agent fleet launched by the user's coordinator. "
@@ -153,7 +130,7 @@ def claude_peer_system_prompt(name):
 
 
 def ensure_coordinator_bridge(own_record):
-    """Give a Claude coordinator a pi: address before any pane exists."""
+    """Give a Claude coordinator a pi: address before any peer terminal exists."""
     args = ["start", "--owner-pid", str(own_record["pid"]), "--name", normalized_name(own_record)]
     if own_record.get("sessionId"):
         args += ["--session-id", own_record["sessionId"]]
@@ -163,71 +140,28 @@ def ensure_coordinator_bridge(own_record):
     return bridge
 
 
-def print_cleanup(records, layout, harness="claude", bridge_stop=None):
-    pids = sorted(
-        {record.get("pid") for record in records if isinstance(record.get("pid"), int)}
-    )
+def print_cleanup(terminals, harness="claude", bridge_stop=None):
     print("\nTear the fleet down when its work is done, unless the user asked to keep it.")
-    print("Recheck addresses/PIDs before use; PIDs can be reused.")
-    print("Kill the processes before closing their panes:")
-    if pids:
-        print("  kill " + " ".join(str(pid) for pid in pids))
-    else:
-        print("  No launched PID registered yet; inspect the panes before closing them.")
-    if layout["placement"] == "workspace":
-        for workspace in layout["workspaces"]:
-            print(f"  herdr workspace close {workspace}")
-    elif layout["placement"] == "tab":
-        for tab in layout["tabs"]:
-            print(f"  herdr tab close {tab}")
-    else:
-        # Split placement lives in the caller's own tab. Close the new panes
-        # only. Never close this tab or this workspace.
-        for pane in layout["panes"]:
-            print(f"  herdr pane close {pane}")
+    for terminal in terminals:
+        print(f"  hc kill {terminal} && hc rm {terminal}")
     print(f"  python3 {shlex.quote(ADDR_SCRIPT)} --harness {harness}")
     if bridge_stop:
         print("Optional: stopping the coordinator bridge ends its pi: reachability.")
         print(f"  {bridge_stop}")
 
 
-def label_panes(specs, panes):
-    """Label each pane with its session name so the fleet reads at a glance."""
-    for (name, _, _), pane in zip(specs, panes):
-        try:
-            herdr("pane", "rename", pane, name)
-        except RuntimeError as error:
-            print(f"note: could not label pane {pane}: {error}", file=sys.stderr)
+def window_labels():
+    """Open each peer as a tab in the coordinator's space; a coordinator outside the window gets hidden peers."""
+    space = hc("get", os.environ["HC_TERMINAL_ID"]).get("labels", {}).get("herdr.space")
+    if not space:
+        print("note: this terminal is not in the Herdr window, so peers start hidden. Show one with herdr-app.",
+              file=sys.stderr)
+        return []
+    return ["--label", f"herdr.space={space}"]
 
 
-def shell_at_prompt(pane):
-    """True once the pane's shell is the only foreground process: its startup files have finished."""
-    info = herdr("pane", "process-info", "--pane", pane).get("process_info", {})
-    shell = info.get("shell_pid")
-    foreground = [process.get("pid") for process in info.get("foreground_processes", [])]
-    return bool(shell) and info.get("foreground_process_group_id") == shell and foreground == [shell]
-
-
-def wait_for_shell_prompt(pane, deadline):
-    """Block until the pane is at its interactive prompt, which `herdr agent start` requires.
-
-    Keystrokes typed while the shell is still running its startup files land in
-    the tty's canonical line buffer, which macOS caps at 1024 bytes and silently
-    truncates, so typing early leaves a half-typed command at the prompt and no
-    agent.
-    """
-    settled = 0
-    while time.monotonic() < deadline:
-        settled = settled + 1 if shell_at_prompt(pane) else 0
-        if settled == 2:
-            return
-        time.sleep(0.2)
-    raise RuntimeError(f"pane {pane} did not reach its shell prompt in time; inspect it with: herdr pane read {pane}")
-
-
-def start_agent(name, pane, harness, permission_mode, extra, timeout_ms, settings=None, system_prompt=None, model=None):
-    """Start an independent session without borrowing another harness's flags."""
-    timeout_ms = min(timeout_ms, HERDR_AGENT_START_MAX_MS)
+def start_agent(name, directory, harness, permission_mode, extra, labels, settings=None, system_prompt=None, model=None):
+    """Start an independent session without borrowing another harness's flags; return its terminal address."""
     native = ["--name", name]
     if harness == "claude":
         native += ["--permission-mode", permission_mode or "auto"]
@@ -237,104 +171,14 @@ def start_agent(name, pane, harness, permission_mode, extra, timeout_ms, setting
         native += ["--append-system-prompt", system_prompt]
     if model:
         native += ["--model", model]
-    herdr("agent", "start", name, "--kind", harness, "--pane", pane,
-          "--timeout", str(timeout_ms), "--", *native, *extra,
-          timeout=timeout_ms / 1000)
-
-
-def split_pane(anchor, direction, directory):
-    return id_of(
-        herdr(
-            "pane",
-            "split",
-            "--pane",
-            anchor,
-            "--direction",
-            direction,
-            "--cwd",
-            directory,
-            "--no-focus",
-        ),
-        "pane",
-    )
-
-
-def build_splits(specs, caller_pane, direction, layout):
-    """Put each session in a sibling pane of the caller's own pane."""
-    if not caller_pane:
-        sys.exit("error: no caller pane. Run this inside a Herdr-managed pane.")
-    if len(specs) > 3:
-        print(
-            f"note: {len(specs)} sibling panes get cramped. "
-            "Use --placement tab or --placement workspace.",
-            file=sys.stderr,
-        )
-    panes = layout["panes"]
-    anchor = caller_pane
-    for _, directory, _ in specs:
-        pane = split_pane(anchor, direction, directory)
-        panes.append(pane)
-        anchor = pane  # chain, so the panes line up in spec order
-    return layout
-
-
-def build_groups(specs, placement, workspace, prefix, per_tab, direction, title, layout):
-    """Record each created resource immediately, including partial layouts."""
-    tabs = layout["tabs"]
-    workspaces = layout["workspaces"]
-    panes = layout["panes"]
-    groups = [specs[index : index + per_tab] for index in range(0, len(specs), per_tab)]
-    for group_index, group in enumerate(groups, 1):
-        label = f"f{group_index}: {title}" if title else f"{prefix}-{group_index}"
-        first_dir = group[0][1]
-        if placement == "workspace":
-            created = herdr(
-                "workspace",
-                "create",
-                "--cwd",
-                first_dir,
-                "--label",
-                label,
-                "--no-focus",
-            )
-            workspaces.append(id_of(created, "workspace"))
-        else:
-            args = ["tab", "create", "--cwd", first_dir, "--label", label, "--no-focus"]
-            if workspace:
-                args += ["--workspace", workspace]
-            created = herdr(*args)
-            tabs.append(id_of(created, "tab"))
-        anchor = id_of(created, "root_pane")
-        panes.append(anchor)
-        for _, directory, _ in group[1:]:
-            anchor = split_pane(anchor, direction, directory)
-            panes.append(anchor)
-    return layout
+    launched = hc("run", "--bg", "--json", "--name", name, "--cwd", directory, *labels,
+                  "--", os.environ.get("SHELL") or "/bin/zsh", "-ilc", EXEC_ARGS, harness, *native, *extra)
+    return launched["address"]
 
 
 def main():
     parser = argparse.ArgumentParser(add_help=True)
     parser.add_argument("specs", nargs="+", metavar="NAME:DIR[@MODEL]")
-    parser.add_argument(
-        "--placement",
-        choices=("split", "tab", "workspace"),
-        default="split",
-        help="split: sibling panes in this tab. tab: new tabs in this workspace. "
-        "workspace: new workspaces (default: split)",
-    )
-    parser.add_argument(
-        "--direction",
-        choices=("right", "down"),
-        default="right",
-        help="direction of each new pane (default: right)",
-    )
-    parser.add_argument("--per-tab", type=int, default=2, choices=(1, 2))
-    parser.add_argument("--prefix", default="fleet")
-    parser.add_argument(
-        "--title",
-        help="short fleet mission, five words or fewer; tabs/workspaces are "
-        "labeled 'f1: <title>', 'f2: <title>', … (default: <prefix>-N)",
-    )
     parser.add_argument("--harness", choices=("pi", "claude"))
     parser.add_argument("--peer-harness", choices=("pi", "claude"),
                         help="harness the peers run in (default: the coordinator harness); Claude peers get "
@@ -346,22 +190,16 @@ def main():
     parser.add_argument("--permission-mode")
     args = parser.parse_args()
 
-    if os.environ.get("HERDR_ENV") != "1":
-        parser.error("not inside a Herdr-managed pane")
+    if not os.environ.get("HC_TERMINAL_ID"):
+        parser.error("not inside a herdr-core terminal: HC_TERMINAL_ID is unset")
     if args.timeout <= 0:
         parser.error("--timeout must be positive")
-    if args.title and len(args.title.split()) > 5:
-        parser.error("--title must be five words or fewer")
-    if args.placement == "split" and not os.environ.get("HERDR_PANE_ID"):
-        parser.error("split placement needs HERDR_PANE_ID")
-    if args.placement == "tab" and not os.environ.get("HERDR_WORKSPACE_ID"):
-        parser.error("tab placement needs HERDR_WORKSPACE_ID")
 
     try:
         harness = detect_harness(args.harness)
         peer_harness = args.peer_harness or harness
-        if not shutil.which("herdr") or not shutil.which(peer_harness):
-            raise RuntimeError(f"Install herdr and {peer_harness} before spawning")
+        if not shutil.which("hc") or not shutil.which(peer_harness):
+            raise RuntimeError(f"Install herdr-core (hc) and {peer_harness} before spawning")
         if peer_harness == "pi" and (args.permission_mode or args.claude_arg):
             raise RuntimeError("--permission-mode and --claude-arg are Claude-only")
         own = coordinator(harness)
@@ -387,34 +225,23 @@ def main():
 
     specs = parse_specs(args.specs)
     wanted = {name for name, _, _ in specs}
-    layout = {"placement": args.placement, "tabs": [], "workspaces": [], "panes": []}
+    terminals = []
     records = []
     print(f"harness {harness}; peer harness {peer_harness}; coordinator {own_address}")
     if node:
         print(f"bridge node {node}")
     try:
-        if args.placement == "split":
-            build_splits(specs, os.environ.get("HERDR_PANE_ID"), args.direction, layout)
-        else:
-            build_groups(specs, args.placement, os.environ.get("HERDR_WORKSPACE_ID"),
-                         args.prefix, args.per_tab, args.direction, args.title, layout)
-        print(f"panes {', '.join(layout['panes'])}")
-        label_panes(specs, layout["panes"])
-
+        labels = window_labels()
         deadline = time.monotonic() + args.timeout
-        for (name, _, model), pane in zip(specs, layout["panes"]):
-            remaining = deadline - time.monotonic()
-            if remaining <= 0:
-                raise RuntimeError("Fleet startup deadline expired")
-            settings = write_claude_peer_settings(name, peer_bridge) if bridged_peers else None
+        for name, directory, model in specs:
+            settings = claude_peer_settings(name, peer_bridge) if bridged_peers else None
             system_prompt = claude_peer_system_prompt(name) if bridged_peers else None
-            wait_for_shell_prompt(pane, deadline)
-            remaining = deadline - time.monotonic()
-            start_agent(name, pane, peer_harness, args.permission_mode, extra, max(1, int(remaining * 1000)),
-                        settings, system_prompt, model or args.model)
+            terminals.append(start_agent(name, directory, peer_harness, args.permission_mode, extra, labels,
+                                         settings, system_prompt, model or args.model))
+        print(f"terminals {', '.join(terminals)}")
 
         while True:
-            records = new_matching_records(before, wanted, peer_harness, layout["panes"])
+            records = new_matching_records(before, wanted, peer_harness, terminals)
             ready = ready_by_name(records, peer_harness, bridged_peers)
             if len(ready) == len(wanted) or time.monotonic() >= deadline:
                 break
@@ -430,19 +257,15 @@ def main():
             else:
                 print(f"- {name:<24} messaging not ready")
         if len(ready) != len(wanted):
-            raise RuntimeError("Some peers are not ready. Use herdr agent get/read <name>; resolve trust or startup prompts with the user.")
+            raise RuntimeError("Some peers are not ready. Use hc get/read <name>; resolve trust or startup prompts with the user.")
         print(f"\n{len(ready)} ready. Send briefs with the addresses above.")
         return 0
     except (RuntimeError, OSError, KeyboardInterrupt) as error:
         print(f"error: {error or 'interrupted'}", file=sys.stderr)
         return 1
     finally:
-        if layout["panes"] or layout["tabs"] or layout["workspaces"]:
-            try:
-                records = new_matching_records(before, wanted, peer_harness, layout["panes"])
-            except (RuntimeError, OSError) as error:
-                print(f"warning: could not refresh PIDs: {error}", file=sys.stderr)
-            print_cleanup(records, layout, peer_harness, bridge_stop)
+        if terminals:
+            print_cleanup(terminals, peer_harness, bridge_stop)
 
 
 if __name__ == "__main__":

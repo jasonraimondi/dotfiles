@@ -187,7 +187,7 @@ def listing_pi(args):
             mark = "." if record["sessionId"] == own_id else "+"
             print(f"{mark} {record['name']}  pid {record['pid']}  {record['address']}")
             if args.details:
-                print(f"    session {record['sessionId']}  pane {record['paneId']}  cwd {record['cwd']}")
+                print(f"    session {record['sessionId']}  terminal {record['terminalId']}  cwd {record['cwd']}")
         if not records:
             print("No reachable pi-peer sessions matched.")
     return 0 if records or (not args.me and args.name is None and args.pid is None) else 1

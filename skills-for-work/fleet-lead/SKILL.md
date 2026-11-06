@@ -7,14 +7,14 @@ argument-hint: "<spec|handoff path>…"
 
 # Fleet lead
 
-Run the specs or handoffs given as arguments, one impl coordinator at a time, against one long-lived integration coordinator that merges, serves, and observes each stage. This session is the lead: it plans once, spawns, routes, runs gated commands on Jason's yes, chains the queue, and finishes. It writes no checkout and messages only its two coordinators. Run it in a `jason-ai-research` Herdr tab.
+Run the specs or handoffs given as arguments, one impl coordinator at a time, against one long-lived integration coordinator that merges, serves, and observes each stage. This session is the lead: it plans once, spawns, routes, runs gated commands on Jason's yes, chains the queue, and finishes. It writes no checkout and messages only its two coordinators. Run it in a tab of the `jason-ai-research` Herdr space.
 
 Message formats: [references/protocol.md](references/protocol.md). The integration coordinator's brief: [references/integration.md](references/integration.md).
 
 ## Roles
 
 - **Lead** (this session): ledger, worktree and services lifecycle, gates, priority, chaining, teardown of its coordinators.
-- **integration-coordinator** (`opus`, own Herdr workspace on the integration worktree): single writer of the integration branch; brings services up with `teamqa`; answers every STAGE with RESULT or DEFECT.
+- **integration-coordinator** (`opus`, a tab on the integration worktree): single writer of the integration branch; brings services up with `teamqa`; answers every STAGE with RESULT or DEFECT.
 - **impl-<slug>** (`opus`, a tab in `jason-ai-research`): runs `fleet-implement` on one spec, stages through the integration coordinator, pushes only on GO-PUSH.
 
 ## 1. Plan screen
@@ -48,11 +48,11 @@ Data target dev-11: write `~/.team-qa/services.json` so the `ai` service runs `n
 Two `spawn-fleet.py` calls from `~/.claude/skills/agent-fleet/scripts/`, both `--permission-mode auto`, with the names fixed here for the whole run:
 
 ```bash
-python3 spawn-fleet.py --placement workspace --per-tab 1 --title "<ticket> integration" --permission-mode auto integration-coordinator:<integration worktree>@opus
-python3 spawn-fleet.py --placement tab --per-tab 1 --title "<ticket> impl" --permission-mode auto impl-<slug>:<this checkout>@opus
+python3 spawn-fleet.py --permission-mode auto integration-coordinator:<integration worktree>@opus
+python3 spawn-fleet.py --permission-mode auto impl-<slug>:<this checkout>@opus
 ```
 
-Roster to the ledger: name, `uds:` address, pid, tab or workspace id, role. The lead's own address comes from `peer-addr.py --me`.
+Roster to the ledger: name, `uds:` address, pid, hc terminal id, role. The lead's own address comes from `peer-addr.py --me`.
 
 ## 4. Brief
 
@@ -70,13 +70,12 @@ Then end the turn. Replies wake the lead.
 - **PRIORITY**: Jason's words verbatim with a timestamp, plus the preset `demo` or `checkpoint` where one fits, to both coordinators.
 - **STATUS**: on Jason's ask, answer from the roster and the ledger tail. Rows from STATUS, STAGE, RESULT, and DEFECT go to the ledger with their superseded-by links. STATUS `phase: PR` from an impl coordinator is the push gate: ask Jason one line, then send GO-PUSH on yes or GO-HOLD otherwise; the coordinator replies DONE after its final review and triage.
 - **SAID**: log it; act on it only where it changes a gate or the priority.
-- Herdr notification (`herdr notification show`) for GATE and DONE only.
 
 Respawn: a coordinator that sends STATUS `phase: handoff-written` (its context budget is spent) is spawned again as `<name>-2` with its handoff and the ledger path in the brief; the lead sends ROSTER with the new address to the other coordinator, then tears the old one down.
 
 ## 6. Chain
 
-On DONE: tear the impl coordinator down per `agent-fleet` (kill the pid, close its tab, confirm with `peer-addr.py`). With specs left in the queue, spawn the next `impl-<slug>` as in §3, brief it as in §4 with the same integration coordinator address, and send ROSTER to the integration coordinator.
+On DONE: tear the impl coordinator down per `agent-fleet` (`hc kill <t> && hc rm <t>`, confirm with `peer-addr.py`). With specs left in the queue, spawn the next `impl-<slug>` as in §3, brief it as in §4 with the same integration coordinator address, and send ROSTER to the integration coordinator.
 
 ## 7. Finish
 

@@ -4,7 +4,6 @@ import io
 import json
 import os
 from pathlib import Path
-import shlex
 import sys
 import tempfile
 import unittest
@@ -19,11 +18,12 @@ fleet = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(fleet)
 
 
-def shell_prompt(args):
-    """The `herdr pane process-info` payload of a pane whose shell sits at its prompt."""
-    pane = args[args.index("--pane") + 1]
-    return {"process_info": {"pane_id": pane, "shell_pid": 7, "foreground_process_group_id": 7,
-                             "foreground_processes": [{"pid": 7}]}}
+COORDINATOR = {"address": "t1", "labels": {"herdr.space": "sp1", "herdr.tab": "tb1"}}
+
+
+def argv_after_dashes(args):
+    """The peer's own argv, after the login-shell wrapper."""
+    return list(args[args.index("--") + 4:])
 
 
 class FleetTests(unittest.TestCase):
@@ -35,7 +35,7 @@ class FleetTests(unittest.TestCase):
         self.stack.enter_context(contextlib.redirect_stderr(self.output))
         self.peer_dir = self.stack.enter_context(tempfile.TemporaryDirectory())
         self.stack.enter_context(patch.dict(os.environ, {
-            "HERDR_ENV": "1", "HERDR_PANE_ID": "test:p1", "HERDR_WORKSPACE_ID": "test",
+            "HC_TERMINAL_ID": "t1",
             "PI_CODING_AGENT": "true", "CLAUDE_CODE_MESSAGING_SOCKET": "", "CLAUDE_CODE_CHILD_SESSION": "",
             "PI_PEER_DIR": self.peer_dir,
         }))
@@ -47,23 +47,28 @@ class FleetTests(unittest.TestCase):
                            or {"address": "pi:bridge-1", "spool": "/spool"})
         self.node = self.stack.enter_context(patch.object(fleet, "bridge_node", return_value="/opt/node/bin/node"))
 
-    def launch(self, args, ready):
-        """Run a successful launch, recording herdr calls in order with bridge calls."""
-        splits = 1
+    def command(self, coordinator=COORDINATOR, fail_run=None):
+        """Fake hc: records calls in order with bridge calls and hands out t2, t3, … to each run."""
+        runs = 1
         def command(*args, **kwargs):
-            nonlocal splits
-            self.events.append(("herdr", args))
-            if args[:2] == ("pane", "split"):
-                splits += 1
-                return {"pane": f"test:p{splits}"}
-            if args[:2] == ("pane", "process-info"):
-                return shell_prompt(args)
-            return {}
+            nonlocal runs
+            self.events.append(("hc", args))
+            if args[0] == "get":
+                return coordinator
+            if args[0] == "run":
+                runs += 1
+                if runs == fail_run:
+                    raise RuntimeError("startup failed")
+                return {"address": f"t{runs}"}
+            raise AssertionError(args)
+        return command
+
+    def launch(self, args, ready, coordinator=COORDINATOR):
         with patch.object(fleet, "new_matching_records", return_value=ready):
-            return self.run_main(args, command)
+            return self.run_main(args, self.command(coordinator))
 
     def starts(self):
-        return [args for kind, args in self.events if kind == "herdr" and args[:2] == ("agent", "start")]
+        return [args for kind, args in self.events if kind == "hc" and args[0] == "run"]
 
     def run_main(self, args, commands):
         self.stack.enter_context(patch.object(sys, "argv", ["spawn-fleet.py", *args]))
@@ -76,7 +81,7 @@ class FleetTests(unittest.TestCase):
         self.live_bridge = Mock(side_effect=self.bridges.get)
         self.stack.enter_context(patch.object(fleet, "live_bridge", self.live_bridge))
         self.stack.enter_context(patch.object(fleet, "live_records", return_value=[]))
-        self.stack.enter_context(patch.object(fleet, "herdr", side_effect=commands))
+        self.stack.enter_context(patch.object(fleet, "hc", side_effect=commands))
         return fleet.main()
 
     def test_detects_harness_not_model(self):
@@ -88,76 +93,67 @@ class FleetTests(unittest.TestCase):
                 harness.detect_harness()
             self.assertEqual(harness.detect_harness("pi"), "pi")
 
+    def test_spawning_needs_a_herdr_core_terminal(self):
+        with patch.dict(os.environ, {"HC_TERMINAL_ID": ""}):
+            with self.assertRaises(SystemExit):
+                self.run_main(["one:."], lambda *args, **kwargs: self.fail("started a terminal"))
+        self.assertIn("HC_TERMINAL_ID", self.output.getvalue())
+
     def test_missing_coordinator_fails_before_creating_layout(self):
-        with patch.object(sys, "argv", ["spawn-fleet.py", "one:."]), patch.object(fleet, "coordinator", side_effect=RuntimeError("not registered")), patch.object(fleet, "herdr") as command:
+        with patch.object(sys, "argv", ["spawn-fleet.py", "one:."]), patch.object(fleet, "coordinator", side_effect=RuntimeError("not registered")), patch.object(fleet, "hc") as command:
             with self.assertRaises(SystemExit):
                 fleet.main()
             command.assert_not_called()
         self.assertIn("not registered", self.output.getvalue())
 
-    def test_partial_layout_failure_prints_only_owned_pane(self):
-        splits = 0
-        def command(*args, **kwargs):
-            nonlocal splits
-            if args[:2] == ("pane", "split"):
-                splits += 1
-                if splits == 2:
-                    raise RuntimeError("split failed")
-                return {"pane": {"pane_id": "test:p2"}}
-            raise AssertionError(args)
-        self.assertEqual(self.run_main(["one:.", "two:."], command), 1)
-        text = self.output.getvalue()
-        self.assertIn("herdr pane close test:p2", text)
-        self.assertNotIn("herdr pane close test:p1", text)
-        self.assertNotIn("herdr tab close", text)
-
-    def test_start_failure_prints_cleanup(self):
-        def command(*args, **kwargs):
-            if args[:2] == ("pane", "split"):
-                return {"pane": "test:p2"}
-            if args[:2] == ("pane", "process-info"):
-                return shell_prompt(args)
-            if args[:2] == ("agent", "start"):
-                raise RuntimeError("startup failed")
-            return {}
-        self.assertEqual(self.run_main(["one:."], command), 1)
-        self.assertIn("startup failed", self.output.getvalue())
-        self.assertIn("herdr pane close test:p2", self.output.getvalue())
-
-    def test_pi_launch_shares_deadline_and_uses_pi_flags(self):
-        clock = [0.0]
-        starts = []
-        splits = 1
-        def command(*args, **kwargs):
-            nonlocal splits
-            if args[:2] == ("pane", "split"):
-                splits += 1
-                return {"pane": f"test:p{splits}"}
-            if args[:2] == ("pane", "process-info"):
-                return shell_prompt(args)
-            if args[:2] == ("agent", "start"):
-                starts.append((args, kwargs))
-                clock[0] += 70
-            return {}
+    def test_peers_open_as_tabs_in_the_coordinators_space(self):
         ready = [{"name": "one", "pid": 111, "address": "pi:one"}, {"name": "two", "pid": 222, "address": "pi:two"}]
-        with patch.object(fleet.time, "monotonic", side_effect=lambda: clock[0]), patch.object(fleet, "new_matching_records", return_value=ready):
-            self.assertEqual(self.run_main(["--timeout", "120", "one:.", "two:."], command), 0)
-        self.assertEqual([args[args.index("--timeout") + 1] for args, _ in starts], ["120000", "50000"])
-        for args, kwargs in starts:
-            self.assertEqual(args[args.index("--kind") + 1], "pi")
-            self.assertIn("--extension", args)
-            self.assertIn("--peer-dir", args)
-            self.assertNotIn("--permission-mode", args)
-        self.assertEqual(starts[1][1]["timeout"], 50)
+        self.assertEqual(self.launch([f"one:{self.peer_dir}", "two:."], ready), 0)
+        first, second = self.starts()
+        self.assertEqual(first[:first.index("--")], ("run", "--bg", "--json", "--name", "one", "--cwd", self.peer_dir,
+                                                     "--label", "herdr.space=sp1"))
+        self.assertEqual(second[second.index("--name") + 1], "two")
+        self.assertIn("terminals t2, t3", self.output.getvalue())
+
+    def test_peers_start_through_an_interactive_login_shell(self):
+        ready = [{"name": "one", "pid": 111, "address": "pi:one"}]
+        with patch.dict(os.environ, {"SHELL": "/bin/zsh"}):
+            self.assertEqual(self.launch(["one:."], ready), 0)
+        args = self.starts()[0]
+        self.assertEqual(list(args[args.index("--") + 1:][:5]), ["/bin/zsh", "-ilc", 'exec "$0" "$@"', "pi", "--name"])
+
+    def test_coordinator_outside_the_window_starts_hidden_peers(self):
+        ready = [{"name": "one", "pid": 111, "address": "pi:one"}]
+        self.assertEqual(self.launch(["one:."], ready, coordinator={"address": "t1", "labels": {}}), 0)
+        self.assertNotIn("--label", self.starts()[0])
+        self.assertIn("hidden", self.output.getvalue())
+
+    def test_teardown_kills_and_removes_only_started_terminals(self):
+        with patch.object(fleet, "new_matching_records", return_value=[]):
+            self.assertEqual(self.run_main(["one:.", "two:.", "three:."], self.command(fail_run=3)), 1)
+        text = self.output.getvalue()
+        self.assertIn("startup failed", text)
+        self.assertIn("hc kill t2 && hc rm t2", text)
+        self.assertNotIn("hc kill t1", text)
+        self.assertNotIn("t3", text.split("startup failed", 1)[1])
+
+    def test_pi_launch_uses_pi_flags(self):
+        ready = [{"name": "one", "pid": 111, "address": "pi:one"}]
+        self.assertEqual(self.launch(["one:."], ready), 0)
+        argv = argv_after_dashes(self.starts()[0])
+        self.assertEqual(argv[:3], ["pi", "--name", "one"])
+        self.assertIn("--extension", argv)
+        self.assertIn("--peer-dir", argv)
+        self.assertNotIn("--permission-mode", argv)
 
     def test_claude_launch_keeps_native_permission_mode(self):
         calls = []
-        with patch.object(fleet, "herdr", side_effect=lambda *args, **kwargs: calls.append(args)):
-            fleet.start_agent("one", "test:p2", "claude", None, [], 1000)
-        args = calls[0]
-        self.assertEqual(args[args.index("--kind") + 1], "claude")
-        self.assertEqual(args[args.index("--permission-mode") + 1], "auto")
-        self.assertNotIn("--extension", args)
+        with patch.object(fleet, "hc", side_effect=lambda *args, **kwargs: calls.append(args) or {"address": "t2"}):
+            self.assertEqual(fleet.start_agent("one", "/w", "claude", None, [], []), "t2")
+        argv = argv_after_dashes(calls[0])
+        self.assertEqual(argv[:3], ["claude", "--name", "one"])
+        self.assertEqual(argv[argv.index("--permission-mode") + 1], "auto")
+        self.assertNotIn("--extension", argv)
 
     def test_pi_rejects_claude_options_before_layout(self):
         for option in ("--permission-mode=auto", "--claude-arg=--effort=low"):
@@ -166,27 +162,33 @@ class FleetTests(unittest.TestCase):
                     self.run_main([option, "one:."], lambda *args, **kwargs: self.fail("created layout"))
         self.assertIn("Claude-only", self.output.getvalue())
 
-    def test_claude_readiness_checks_processes_in_owned_panes(self):
+    def test_claude_readiness_checks_processes_in_owned_terminals(self):
         records = [{"pid": 111, "name": "one"}, {"pid": 222, "name": "one"}]
-        info = {"process_info": {"pane_id": "test:p2", "foreground_processes": [{"pid": 222}]}}
-        with patch.object(fleet, "live_records", return_value=records), patch.object(fleet, "herdr", return_value=info):
-            self.assertEqual(fleet.new_matching_records(set(), {"one"}, "claude", ["test:p2"]), [records[1]])
+        terminal = {"address": "t2", "foreground": {"pid": 222}}
+        with patch.object(fleet, "live_records", return_value=records), patch.object(fleet, "hc", return_value=terminal):
+            self.assertEqual(fleet.new_matching_records(set(), {"one"}, "claude", ["t2"]), [records[1]])
 
-    def test_pi_readiness_ignores_same_named_sessions_in_other_panes(self):
+    def test_claude_readiness_skips_a_terminal_whose_program_ended(self):
+        records = [{"pid": 222, "name": "one"}]
+        with patch.object(fleet, "live_records", return_value=records), \
+                patch.object(fleet, "hc", return_value={"address": "t2", "foreground": None}):
+            self.assertEqual(fleet.new_matching_records(set(), {"one"}, "claude", ["t2"]), [])
+
+    def test_pi_readiness_ignores_same_named_sessions_in_other_terminals(self):
         records = [
-            {"instanceId": "old", "name": "one", "paneId": "test:p2"},
-            {"instanceId": "foreign", "name": "one", "paneId": "other:p2"},
-            {"instanceId": "owned", "name": "one", "paneId": "test:p2"},
+            {"instanceId": "old", "name": "one", "terminalId": "t2"},
+            {"instanceId": "foreign", "name": "one", "terminalId": "t9"},
+            {"instanceId": "owned", "name": "one", "terminalId": "t2"},
         ]
         with patch.object(fleet, "pi_records", return_value=records):
-            self.assertEqual(fleet.new_matching_records({"old"}, {"one"}, "pi", ["test:p2"]), [records[2]])
+            self.assertEqual(fleet.new_matching_records({"old"}, {"one"}, "pi", ["t2"]), [records[2]])
 
     def test_peer_harness_defaults_to_claude_coordinator_harness(self):
         ready = [{"name": "one", "pid": 111, "messagingSocketPath": "/one.sock"}]
         with patch.object(fleet, "socket_live", return_value=True):
             self.assertEqual(self.launch(["--harness", "claude", "one:."], ready), 0)
-        args = self.starts()[0]
-        self.assertEqual(args[args.index("--kind") + 1], "claude")
+        args = argv_after_dashes(self.starts()[0])
+        self.assertEqual(args[0], "claude")
         self.assertIn("uds:/one.sock", self.output.getvalue())
         self.bridge.assert_not_called()
 
@@ -203,8 +205,8 @@ class FleetTests(unittest.TestCase):
         ready = [{"name": "one", "pid": 111, "address": "pi:one"}]
         self.assertEqual(self.launch(["--harness", "claude", "--peer-harness", "pi", "one:."], ready), 0)
         self.assertEqual(self.events[0], ("bridge", ("start", "--owner-pid", "999", "--name", "boss", "--session-id", "sess")))
-        args = self.starts()[0]
-        self.assertEqual(args[args.index("--kind") + 1], "pi")
+        args = argv_after_dashes(self.starts()[0])
+        self.assertEqual(args[0], "pi")
         self.assertIn("--extension", args)
         self.assertIn("--peer-dir", args)
         self.assertNotIn("--permission-mode", args)
@@ -246,10 +248,10 @@ class FleetTests(unittest.TestCase):
         ready = [{"name": "one", "pid": 111, "messagingSocketPath": "/one.sock"}]
         with patch.object(fleet, "socket_live", return_value=True):
             self.assertEqual(self.launch(["--peer-harness", "claude", "one:."], ready), 0)
-        args = self.starts()[0]
-        self.assertEqual(args[args.index("--kind") + 1], "claude")
+        args = argv_after_dashes(self.starts()[0])
+        self.assertEqual(args[0], "claude")
         self.assertEqual(args[args.index("--permission-mode") + 1], "auto")
-        hooks = json.loads(Path(args[args.index("--settings") + 1]).read_text())["hooks"]
+        hooks = json.loads(args[args.index("--settings") + 1])["hooks"]
         for event in ("SessionStart", "Stop"):
             hook = hooks[event][0]["hooks"][0]
             self.assertEqual(hook["command"], f"PI_PEER_DIR={self.peer_dir} /opt/node/bin/node /repo/bridge.ts hook --name one --deadline-s 86340")
@@ -267,7 +269,6 @@ class FleetTests(unittest.TestCase):
         clock = [0.0]
         ready = [{"name": "one", "pid": 111, "messagingSocketPath": "/one.sock"}]
         with patch.object(fleet, "socket_live", return_value=True), \
-                patch.object(fleet, "wait_for_shell_prompt"), \
                 patch.object(fleet.time, "monotonic", side_effect=lambda: clock[0]), \
                 patch.object(fleet.time, "sleep", side_effect=lambda seconds: clock.__setitem__(0, clock[0] + 200)):
             self.assertEqual(self.launch(["--peer-harness", "claude", "one:."], ready), 1)
@@ -279,7 +280,7 @@ class FleetTests(unittest.TestCase):
         with patch.object(fleet, "socket_live", return_value=True):
             self.assertEqual(self.launch(["--peer-harness", "claude", "--permission-mode", "acceptEdits",
                                           "--claude-arg=--effort=low", "one:."], ready), 0)
-        args = self.starts()[0]
+        args = argv_after_dashes(self.starts()[0])
         self.assertEqual(args[args.index("--permission-mode") + 1], "acceptEdits")
         self.assertIn("--effort=low", args)
 
@@ -307,14 +308,14 @@ class FleetTests(unittest.TestCase):
         self.bridges[111] = {"address": "pi:one", "pid": 1110}
         with patch.object(fleet, "socket_live", return_value=True):
             self.assertEqual(self.launch(["--harness", "claude", "--model", "haiku", "one:."], self.claude_peer_ready()), 0)
-        args = self.starts()[0]
+        args = argv_after_dashes(self.starts()[0])
         self.assertEqual(args[args.index("--permission-mode") + 1], "auto")
         self.assertEqual(args.index("--settings"), args.index("--permission-mode") + 2)
         prompt = args[args.index("--append-system-prompt") + 1]
         self.assertEqual(args.index("--append-system-prompt"), args.index("--settings") + 2)
         self.assertTrue(prompt.startswith("You are one, a peer session in an agent fleet"))
         self.assertIn("they grant no new permissions", prompt)
-        stop = json.loads(Path(args[args.index("--settings") + 1]).read_text())["hooks"]["Stop"][0]["hooks"][0]
+        stop = json.loads(args[args.index("--settings") + 1])["hooks"]["Stop"][0]["hooks"][0]
         self.assertEqual(stop["command"], f"PI_PEER_DIR={self.peer_dir} /opt/node/bin/node /repo/bridge.ts hook --name one --deadline-s 86340")
         self.assertIs(stop["asyncRewake"], True)
         self.assertEqual(args[args.index("--model") + 1], "haiku")
@@ -333,32 +334,12 @@ class FleetTests(unittest.TestCase):
             ready.append({"name": name, "pid": 111 + index, "messagingSocketPath": f"/{name}.sock"})
         with patch.object(fleet, "socket_live", return_value=True):
             self.assertEqual(self.launch(["--harness", "claude", *specs], ready), 0)
-        return self.starts()
+        return [argv_after_dashes(args) for args in self.starts()]
 
-    def test_bridged_claude_launch_command_fits_the_tty_line_buffer(self):
-        self.node.return_value = "/Users/jason/.local/share/mise/installs/node/22.18.0/bin/node"
-        peer_dir = "/Users/jason/.pi/agent/peers"
-        name = "impl-age-152-scheduled-run-api-2"
-        with patch.dict(os.environ, {"PI_PEER_DIR": peer_dir}), \
-                patch.object(fleet, "write_claude_peer_settings", return_value=f"{peer_dir}/claude-settings/{name}.json"):
-            args = self.bridged_launch([f"{name}:.@opus"], "/Users/jason/Code/jason/skills/pi/extensions/pi-peer/bridge.ts")[0]
-        typed = " ".join(shlex.quote(str(arg)) for arg in ("claude", *args[args.index("--") + 1:]))
-        self.assertLess(len(typed), 1024, typed)
-
-    def test_bridged_claude_peer_settings_come_from_a_file_with_the_hook_json(self):
-        args = self.bridged_launch(["one:."])[0]
-        path = args[args.index("--settings") + 1]
-        self.assertTrue(path.startswith(self.peer_dir), path)
-        self.assertEqual(json.loads(Path(path).read_text()), json.loads(fleet.claude_peer_settings("one", "/repo/bridge.ts")))
-
-    def test_settings_files_are_per_peer_and_reused_by_name(self):
+    def test_bridged_claude_peers_get_their_own_hook_settings(self):
         first, second = self.bridged_launch(["one:.", "two:."])
-        self.assertNotEqual(first[first.index("--settings") + 1], second[second.index("--settings") + 1])
-        self.events.clear()
-        again = self.bridged_launch(["one:."])[0]
-        self.assertEqual(again[again.index("--settings") + 1], first[first.index("--settings") + 1])
-        self.assertEqual(json.loads(Path(again[again.index("--settings") + 1]).read_text()),
-                         json.loads(fleet.claude_peer_settings("one", "/repo/bridge.ts")))
+        self.assertEqual(json.loads(first[first.index("--settings") + 1]), json.loads(fleet.claude_peer_settings("one", "/repo/bridge.ts")))
+        self.assertEqual(json.loads(second[second.index("--settings") + 1]), json.loads(fleet.claude_peer_settings("two", "/repo/bridge.ts")))
 
     def test_unbridged_claude_coordinator_launches_plain_claude_peers(self):
         with patch.object(fleet, "socket_live", return_value=True):
@@ -390,12 +371,12 @@ class FleetTests(unittest.TestCase):
     def test_per_peer_model_overrides_the_fleet_model(self):
         ready = [{"name": "one", "pid": 111, "address": "pi:one"}, {"name": "two", "pid": 222, "address": "pi:two"}]
         self.assertEqual(self.launch(["--model", "anthropic/claude-haiku-4-5", "one:.", "two:.@openai-codex/gpt-6-sol:high"], ready), 0)
-        models = [args[args.index("--model") + 1] for args in self.starts()]
+        models = [args[args.index("--model") + 1] for args in map(argv_after_dashes, self.starts())]
         self.assertEqual(models, ["anthropic/claude-haiku-4-5", "openai-codex/gpt-6-sol:high"])
 
     def test_peer_without_a_model_gets_no_model_flag(self):
         self.assertEqual(self.launch(["one:."], [{"name": "one", "pid": 111, "address": "pi:one"}]), 0)
-        self.assertNotIn("--model", self.starts()[0])
+        self.assertNotIn("--model", argv_after_dashes(self.starts()[0]))
 
 
 if __name__ == "__main__":

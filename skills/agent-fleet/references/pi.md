@@ -28,7 +28,7 @@ python3 scripts/spawn-fleet.py --peer-harness claude reviewer:/path/to/project
 
 The second line launches Claude Code peers reachable over pi-peer; read [cross-harness.md](cross-harness.md) first.
 
-The script launches `herdr agent start ... --kind pi`, passes the local extension explicitly, and waits for a protocol handshake from peers in the panes it created. `--model` or `NAME:DIR@MODEL` selects a pi model (`provider/id`, optionally `:thinking`); `--agent-arg=<flag>` passes native options. Claude-only permission flags are rejected for pi peers. The launcher does not set `--approve` or weaken tool restrictions.
+The script launches each pi peer with `hc run --bg`, passes the local extension explicitly, and waits for a protocol handshake from peers in the terminals it started. `--model` or `NAME:DIR@MODEL` selects a pi model (`provider/id`, optionally `:thinking`); `--agent-arg=<flag>` passes native options. Claude-only permission flags are rejected for pi peers. The launcher does not set `--approve` or weaken tool restrictions.
 
 Pi project trust, tool allowlists, and any permission extensions continue to apply. `peer_sessions` must be active. If it is excluded at startup, the session does not register. If disabled later, inbound messages are rejected. Do not alter restrictions merely to make a denied task run elsewhere.
 
@@ -61,4 +61,4 @@ For transcript recovery, inspect the receiver's pi session file for `customType:
 
 macOS/Linux, same machine, same OS user. Socket permissions keep other users out; same-user processes are trusted, not sandboxed from one another. The protocol cross-checks the sender's live endpoint but does not authenticate a potentially hostile process with the same UID. Peer identity never grants additional authority.
 
-Only messaging lives in the extension. Herdr owns layout; the skill owns coordination. Remote hosts, durable offline delivery, and fleet dashboards are outside this version.
+Only messaging lives in the extension. herdr-core owns the terminals; the skill owns coordination. Remote hosts, durable offline delivery, and fleet dashboards are outside this version.

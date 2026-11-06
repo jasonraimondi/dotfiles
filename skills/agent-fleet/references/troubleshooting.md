@@ -29,7 +29,7 @@ Checkpoint 4 is a feature. Each peer message carries a trailer that says a peer 
 env -u CLAUDE_CODE_CHILD_SESSION claude --name <name> --permission-mode auto
 ```
 
-`spawn-fleet.py` does this for you. Do it by hand whenever you type a `claude` command yourself.
+Peers started with `hc run` never carry the marker, since hc launches them with the login session's environment. Strip it whenever you type a `claude` command into your own shell.
 
 **The session has a registry file with no `messagingSocketPath`.** Read `peerProtocol` in that file. A record with no `peerProtocol` comes from a build that predates cross-session messaging (**2.1.224**); it is alive, healthy, and invisible, and `claude --resume <sessionId>` in a fresh terminal repairs it and keeps the history. A record that has `peerProtocol` and no socket means the messaging gate is off, the bind failed, or the session is thin/bare.
 
@@ -47,15 +47,13 @@ Read `peerProtocol`, not the version string: a prerelease version like `2.2.0-be
 In order of likelihood:
 
 1. **The peer still works.** Research plus writing runs for several minutes. The reply arrives as a new user turn. End your own turn and wait. This is correct, not lazy.
-2. **The peer is stalled on a prompt.** Run `herdr agent get <name>`. Herdr reports `blocked` when it recognizes an approval or question UI, so you do not have to read pixels. Then `herdr agent read <name>` for the question itself. "Is this a project you created or one you trust?" comes from a directory Claude has not seen before — the common stall, because a fresh fleet directory is new by definition. "Do you want to proceed?" comes from a non-auto permission mode. A session waiting on either one registers no socket.
+2. **The peer is stalled on a prompt.** Run `hc get <name>`. A status of `blocked` means the peer waits on an approval or question for a person, so you do not have to read pixels. Then `hc read --lines 100 <name>` for the question itself, and bring it to the user. "Is this a project you created or one you trust?" comes from a directory Claude has not seen before — the common stall, because a fresh fleet directory is new by definition. "Do you want to proceed?" comes from a non-auto permission mode. A session waiting on either one registers no socket.
 3. **You did not ask for a reply.** A send is one-way. If the brief did not contain your `uds:` address and a clear ask, no reply comes.
-4. **The peer declined.** Read the pane. Peers state their refusals.
+4. **The peer declined.** Read its screen with `hc read`. Peers state their refusals.
 
-Herdr's `unknown` state proves nothing. It means an agent is present that Herdr could not classify, not that the work finished.
+## The reply arrived but the screen truncated it
 
-## The reply arrived but the pane truncated it
-
-Claude Code runs on the terminal's alternate screen, so rows that scroll away never enter Herdr's scrollback and a larger `--lines` cannot bring them back. The transcript holds the whole thing:
+A long reply can scroll off the peer's screen. The transcript holds the whole thing:
 
 ```bash
 python3 scripts/peer-inbox.py \
@@ -64,17 +62,9 @@ python3 scripts/peer-inbox.py \
 
 The helper accepts only events marked `origin.kind: peer` with a verified peer PID, and `--from-pid` matches that transport-recorded PID rather than the sender's display name. This is provenance within Claude's transcript, not protection against a local user editing their own files. `peer-addr.py` prints it on every row. Use `--json` when another tool consumes the result, or `--session-id` when the registry entry is already gone.
 
-## The launch timed out and the pane shows a half-typed `claude` command
-
-The command was typed before the shell finished its startup files. Until the shell's line editor takes over, the tty buffers typed input in canonical mode, which macOS caps at 1024 bytes and truncates without a sound, so a long command loses its tail, including the Enter, and `herdr agent start` waits for an agent that never starts. `spawn-fleet.py` waits for each pane's prompt before typing and keeps the typed command short by passing a bridged peer's hooks as a settings file. Launching by hand in a pane whose shell runs direnv or dotfiles on startup: wait for the prompt, or press Ctrl-C to clear the fragment and run the command again.
-
 ## CLI traps
 
 - `claude agents` needs a TTY. Use `claude agents --json` for scripts. The list contains your own session — check the pid before you kill a process.
-- Recent Claude builds provide `logs`, `stop`, and `attach` for background-managed sessions. Check `claude --help`; these do not automatically address interactive peers launched in Herdr. Refresh the peer identity before using `kill <pid>`.
-- Kill the PID before you close the pane. A `claude` that outlives its pane is an addressable orphan, and this ordering makes that impossible whatever the close does.
-- Bare `herdr` launches or attaches the TUI. For discovery, run `herdr --help` or a command group with no subcommand (`herdr pane`).
-- Do not probe a mutating nested command by omitting arguments. `herdr workspace create` is valid with defaults and will execute.
-- `herdr agent start` needs a pane already at its shell prompt. It never creates or moves layout, and it fails on a pane that still runs a foreground command.
-- Herdr server errors are JSON on stderr with exit 1. A CLI syntax error exits 2.
-- A pane command with no target may hit whichever pane the UI has focused, which can belong to the user or another client. Pass `--current`, an explicit pane id, or a unique agent name.
+- Recent Claude builds provide `logs`, `stop`, and `attach` for background-managed sessions. Check `claude --help`; these do not automatically address interactive peers in hc terminals. End a peer with `hc kill <t> && hc rm <t>`.
+- Clean up only terminals you started. `hc ls` lists every live terminal, including the user's own work.
+- hc errors are `{error: {kind, message, hint}}` JSON on stderr. Exit code 9 means the target is blocked; `hc --skill` lists the rest.

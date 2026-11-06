@@ -20,7 +20,7 @@ export default function piPeer(pi: ExtensionAPI) {
       sessionId: ctx.sessionManager.getSessionId(),
       name: pi.getSessionName() || "(unnamed)",
       cwd: ctx.cwd,
-      paneId: process.env.HERDR_PANE_ID,
+      terminalId: process.env.HC_TERMINAL_ID,
       receive: (message) => {
         if (stopped || !pi.getActiveTools().includes("peer_sessions")) throw new Error("Peer messaging is disabled");
         pi.sendMessage({

@@ -23,7 +23,7 @@ When `domain-modeling` is loaded, as in a `/grill-with-docs` session, keep its d
 
 ## 2. Launch the panel
 
-Follow the `agent-fleet` preflight, then `references/cross-harness.md` → *Preflight*, *Spawn*, *Send a brief*. Without `HERDR_ENV=1`, stop and tell the user the panel needs a Herdr pane.
+Follow the `agent-fleet` preflight, then `references/cross-harness.md` → *Preflight*, *Spawn*, *Send a brief*. Without `$HC_TERMINAL_ID`, stop and tell the user the panel needs a herdr-core terminal.
 
 From the `agent-fleet` skill directory, spawn in the directory the grill is about, `sol` first because it starts the coordinator's bridge:
 

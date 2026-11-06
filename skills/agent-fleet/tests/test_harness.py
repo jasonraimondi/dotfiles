@@ -14,7 +14,7 @@ import harness
 PEER = {
     "version": 1, "instanceId": "0f8fad5b-d9cb-469f-a165-70867728950e",
     "address": "pi:0f8fad5b-d9cb-469f-a165-70867728950e", "sessionId": "s1", "name": "one",
-    "cwd": "/w", "pid": 4242, "paneId": "test:p2", "socketPath": "/tmp/pi-peer-1/x.sock",
+    "cwd": "/w", "pid": 4242, "terminalId": "t2", "socketPath": "/tmp/pi-peer-1/x.sock",
 }
 
 

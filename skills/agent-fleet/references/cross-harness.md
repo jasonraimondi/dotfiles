@@ -27,7 +27,7 @@ Without a bridge it prints only the `uds:` address. Once the launcher has starte
 python3 scripts/spawn-fleet.py --peer-harness pi reviewer:/path/to/project
 ```
 
-Run it from the Claude coordinator. Before creating any layout, the launcher starts the coordinator's bridge; if that fails, no panes are created. Peers launch as pi sessions with the local pi-peer extension and the same peer directory; `--permission-mode` and `--claude-arg` are rejected. The header line prints both coordinator addresses:
+Run it from the Claude coordinator. Before starting any peer, the launcher starts the coordinator's bridge; if that fails, no terminals are started. Peers launch as pi sessions with the local pi-peer extension and the same peer directory; `--permission-mode` and `--claude-arg` are rejected. The header line prints both coordinator addresses:
 
 ```text
 harness claude; peer harness pi; coordinator uds:/tmp/cc-socks/<pid>.sock pi:<uuid>
@@ -107,7 +107,7 @@ A Claude peer whose waiter shows `expired` gave up after about 24 hours. It will
 SendMessage(to: "uds:<peer-socket>", message: "Check your pi-peer bridge.")
 ```
 
-That turn ends in a fresh `Stop` hook, which arms a new waiter and delivers the spooled messages. A pi coordinator has no native path and nudges with `herdr agent prompt`; see [pi coordinator](#pi-coordinator).
+That turn ends in a fresh `Stop` hook, which arms a new waiter and delivers the spooled messages. A pi coordinator has no native path and nudges with `hc send`; see [pi coordinator](#pi-coordinator).
 
 ### pi coordinator
 
@@ -126,14 +126,14 @@ peer_sessions({ action: "send", to: "pi:<peer-instance>", message: "Review only;
 The peer replies with the `bridge.ts send` command its frame names. The reply arrives as an ordinary labeled pi-peer message: an idle coordinator starts a turn; a busy one gets a follow-up. Nudge an `expired` peer with the fixed text and nothing else:
 
 ```bash
-herdr agent prompt <name> "Check your pi-peer bridge."
+hc send <name> "Check your pi-peer bridge."
 ```
 
-This is the only use of `herdr agent prompt`; it is never a message transport. Confirm teardown with `peer-addr.py --harness claude`.
+This is the only use of `hc send` in a fleet; briefs and replies travel over pi-peer. Confirm teardown with `peer-addr.py --harness claude`.
 
 ## Teardown
 
-Teardown is the default once the work is done (SKILL.md section 4). The launcher's block kills the pi peers, closes the layout it created, and ends with an optional line:
+Teardown is the default once the work is done (SKILL.md section 4). The launcher's block kills and removes the pi peers' terminals and ends with an optional line:
 
 ```bash
 <node> <bridge.ts> stop --owner-pid <coordinator-pid>

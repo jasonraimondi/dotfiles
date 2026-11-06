@@ -260,7 +260,7 @@ async function serve(flags: Flags): Promise<void> {
   };
 
   const peer = await startPeer({
-    directory: peerDirectory(), sessionId: sessionId ?? "", name, cwd: process.cwd(), paneId: process.env.HERDR_PANE_ID,
+    directory: peerDirectory(), sessionId: sessionId ?? "", name, cwd: process.cwd(), terminalId: process.env.HC_TERMINAL_ID,
     receive: (message) => {
       const spooled: Spooled = { id: message.id, from: message.from, body: message.body, receivedAt: new Date().toISOString() };
       const temporary = join(p.inbox, `.${message.id}.${randomUUID()}.tmp`);
