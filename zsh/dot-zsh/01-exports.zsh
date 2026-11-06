@@ -14,12 +14,10 @@ export HOMEBREW_NO_ENV_HINTS=1
 export ADBLOCK=true
 
 # disable telemetry
-export NEXT_TELEMETRY_DISABLED=1
 export BETTER_AUTH_TELEMETRY=0
 
-# docker
-export COMPOSE_DOCKER_CLI_BUILD=1
-export DOCKER_BUILDKIT=1
+# overmind
+export OVERMIND_NO_PORT=1
 
 # display how long all tasks over 10 seconds take
 export REPORTTIME=10
