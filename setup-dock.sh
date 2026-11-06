@@ -29,6 +29,7 @@ applications=(
     "$HOME/Applications/DataGrip.app"
     "/Applications/Zed.app"
     "/Applications/Linear.app"
+    "/Applications/Herdr.app"
     "/Applications/iTerm.app"
     "/Applications/Proxyman.app"
     "/Applications/Transmit.app"
