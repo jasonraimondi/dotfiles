@@ -11,12 +11,20 @@ brew "zsh"
 # Shell & utilities
 brew "atuin"
 brew "direnv"
+brew "asciinema"
 brew "dockutil"
+brew "fd"
 brew "fzf"
 brew "jq"
+brew "moreutils"
+brew "mtr"
+brew "neofetch"
+brew "overmind"
 brew "ripgrep"
 brew "safe-rm"
 brew "stow"
+brew "switchaudio-osx"
+brew "task"
 brew "tmux"
 brew "tree"
 brew "watch"
@@ -24,10 +32,22 @@ brew "wget"
 brew "yq"
 
 # Dev tools
+brew "agent-browser"
+brew "awscli"
 brew "docker-compose"
+brew "getsentry/tools/sentry-cli"
+brew "gitleaks"
 brew "libpq" # for postgres gem
 # brew "minikube"
+brew "mysql@8.0"
+brew "node"
 brew "php" # mise php is a pain in the ass
+brew "playwright-cli"
+brew "safedep/tap/vet"
+brew "schpet/tap/linear"
+brew "shellcheck"
+brew "stripe/stripe-cli/stripe"
+brew "trufflehog"
 brew "usage" # mise completion
 
 # Git
@@ -37,9 +57,17 @@ brew "gh"
 brew "git"
 brew "git-extras"
 brew "git-lfs"
+brew "lazygit"
 # brew "git-duet/tap/git-duet"
 # brew "potatolabs/git-redate/git-redate"
+brew "agavra/tap/tuicr"
 
 # Media
 brew "ffmpeg"
 brew "imagemagick"
+brew "librsvg"
+
+# Agent tooling
+brew "anomalyco/tap/opencode"
+brew "graykode/tap/abtop"
+brew "raine/workmux/workmux"
