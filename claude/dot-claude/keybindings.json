@@ -7,6 +7,12 @@
       "bindings": {
         "shift+tab": "chat:modelPicker"
       }
+    },
+    {
+      "context": "Chat",
+      "bindings": {
+        "ctrl+alt+g": "command:orca-agent-view"
+      }
     }
   ]
 }
