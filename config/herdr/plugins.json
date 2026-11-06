@@ -1,5 +1,48 @@
 [
   {
+    "plugin_id": "jasonraimondi.workspace-order",
+    "name": "Workspace Order",
+    "version": "0.1.0",
+    "min_herdr_version": "0.9.0",
+    "description": "Move the focused workspace up or down the sidebar",
+    "manifest_path": "/Users/jraimondi/dotfiles/herdr-plugins/workspace-order/herdr-plugin.toml",
+    "plugin_root": "/Users/jraimondi/dotfiles/herdr-plugins/workspace-order",
+    "enabled": true,
+    "platforms": [
+      "linux",
+      "macos"
+    ],
+    "actions": [
+      {
+        "id": "move-down",
+        "title": "Move workspace down",
+        "contexts": [
+          "workspace"
+        ],
+        "command": [
+          "node",
+          "src/move.js",
+          "1"
+        ]
+      },
+      {
+        "id": "move-up",
+        "title": "Move workspace up",
+        "contexts": [
+          "workspace"
+        ],
+        "command": [
+          "node",
+          "src/move.js",
+          "-1"
+        ]
+      }
+    ],
+    "source": {
+      "kind": "local"
+    }
+  },
+  {
     "plugin_id": "jasonraimondi.worktree-setup",
     "name": "Worktree Setup",
     "version": "0.2.0-jpatch.0",

@@ -1,0 +1,6 @@
+{
+  "name": "herdr-workspace-order",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test" }
+}
