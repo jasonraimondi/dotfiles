@@ -28,7 +28,7 @@ stow "${FLAGS[@]}" tmux
 stow "${FLAGS[@]}" vim
 stow "${FLAGS[@]}" zsh
 stow "${FLAGS[@]}" zprezto
-mkdir -p "$HOME/.config" \
+mkdir -p "$HOME/.config/herdr-app" \
   && stow "${FLAGS[@]}" -t "$HOME/.config" config
 mkdir -p "$HOME/.ssh" \
   && stow "${FLAGS[@]}" -t "$HOME/.ssh" ssh
