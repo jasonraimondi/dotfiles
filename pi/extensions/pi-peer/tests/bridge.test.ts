@@ -4,7 +4,7 @@ import { createServer } from "node:net";
 import { randomUUID } from "node:crypto";
 import { once } from "node:events";
 import { watch } from "node:fs";
-import { access, chmod, mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { access, chmod, mkdir, mkdtemp, readdir, readFile, rm, stat, symlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
@@ -22,8 +22,8 @@ async function directory(t: Context): Promise<string> {
   return path;
 }
 
-async function run(dir: string, args: string[], options: { input?: string; env?: Record<string, string> } = {}): Promise<Run> {
-  const child = spawn(process.execPath, [BRIDGE, ...args], {
+async function run(dir: string, args: string[], options: { input?: string; env?: Record<string, string>; node?: string } = {}): Promise<Run> {
+  const child = spawn(options.node ?? process.execPath, [BRIDGE, ...args], {
     env: { ...process.env, PI_PEER_DIR: dir, CLAUDE_CODE_MESSAGING_SOCKET: "", CLAUDE_PID: "", CLAUDE_CODE_SESSION_ID: "", ...options.env },
     stdio: ["pipe", "pipe", "pipe"],
   });
@@ -200,6 +200,20 @@ test("wait prints every pre-spooled message framed and moves them to read/", asy
   assert.deepEqual(await spooled(join(spool, "inbox")), []);
   assert.equal((await spooled(join(spool, "read"))).length, 2);
   assert.equal(JSON.parse(await readFile(join(dir, "bridges", `${dummy.pid}.json`), "utf8")).waiter, "none");
+});
+
+test("the reply hint names the node the bridge was launched with, not its resolved install", async (t) => {
+  const dir = await directory(t);
+  const linked = join(dir, "node");
+  await symlink(process.execPath, linked);
+  const dummy = owner(t);
+  const { address } = await bridge(t, dir, dummy.pid);
+  const sender = await startPeer({ directory: dir, sessionId: "s", name: "reviewer", cwd: "/r", receive: () => {} });
+  t.after(() => sender.close());
+  await sender.send({ to: address, message: "hi" });
+  const result = await run(dir, ["wait", "--owner-pid", String(dummy.pid)], { node: linked });
+  assert.equal(result.code, 0, result.stderr);
+  assert.ok(result.stdout.includes(`[Reply with: ${linked} ${BRIDGE} send`), result.stdout);
 });
 
 test("wait blocks with an armed waiter until a message arrives, and fails when the bridge stops", async (t) => {

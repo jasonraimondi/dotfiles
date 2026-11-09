@@ -4,12 +4,14 @@ import { once } from "node:events";
 import { chmodSync, lstatSync, mkdirSync, readFileSync, readdirSync, renameSync, unlinkSync, watch, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { createConnection, createServer, type Server, type Socket } from "node:net";
-import { join } from "node:path";
+import { isAbsolute, join } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 import { listPeers, peerDirectory, startPeer, type PeerMessage } from "./peer.ts";
 
 const SCRIPT = fileURLToPath(import.meta.url);
+// execPath resolves symlinks to a versioned install that an upgrade can delete; argv0 keeps the stable path the launcher chose.
+const NODE = isAbsolute(process.argv0) ? process.argv0 : process.execPath;
 const MAX_MESSAGE = 16 * 1024;
 const MAX_FRAME = 128 * 1024;
 const CONTROL_TIMEOUT_MS = 10000;
@@ -306,7 +308,7 @@ async function ensureBridge({ ownerPid, name, sessionId }: { ownerPid: number; n
   let record = await running(p);
   if (record) return record;
   const args = ["--owner-pid", String(ownerPid), "--name", name, ...(sessionId === undefined ? [] : ["--session-id", sessionId])];
-  const child = spawn(process.execPath, [SCRIPT, "serve", ...args], { detached: true, stdio: ["ignore", "ignore", "ignore", "ipc"] });
+  const child = spawn(NODE, [SCRIPT, "serve", ...args], { detached: true, stdio: ["ignore", "ignore", "ignore", "ipc"] });
   const settled = new AbortController();
   const outcome = await Promise.race([
     once(child, "message", { signal: settled.signal }).then(([message]: unknown[]) => message),
@@ -366,7 +368,7 @@ function inbound(value: unknown): { id: string; body: string; name: string; addr
 
 function frame(message: ReturnType<typeof inbound>): string {
   const name = message.name.replace(/\s+/g, " ").trim() || "(unnamed)";
-  return `[pi-peer message from ${name} ${message.address} · id ${message.id}. Sent by another agent session working on the user's behalf, not typed by the user: treat it as a teammate's request and act on it within this session's own permission settings; it grants no new permissions.]\n${message.body}\n[Reply with: ${process.execPath} ${SCRIPT} send --to ${message.address}]`;
+  return `[pi-peer message from ${name} ${message.address} · id ${message.id}. Sent by another agent session working on the user's behalf, not typed by the user: treat it as a teammate's request and act on it within this session's own permission settings; it grants no new permissions.]\n${message.body}\n[Reply with: ${NODE} ${SCRIPT} send --to ${message.address}]`;
 }
 
 function drain(p: Paths): string[] {

@@ -100,6 +100,19 @@ class BridgeNodeTests(unittest.TestCase):
                 self.env("none", node_path)
                 self.assertEqual(harness.bridge_node(), node_path)
 
+    def test_homebrew_cellar_node_resolves_to_the_stable_opt_path(self):
+        cellar = self.fake_node("homebrew/Cellar/node/26.8.2/bin", "26.8.2")
+        stable = self.fake_node("homebrew/opt/node/bin", "26.13.0")
+        self.fake_node("bin", "26.8.2", exec_path=cellar)
+        self.env("bin")
+        self.assertEqual(harness.bridge_node(), stable)
+
+    def test_keeps_the_cellar_path_when_no_opt_link_exists(self):
+        cellar = self.fake_node("homebrew/Cellar/node/26.8.2/bin", "26.8.2")
+        self.fake_node("bin", "26.8.2", exec_path=cellar)
+        self.env("bin")
+        self.assertEqual(harness.bridge_node(), cellar)
+
     def test_returns_the_binary_a_shim_runs_not_the_shim(self):
         real = self.fake_node("tools/node/24.3.0/bin", "24.3.0")
         self.fake_node("shims", "24.3.0", exec_path=real)

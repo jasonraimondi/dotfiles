@@ -62,6 +62,17 @@ def installed_nodes():
                 yield binary
 
 
+def stable_node(exec_path):
+    """Homebrew's opt link for a Cellar node, else exec_path unchanged.
+
+    A versioned Cellar path dies when `brew upgrade` relinks node or bumps a dylib
+    it links against, while bridges and the reply hints in their frames outlive it.
+    """
+    match = re.fullmatch(r"(.*)/Cellar/([^/]+)/[^/]+/(.*)", exec_path)
+    linked = f"{match[1]}/opt/{match[2]}/{match[3]}" if match else None
+    return linked if linked and os.access(linked, os.X_OK) else exec_path
+
+
 @functools.cache
 def bridge_node():
     """Absolute path of the Node that runs bridge.ts.
@@ -76,13 +87,13 @@ def bridge_node():
     candidate = shutil.which(pinned or "node")
     probed = node_version(os.path.abspath(candidate)) if candidate else None
     if probed and probed[1] >= MIN_BRIDGE_NODE:
-        return probed[0]
+        return stable_node(probed[0])
     if pinned:
         reason = f"{candidate or pinned} is v{probed[2]}" if probed else f"{candidate or pinned} is not a usable Node"
         raise RuntimeError(f"{needs}; {reason}. Set PI_PEER_NODE to a newer node.")
     qualifying = [found for found in map(node_version, installed_nodes()) if found and found[1] >= MIN_BRIDGE_NODE]
     if qualifying:
-        return max(qualifying, key=lambda found: tuple(int(part) for part in found[2].split(".")))[0]
+        return stable_node(max(qualifying, key=lambda found: tuple(int(part) for part in found[2].split(".")))[0])
     reason = f"PATH's node is v{probed[2]}" if probed else "no usable node on PATH"
     raise RuntimeError(f"{needs}; {reason} and no newer install was found. Set PI_PEER_NODE to a Node {minimum}+ binary.")
 
