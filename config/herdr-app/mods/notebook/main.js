@@ -9,6 +9,37 @@ function location() {
 const key = () => JSON.stringify(location());
 const LANG = { ts: "js", tsx: "js", mts: "js", cts: "js", jsx: "js", mjs: "js", toml: "yaml", jsonc: "json", svelte: "html", vue: "html" };
 const PER_FOLDER = 500, TOTAL = 5000;
+const WINDOWS = [["7d", 168], ["24h", 24], ["48h", 48], ["All", 0]];
+
+async function births(root, on) {
+  if (!on && window()?.platform === "windows") {
+    const r = await exec("powershell", ["-NoProfile", "-Command", "[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); & { param($p) $root = (Get-Item -LiteralPath $p).FullName; @(Get-ChildItem -LiteralPath $root -Recurse -File -Force -ErrorAction SilentlyContinue | ForEach-Object { \"$([DateTimeOffset]::new($_.CreationTimeUtc).ToUnixTimeSeconds()) $($_.FullName.Substring($root.Length).TrimStart('\\'))\" }) -join \"`n\" } '" + root.replace(/['‘’‚‛]/g, "$&$&") + "'"], { on });
+    return r.code === 0 ? parseBirths(r.stdout.replace(/\\/g, "/")) : null;
+  }
+  const r = await exec("sh", ["-c", 'cd "$1" && find -L . -mindepth 1 -name ".*" -prune -o -type f -exec stat -L -f "%B %N" {} +', "births", root], { on });
+  // find exits non-zero when one subfolder is unreadable but still lists the rest.
+  return r.code === 0 || r.stdout ? parseBirths(r.stdout) : null;
+}
+
+function parseBirths(stdout) {
+  const out = new Map();
+  for (const line of stdout.split("\n")) {
+    const space = line.indexOf(" "), path = line.slice(space + 1).replace(/^\.\//, "");
+    if (space < 1 || !path || path.split("/").some(part => part.startsWith("."))) continue;
+    out.set(path, Number(line.slice(0, space)));
+  }
+  return out;
+}
+
+function shown(births, hours, now) {
+  if (!hours || births === null) return null;
+  const since = now / 1000 - hours * 3600, out = new Set();
+  for (const [path, birth] of births ?? []) if (birth > 0 && birth >= since) {
+    const parts = path.split("/");
+    for (let i = 1; i <= parts.length; i++) out.add(parts.slice(0, i).join("/"));
+  }
+  return out;
+}
 
 async function directory(path, on) {
   const windowsDirectory = async () => {
@@ -37,7 +68,7 @@ async function directory(path, on) {
 
 export default class Files extends View {
   init(_props, cx) {
-    this.saved = new Map(); this.reads = 0;
+    this.saved = new Map(); this.reads = 0; this.recency = 0;
     this.entries = new Map(); this.folders = new Set(); this.pending = new Set(); this.marks = {};
     this.refresh(cx);
     cx.timer.every(10000, cx => this.refresh(cx));
@@ -72,7 +103,7 @@ export default class Files extends View {
       if (this.context) this.saved.set(this.context.key, { folders: this.folders, file: this.file });
       const saved = this.saved.get(next);
       this.context = { key: next, cwd, on }; this.root = cwd; this.on = on; this.entries = new Map(); this.folders = new Set(saved?.folders);
-      this.pending = new Set(); this.marks = {}; this.show(null); this.watched = null; this.error = null; this.limited = false;
+      this.pending = new Set(); this.marks = {}; this.show(null); this.births = undefined; this.watched = null; this.error = null; this.limited = false;
       this.loading = false;
       if (saved?.file) this.show(saved.file, cx);
     }
@@ -87,6 +118,9 @@ export default class Files extends View {
           if (!this.current(context)) return;
           await this.loadFolder(path, context);
         }
+        const created = await births(cwd, on).catch(() => null);
+        if (!this.current(context)) return;
+        this.births = created;
         const top = await exec("git", ["rev-parse", "--show-toplevel"], { cwd, on }).catch(() => null);
         const marks = {};
         if (top?.code === 0) {
@@ -161,6 +195,10 @@ export default class Files extends View {
     });
   }
 
+  obsidianUrl() {
+    return `obsidian://open?path=${encodeURIComponent(this.file ? `${this.root}/${this.file}` : this.root)}`;
+  }
+
   link(url, cx) {
     if (/^https?:/i.test(url)) return cx.open_url(url);
     if (/^[a-z][a-z0-9+.-]*:/i.test(url) && !/^file:/i.test(url)) return;
@@ -179,32 +217,39 @@ export default class Files extends View {
     cx.notify();
   }
 
-  rows(prefix, depth, out, t) {
+  rows(prefix, depth, out, t, visible) {
     if (out.length >= TOTAL || depth > 40) return out;
     for (const entry of this.entries.get(prefix) ?? []) {
       if (out.length >= TOTAL) break;
-      const path = prefix ? `${prefix}/${entry.name}` : entry.name, open = this.folders.has(path), mark = this.marks[`${this.root}/${path}`];
+      const path = prefix ? `${prefix}/${entry.name}` : entry.name;
+      if (visible && !visible.has(path)) continue;
+      const open = this.folders.has(path), mark = this.marks[`${this.root}/${path}`];
       out.push(h_flex().id(`file-${path}`).h(28).flex_none().pl(8 + depth * 18).pr(8).gap(7).items_center().rounded(7).cursor_pointer().hover(s => s.bg(t.hover))
         .on_click((_e, cx) => entry.dir ? this.toggle(path, cx) : this.show(path, cx))
         .child(entry.dir ? svg(`mods/notebook/chevron-${open ? "down" : "right"}.svg`).size(12).flex_none().text_color(t.dim) : div().w(12).flex_none())
         .child(svg(`mods/notebook/${entry.dir ? "folder" : "file"}.svg`).size(14).flex_none().text_color(t.muted))
         .child(div().flex_1().min_w(0).truncate().child(entry.name))
         .when(Boolean(mark), el => el.child(div().text_size(11).text_color(mark === "A" ? t.ansi2 : mark === "D" || mark === "U" ? t.ansi1 : t.blocked).child(mark))));
-      if (entry.dir && open) this.rows(path, depth + 1, out, t);
+      if (entry.dir && open) this.rows(path, depth + 1, out, t, visible);
     }
     return out;
   }
 
   render(cx) {
     if (key() !== this.context?.key) this.refresh(cx);
-    const t = theme();
+    const t = theme(), [label, hours] = WINDOWS[this.recency];
+    const rows = this.file ? [] : this.rows("", 0, [], t, shown(this.births, hours, Date.now()));
     return v_flex().id("files").size_full().min_h(0).rounded(10).overflow_hidden().bg(t.background).border_1().border_color(t.border).text_color(t.foreground).text_size(13)
       .child(h_flex().h(42).flex_none().px(14).gap(8).items_center().border_b(1).border_color(t.border)
         .when(Boolean(this.file), el => el.child(div().id("files-back").w(20).cursor_pointer().text_color(t.muted).on_click((_e, cx) => { this.show(null); cx.notify(); }).child("←")))
         .child(div().font_semibold().child("Notebook"))
-        .child(div().flex_1().min_w(0).truncate().text_right().text_size(12).text_color(t.dim).child(this.file ?? this.root?.split(/[\\/]/).pop() ?? "")))
-      .when(!this.file, el => el.child(v_flex().id("files-tree").flex_1().min_h(0).overflow_y_scrollbar().p(6).children(this.rows("", 0, [], t))
-        .when(Boolean(this.error) || !this.entries.get("")?.length, el => el.child(div().p(8).text_size(12).text_color(t.dim).child(this.error || (this.loading ? "Loading files…" : this.root ? "No files" : "No folder"))))
+        .child(div().flex_1().min_w(0).truncate().text_right().text_size(12).text_color(t.dim).child(this.file ?? this.root?.split(/[\\/]/).pop() ?? ""))
+        .when(!this.file, el => el.child(div().id("nb-window").cursor_pointer().text_size(12).text_color(t.muted).hover(s => s.text_color(t.foreground))
+          .on_click((_e, cx) => { this.recency = (this.recency + 1) % WINDOWS.length; cx.notify(); }).child(label)))
+        .when(Boolean(this.root), el => el.child(div().id("nb-obsidian").cursor_pointer().text_size(12).text_color(t.muted).hover(s => s.text_color(t.foreground))
+          .on_click(() => exec("open", [this.obsidianUrl()]).catch(() => {})).child("Obsidian ↗"))))
+      .when(!this.file, el => el.child(v_flex().id("files-tree").flex_1().min_h(0).overflow_y_scrollbar().p(6).children(rows)
+        .when(Boolean(this.error) || !rows.length, el => el.child(div().p(8).text_size(12).text_color(t.dim).child(this.error || (this.loading ? "Loading files…" : !this.root ? "No folder" : hours ? `No files created in the past ${label}` : "No files"))))
         .when(this.limited, el => el.child(div().p(8).text_size(11).text_color(t.dim).child("File list limited to 500 entries per folder and 5,000 total")))))
       .when(Boolean(this.file), el => el.child(this.markdown != null ? v_flex().id("notebook-doc").flex_1().min_h(0).overflow_y_scrollbar().p(12)
         .child(TextView.markdown(`nb-${this.file}`, this.markdown).selectable(true).on_link_click((url, cx) => this.link(url, cx)))
