@@ -11,7 +11,7 @@ Paths are relative to this repo (local) and to the upstream repo root (upstream)
 | `vendor-pending/claude-handoff` | `skills/in-progress/claude-handoff` | parked in `vendor-pending/` (not installed) |
 | `vendor-mattpocock/grill-me` | `skills/productivity/grill-me` | none |
 | `vendor-mattpocock/grill-with-docs` | `skills/engineering/grill-with-docs` | none |
-| `vendor-mattpocock/handoff` | `skills/productivity/handoff` | none |
+| `vendor-mattpocock/handoff` | `skills/productivity/handoff` | saves to the notebook's `handoff/` through the notebook skill, not the OS temp dir |
 | `vendor-mattpocock/teach` | `skills/productivity/teach` | none |
 | `vendor-mattpocock/to-questionnaire` | `skills/productivity/to-questionnaire` | none |
 | `vendor-mattpocock/wait-what` | `skills/productivity/wait-what` | none |
@@ -25,7 +25,7 @@ Paths are relative to this repo (local) and to the upstream repo root (upstream)
 | `vendor-mattpocock/grilling` | `skills/productivity/grilling` | extended with "Frame the questions that need it", "Keep a decision log" (`references/decision-log.md`) and "Close with a handoff" (`references/handoff.md`). Upstream's "Word each question so \"yes\" accepts your recommended answer." stays out on every sync: the user takes recommendations by saying "accept recommendations", so questions keep whatever wording fits them |
 | `vendor-mattpocock/review-code` | `skills/engineering/code-review` | renamed: frontmatter `name` is `review-code` |
 | `vendor-mattpocock/writing-for-agents` | `skills/productivity/writing-for-agents` | none |
-| `vendor-mattpocock/research` | `skills/engineering/research` | none |
+| `vendor-mattpocock/research` | `skills/engineering/research` | saves to the notebook's `research/` through the notebook skill, not the repo (description and step 3) |
 | `vendor-mattpocock/retro` | `skills/engineering/retro` | none |
 
 ## Related, not tracked

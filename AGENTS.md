@@ -11,7 +11,7 @@
 - Wrap only where the newline is part of the artifact (commit bodies, code).
 - Text for Slack, email, PRs, or issues must be one line per paragraph — the viewer reflows it, so your breaks become permanent.
 - Load the writing-for-agents skill before writing or editing a skill, an AGENTS.md, or a CLAUDE.md. Without a Skill tool, read `~/.claude/skills/writing-for-agents/SKILL.md` instead.
-- Every working doc (handoff, plan, research, review, scratch output) goes in my notebook through the notebook skill, at `$AI_NOTEBOOK_PATH` (default ~/Notebook). This holds even when another skill, such as handoff, names a temp directory: the notebook wins.
+- Every working doc (handoff, plan, research, review, scratch output) goes in my notebook through the notebook skill, at `$AI_NOTEBOOK_PATH` (default ~/Notebook).
 
 ## Context
 Context is carried into every later turn. Raw material enters it only when the next call edits from that exact text.
