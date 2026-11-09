@@ -58,7 +58,7 @@
     "ctrl-8": "space.select:8",
     "ctrl-9": "space.select:9",
     "cmd-l": "mod.open:linear",
-    "alt-shift-p": "pokemon-agents.pick"
+    "alt-shift-n": {"command":"pane.split","args":{"direction":"right","mod":"notebook","props":{"root":"/Users/jraimondi/Desktop/ig-notebook"}}}
   },
   "terminal": {
     "cmd-f": "terminal.search",
