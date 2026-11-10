@@ -208,6 +208,14 @@ export default class Files extends View {
     return `obsidian://open?path=${encodeURIComponent(this.file ? `${this.root}/${this.file}` : this.root)}`;
   }
 
+  // `open file.html` uses the .html handler, which may be an editor; the https handler is the browser.
+  async openInBrowser() {
+    const browser = await exec("osascript", ["-l", "JavaScript", "-e",
+      "ObjC.import('AppKit'); $.NSWorkspace.sharedWorkspace.URLForApplicationToOpenURL($.NSURL.URLWithString('https://example.com')).path.js"]);
+    const path = `${this.root}/${this.file}`;
+    await exec("open", browser.code === 0 && browser.stdout.trim() ? ["-a", browser.stdout.trim(), path] : [path]);
+  }
+
   link(url, cx) {
     if (/^https?:/i.test(url)) return cx.open_url(url);
     if (/^[a-z][a-z0-9+.-]*:/i.test(url) && !/^file:/i.test(url)) return;
@@ -246,16 +254,16 @@ export default class Files extends View {
 
   render(cx) {
     if (key() !== this.context?.key) this.refresh(cx);
-    const t = theme(), [label, hours] = WINDOWS[this.recency];
+    const t = theme(), [label, hours] = WINDOWS[this.recency], html = !this.on && /\.html?$/i.test(this.file ?? "");
     const rows = this.file ? [] : this.rows("", 0, [], t, shown(this.births, hours, Date.now()));
     return v_flex().id("files").size_full().min_h(0).rounded(10).overflow_hidden().bg(t.background).border_1().border_color(t.border).text_color(t.foreground).text_size(13)
       .child(h_flex().h(42).flex_none().px(14).gap(8).items_center().border_b(1).border_color(t.border)
         .when(Boolean(this.file), el => el.child(div().id("files-back").w(20).cursor_pointer().text_color(t.muted).on_click((_e, cx) => { this.show(null); cx.notify(); }).child("←")))
         .child(div().font_semibold().child("Notebook"))
         .child(div().flex_1().min_w(0).truncate().text_right().text_size(12).text_color(t.dim).child(this.file ?? this.root?.split(/[\\/]/).pop() ?? ""))
-        .when(!this.on && /\.html?$/i.test(this.file ?? ""), el => el.child(div().id("nb-browser").cursor_pointer().text_size(12).text_color(t.muted).hover(s => s.text_color(t.foreground))
-          .on_click((_e, cx) => cx.open_url(`file://${`${this.root}/${this.file}`.split("/").map(encodeURIComponent).join("/")}`)).child("Browser ↗")))
-        .when(Boolean(this.root), el => el.child(div().id("nb-obsidian").cursor_pointer().text_size(12).text_color(t.muted).hover(s => s.text_color(t.foreground))
+        .when(html, el => el.child(div().id("nb-browser").cursor_pointer().text_size(12).text_color(t.muted).hover(s => s.text_color(t.foreground))
+          .on_click(() => this.openInBrowser().catch(() => {})).child("Browser ↗")))
+        .when(Boolean(this.root) && !html, el => el.child(div().id("nb-obsidian").cursor_pointer().text_size(12).text_color(t.muted).hover(s => s.text_color(t.foreground))
           .on_click(() => exec("open", [this.obsidianUrl()]).catch(() => {})).child("Obsidian ↗"))))
       .when(!this.file, el => el.child(h_flex().h(30).flex_none().px(14).gap(12).items_center().border_b(1).border_color(t.border).text_size(12)
         .children(WINDOWS.map(([name], i) => div().id(`nb-window-${name}`).cursor_pointer()
