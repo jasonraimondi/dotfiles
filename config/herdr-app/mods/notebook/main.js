@@ -9,15 +9,31 @@ function location() {
 const key = () => JSON.stringify(location());
 const LANG = { ts: "js", tsx: "js", mts: "js", cts: "js", jsx: "js", mjs: "js", toml: "yaml", jsonc: "json", svelte: "html", vue: "html" };
 const PER_FOLDER = 500, TOTAL = 5000;
-const WINDOWS = [["30m", 0.5], ["1h", 1], ["3h", 3], ["12h", 12], ["24h", 24], ["48h", 48], ["72h", 72], ["7d", 168], ["All", 0]];
+const WINDOWS = [["30m", 0.5], ["1h", 1], ["3h", 3], ["12h", 12], ["24h", 24], ["2d", 48], ["3d", 72], ["7d", 168], ["All", 0]];
 const DEFAULT_WINDOW = WINDOWS.findIndex(([label]) => label === "7d");
+const VIEWS = ["Folders", "Flat"];
+const SORTS = ["Name", "Updated"];
+const KINDS = ["All", "MD"];
+
+// A folder takes the newest edit of any file inside it, so folders sort alongside files.
+function newest(files) {
+  const out = new Map();
+  for (const [path, { modified }] of files ?? []) {
+    const parts = path.split("/");
+    for (let i = 1; i <= parts.length; i++) {
+      const key = parts.slice(0, i).join("/");
+      out.set(key, Math.max(out.get(key) ?? 0, modified));
+    }
+  }
+  return out;
+}
 
 async function births(root, on) {
   if (!on && window()?.platform === "windows") {
-    const r = await exec("powershell", ["-NoProfile", "-Command", "[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); & { param($p) $root = (Get-Item -LiteralPath $p).FullName; @(Get-ChildItem -LiteralPath $root -Recurse -File -Force -ErrorAction SilentlyContinue | ForEach-Object { \"$([DateTimeOffset]::new($_.CreationTimeUtc).ToUnixTimeSeconds()) $($_.FullName.Substring($root.Length).TrimStart('\\'))\" }) -join \"`n\" } '" + root.replace(/['‘’‚‛]/g, "$&$&") + "'"], { on });
+    const r = await exec("powershell", ["-NoProfile", "-Command", "[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); & { param($p) $root = (Get-Item -LiteralPath $p).FullName; @(Get-ChildItem -LiteralPath $root -Recurse -File -Force -ErrorAction SilentlyContinue | ForEach-Object { \"$([DateTimeOffset]::new($_.CreationTimeUtc).ToUnixTimeSeconds()) $([DateTimeOffset]::new($_.LastWriteTimeUtc).ToUnixTimeSeconds()) $($_.FullName.Substring($root.Length).TrimStart('\\'))\" }) -join \"`n\" } '" + root.replace(/['‘’‚‛]/g, "$&$&") + "'"], { on });
     return r.code === 0 ? parseBirths(r.stdout.replace(/\\/g, "/")) : null;
   }
-  const r = await exec("sh", ["-c", 'cd "$1" && find -L . -mindepth 1 -name ".*" -prune -o -type f -exec stat -L -f "%B %N" {} +', "births", root], { on });
+  const r = await exec("sh", ["-c", 'cd "$1" && find -L . -mindepth 1 -name ".*" -prune -o -type f -exec stat -L -f "%B %m %N" {} +', "births", root], { on });
   // find exits non-zero when one subfolder is unreadable but still lists the rest.
   return r.code === 0 || r.stdout ? parseBirths(r.stdout) : null;
 }
@@ -25,17 +41,17 @@ async function births(root, on) {
 function parseBirths(stdout) {
   const out = new Map();
   for (const line of stdout.split("\n")) {
-    const space = line.indexOf(" "), path = line.slice(space + 1).replace(/^\.\//, "");
-    if (space < 1 || !path || path.split("/").some(part => part.startsWith("."))) continue;
-    out.set(path, Number(line.slice(0, space)));
+    const [birth, modified] = line.split(" ", 2), path = line.slice(birth.length + modified?.length + 2).replace(/^\.\//, "");
+    if (!birth || !modified || !path || path.split("/").some(part => part.startsWith("."))) continue;
+    out.set(path, { birth: Number(birth), modified: Number(modified) });
   }
   return out;
 }
 
-function shown(births, hours, now) {
-  if (!hours || births === null) return null;
+function shown(births, hours, now, mdOnly) {
+  if ((!hours && !mdOnly) || births === null) return null;
   const since = now / 1000 - hours * 3600, out = new Set();
-  for (const [path, birth] of births ?? []) if (birth > 0 && birth >= since) {
+  for (const [path, { birth }] of births ?? []) if ((!hours || (birth > 0 && birth >= since)) && (!mdOnly || path.endsWith(".md"))) {
     const parts = path.split("/");
     for (let i = 1; i <= parts.length; i++) out.add(parts.slice(0, i).join("/"));
   }
@@ -77,7 +93,7 @@ async function directory(path, on) {
 
 export default class Files extends View {
   init(_props, cx) {
-    this.saved = new Map(); this.reads = 0; this.recency = DEFAULT_WINDOW;
+    this.saved = new Map(); this.reads = 0; this.recency = DEFAULT_WINDOW; this.view = "Flat"; this.sort = "Updated"; this.kind = "MD"; this.times = new Map();
     this.entries = new Map(); this.folders = new Set(); this.pending = new Set(); this.marks = {};
     this.refresh(cx);
     cx.timer.every(10000, cx => this.refresh(cx));
@@ -129,7 +145,7 @@ export default class Files extends View {
         }
         const created = await births(cwd, on).catch(() => null);
         if (!this.current(context)) return;
-        this.births = created;
+        this.births = created; this.times = newest(created);
         const top = await exec("git", ["rev-parse", "--show-toplevel"], { cwd, on }).catch(() => null);
         const marks = {};
         if (top?.code === 0) {
@@ -236,26 +252,52 @@ export default class Files extends View {
 
   rows(prefix, depth, out, t, visible) {
     if (out.length >= TOTAL || depth > 40) return out;
-    for (const entry of this.entries.get(prefix) ?? []) {
+    for (const entry of this.sorted(prefix, this.entries.get(prefix) ?? [])) {
       if (out.length >= TOTAL) break;
       const path = prefix ? `${prefix}/${entry.name}` : entry.name;
       if (visible && !visible.has(path)) continue;
-      const open = this.folders.has(path), mark = this.marks[`${this.root}/${path}`];
-      out.push(h_flex().id(`file-${path}`).h(28).flex_none().pl(8 + depth * 18).pr(8).gap(7).items_center().rounded(7).cursor_pointer().hover(s => s.bg(t.hover))
-        .on_click((_e, cx) => entry.dir ? this.toggle(path, cx) : this.show(path, cx))
-        .child(entry.dir ? svg(`mods/notebook/chevron-${open ? "down" : "right"}.svg`).size(12).flex_none().text_color(t.dim) : div().w(12).flex_none())
-        .child(svg(`mods/notebook/${entry.dir ? "folder" : "file"}.svg`).size(14).flex_none().text_color(t.muted))
-        .child(div().flex_1().min_w(0).truncate().child(entry.name))
-        .when(Boolean(mark), el => el.child(div().text_size(11).text_color(mark === "A" ? t.ansi2 : mark === "D" || mark === "U" ? t.ansi1 : t.blocked).child(mark))));
-      if (entry.dir && open) this.rows(path, depth + 1, out, t, visible);
+      out.push(this.row(path, entry.name, entry.dir, depth, t));
+      if (entry.dir && this.folders.has(path)) this.rows(path, depth + 1, out, t, visible);
     }
     return out;
+  }
+
+  byUpdated(a, b) {
+    return (this.times.get(b) ?? 0) - (this.times.get(a) ?? 0) || a.localeCompare(b);
+  }
+
+  sorted(prefix, entries) {
+    const path = name => prefix ? `${prefix}/${name}` : name;
+    return this.sort === "Updated" ? [...entries].sort((a, b) => this.byUpdated(path(a.name), path(b.name))) : entries;
+  }
+
+  flatRows(t, visible) {
+    return [...this.births ?? []].filter(([path]) => !visible || visible.has(path))
+      .sort(([a], [b]) => this.sort === "Updated" ? this.byUpdated(a, b) : a.localeCompare(b)).slice(0, TOTAL)
+      .map(([path]) => this.row(path, path, false, 0, t));
+  }
+
+  row(path, name, dir, depth, t) {
+    const open = this.folders.has(path), mark = this.marks[`${this.root}/${path}`];
+    return h_flex().id(`file-${path}`).h(28).flex_none().pl(8 + depth * 18).pr(8).gap(7).items_center().rounded(7).cursor_pointer()
+      .hover(s => s.bg(t.hover))
+      .on_click((_e, cx) => dir ? this.toggle(path, cx) : this.show(path, cx))
+      .child(dir ? svg(`mods/notebook/chevron-${open ? "down" : "right"}.svg`).size(12).flex_none().text_color(t.dim) : div().w(12).flex_none())
+      .child(svg(`mods/notebook/${dir ? "folder" : "file"}.svg`).size(14).flex_none().text_color(t.muted))
+      .child(div().flex_1().min_w(0).truncate().child(name))
+      .when(Boolean(mark), el => el.child(div().text_size(11).text_color(mark === "A" ? t.ansi2 : mark === "D" || mark === "U" ? t.ansi1 : t.blocked).child(mark)));
+  }
+
+  option(id, name, active, pick, t) {
+    return div().id(id).cursor_pointer().text_color(active ? t.foreground : t.dim).when(active, s => s.font_semibold()).hover(s => s.text_color(t.foreground))
+      .on_click((_e, cx) => { pick(); cx.notify(); }).child(name);
   }
 
   render(cx) {
     if (key() !== this.context?.key) this.refresh(cx);
     const t = theme(), [label, hours] = WINDOWS[this.recency], html = !this.on && /\.html?$/i.test(this.file ?? "");
-    const rows = this.file ? [] : this.rows("", 0, [], t, shown(this.births, hours, Date.now()));
+    const visible = this.file ? null : shown(this.births, hours, Date.now(), this.kind === "MD");
+    const rows = this.file ? [] : this.view === "Flat" ? this.flatRows(t, visible) : this.rows("", 0, [], t, visible);
     return v_flex().id("files").size_full().min_h(0).rounded(10).overflow_hidden().bg(t.background).border_1().border_color(t.border).text_color(t.foreground).text_size(13)
       .child(h_flex().h(42).flex_none().px(14).gap(8).items_center().border_b(1).border_color(t.border)
         .when(Boolean(this.file), el => el.child(div().id("files-back").w(20).cursor_pointer().text_color(t.muted).on_click((_e, cx) => { this.show(null); cx.notify(); }).child("←")))
@@ -268,7 +310,13 @@ export default class Files extends View {
       .when(!this.file, el => el.child(h_flex().h(30).flex_none().px(14).gap(12).items_center().border_b(1).border_color(t.border).text_size(12)
         .children(WINDOWS.map(([name], i) => div().id(`nb-window-${name}`).cursor_pointer()
           .text_color(i === this.recency ? t.foreground : t.dim).when(i === this.recency, s => s.font_semibold()).hover(s => s.text_color(t.foreground))
-          .on_click((_e, cx) => { this.recency = i; cx.notify(); }).child(name)))))
+          .on_click((_e, cx) => { this.recency = i; cx.notify(); }).child(name)))
+        .child(div().flex_1())
+        .children(SORTS.map(name => this.option(`nb-sort-${name}`, name, name === this.sort, () => { this.sort = name; }, t)))
+        .child(div().text_color(t.border).child("|"))
+        .children(KINDS.map(name => this.option(`nb-kind-${name}`, name, name === this.kind, () => { this.kind = name; }, t)))
+        .child(div().text_color(t.border).child("|"))
+        .children(VIEWS.map(name => this.option(`nb-view-${name}`, name, name === this.view, () => { this.view = name; }, t)))))
       .when(!this.file, el => el.child(v_flex().id("files-tree").flex_1().min_h(0).overflow_y_scrollbar().p(6).children(rows)
         .when(Boolean(this.error) || !rows.length, el => el.child(div().p(8).text_size(12).text_color(t.dim).child(this.error || (this.loading ? "Loading files…" : !this.root ? "No folder" : hours ? `No files created in the past ${label}` : "No files"))))
         .when(this.limited, el => el.child(div().p(8).text_size(11).text_color(t.dim).child("File list limited to 500 entries per folder and 5,000 total")))))
