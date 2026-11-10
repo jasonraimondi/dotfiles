@@ -9,7 +9,7 @@ function location() {
 const key = () => JSON.stringify(location());
 const LANG = { ts: "js", tsx: "js", mts: "js", cts: "js", jsx: "js", mjs: "js", toml: "yaml", jsonc: "json", svelte: "html", vue: "html" };
 const PER_FOLDER = 500, TOTAL = 5000;
-const WINDOWS = [["30m", 0.5], ["1h", 1], ["3h", 3], ["24h", 24], ["48h", 48], ["7d", 168], ["All", 0]];
+const WINDOWS = [["30m", 0.5], ["1h", 1], ["3h", 3], ["12h", 12], ["24h", 24], ["48h", 48], ["72h", 72], ["7d", 168], ["All", 0]];
 const DEFAULT_WINDOW = WINDOWS.findIndex(([label]) => label === "7d");
 
 async function births(root, on) {
