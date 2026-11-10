@@ -9,7 +9,8 @@ function location() {
 const key = () => JSON.stringify(location());
 const LANG = { ts: "js", tsx: "js", mts: "js", cts: "js", jsx: "js", mjs: "js", toml: "yaml", jsonc: "json", svelte: "html", vue: "html" };
 const PER_FOLDER = 500, TOTAL = 5000;
-const WINDOWS = [["7d", 168], ["24h", 24], ["48h", 48], ["1h", 1], ["30m", 0.5], ["All", 0]];
+const WINDOWS = [["30m", 0.5], ["1h", 1], ["24h", 24], ["48h", 48], ["7d", 168], ["All", 0]];
+const DEFAULT_WINDOW = WINDOWS.findIndex(([label]) => label === "7d");
 
 async function births(root, on) {
   if (!on && window()?.platform === "windows") {
@@ -41,6 +42,14 @@ function shown(births, hours, now) {
   return out;
 }
 
+const DATED = /^\d{4}-\d{2}-\d{2}/;
+
+const rank = entry => DATED.test(entry.name) ? 1 : entry.dir ? 0 : 2;
+
+function byEntry(a, b) {
+  return rank(a) - rank(b) || (rank(a) === 1 ? b.name.localeCompare(a.name) : a.name.localeCompare(b.name));
+}
+
 async function directory(path, on) {
   const windowsDirectory = async () => {
     // Windows PowerShell otherwise uses the console code page; exec decodes UTF-8.
@@ -68,7 +77,7 @@ async function directory(path, on) {
 
 export default class Files extends View {
   init(_props, cx) {
-    this.saved = new Map(); this.reads = 0; this.recency = 0;
+    this.saved = new Map(); this.reads = 0; this.recency = DEFAULT_WINDOW;
     this.entries = new Map(); this.folders = new Set(); this.pending = new Set(); this.marks = {};
     this.refresh(cx);
     cx.timer.every(10000, cx => this.refresh(cx));
@@ -93,7 +102,7 @@ export default class Files extends View {
     const entries = await directory(path ? `${root}/${path}` : root, on);
     if (!this.current(context) || (path && !this.folders.has(path))) return;
     const used = [...this.entries.entries()].filter(([p]) => p !== path).reduce((n, [, e]) => n + e.length, 0);
-    this.entries.set(path, entries.slice(0, Math.max(0, Math.min(PER_FOLDER, TOTAL - used))).sort((a, b) => Number(b.dir) - Number(a.dir) || a.name.localeCompare(b.name)));
+    this.entries.set(path, entries.slice(0, Math.max(0, Math.min(PER_FOLDER, TOTAL - used))).sort(byEntry));
     if (entries.length > PER_FOLDER || used + entries.length > TOTAL) this.limited = true;
   }
 
@@ -244,10 +253,12 @@ export default class Files extends View {
         .when(Boolean(this.file), el => el.child(div().id("files-back").w(20).cursor_pointer().text_color(t.muted).on_click((_e, cx) => { this.show(null); cx.notify(); }).child("←")))
         .child(div().font_semibold().child("Notebook"))
         .child(div().flex_1().min_w(0).truncate().text_right().text_size(12).text_color(t.dim).child(this.file ?? this.root?.split(/[\\/]/).pop() ?? ""))
-        .when(!this.file, el => el.child(div().id("nb-window").cursor_pointer().text_size(12).text_color(t.muted).hover(s => s.text_color(t.foreground))
-          .on_click((_e, cx) => { this.recency = (this.recency + 1) % WINDOWS.length; cx.notify(); }).child(label)))
         .when(Boolean(this.root), el => el.child(div().id("nb-obsidian").cursor_pointer().text_size(12).text_color(t.muted).hover(s => s.text_color(t.foreground))
           .on_click(() => exec("open", [this.obsidianUrl()]).catch(() => {})).child("Obsidian ↗"))))
+      .when(!this.file, el => el.child(h_flex().h(30).flex_none().px(14).gap(12).items_center().border_b(1).border_color(t.border).text_size(12)
+        .children(WINDOWS.map(([name], i) => div().id(`nb-window-${name}`).cursor_pointer()
+          .text_color(i === this.recency ? t.foreground : t.dim).when(i === this.recency, s => s.font_semibold()).hover(s => s.text_color(t.foreground))
+          .on_click((_e, cx) => { this.recency = i; cx.notify(); }).child(name)))))
       .when(!this.file, el => el.child(v_flex().id("files-tree").flex_1().min_h(0).overflow_y_scrollbar().p(6).children(rows)
         .when(Boolean(this.error) || !rows.length, el => el.child(div().p(8).text_size(12).text_color(t.dim).child(this.error || (this.loading ? "Loading files…" : !this.root ? "No folder" : hours ? `No files created in the past ${label}` : "No files"))))
         .when(this.limited, el => el.child(div().p(8).text_size(11).text_color(t.dim).child("File list limited to 500 entries per folder and 5,000 total")))))
