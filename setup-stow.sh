@@ -47,7 +47,7 @@ stow ${FLAGS[@]+"${FLAGS[@]}"} vim
 stow ${FLAGS[@]+"${FLAGS[@]}"} zsh
 stow ${FLAGS[@]+"${FLAGS[@]}"} zprezto
 if prepare_dir "$HOME/.config/herdr" "$HOME/.config/herdr-app"; then
-  stow ${FLAGS[@]+"${FLAGS[@]}"} --ignore='herdr/plugins\.json' --ignore='herdr/\.plugins\.lock' -t "$HOME/.config" config
+  stow ${FLAGS[@]+"${FLAGS[@]}"} --ignore='herdr/(?!config\.toml$).*' -t "$HOME/.config" config
 fi
 if prepare_dir -m 700 "$HOME/.ssh"; then
   stow ${FLAGS[@]+"${FLAGS[@]}"} -t "$HOME/.ssh" ssh

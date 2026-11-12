@@ -62,12 +62,30 @@ run_dry_run_side_effects_case() {
   rm -rf "$home"
 }
 
+run_herdr_runtime_files_case() {
+  local src home linked
+  src="$(mktemp -d)"
+  home="$(mktemp -d)"
+  echo "case: only herdr config.toml is linked beside herdr runtime files"
+  rsync -a --exclude .git "$REPO/" "$src/"
+  touch "$src/config/herdr/plugins.json" "$src/config/herdr/.plugins.lock" \
+    "$src/config/herdr/session.json" "$src/config/herdr/herdr.log"
+  ln -s /nonexistent/herdr.sock "$src/config/herdr/herdr.sock"
+  (cd "$home" && HOME="$home" bash "$src/setup-stow.sh") > "$home/.out" 2>&1 \
+    || { fail "exit nonzero"; tail -5 "$home/.out" >&2; }
+  linked="$(ls -A "$home/.config/herdr" 2>/dev/null | tr '\n' ' ')"
+  [[ "$linked" == "config.toml " ]] || fail ".config/herdr holds: ${linked:-nothing}"
+  [[ -L "$home/.config/herdr/config.toml" ]] || fail ".config/herdr/config.toml is not a symlink"
+  rm -rf "$src" "$home"
+}
+
 run_case "dry-run from HOME" home -n
 run_case "dry-run from /tmp" tmp -n
 run_case "real run from HOME" home ""
 run_case "real run from /tmp" tmp ""
 run_dry_run_side_effects_case -n
 run_dry_run_side_effects_case -D
+run_herdr_runtime_files_case
 
 if (( failures > 0 )); then
   echo "$failures failure(s)" >&2
