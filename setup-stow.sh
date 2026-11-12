@@ -28,27 +28,27 @@ prepare_dir() {
   fi
 }
 
-stow "${FLAGS[@]}" aws
+stow ${FLAGS[@]+"${FLAGS[@]}"} aws
 if prepare_dir "$HOME/.claude"; then
-  stow "${FLAGS[@]}" claude
+  stow ${FLAGS[@]+"${FLAGS[@]}"} claude
 fi
-stow "${FLAGS[@]}" git
+stow ${FLAGS[@]+"${FLAGS[@]}"} git
 if prepare_dir -m 700 "$HOME/.gnupg"; then
-  stow "${FLAGS[@]}" -t "$HOME/.gnupg" gnupg
+  stow ${FLAGS[@]+"${FLAGS[@]}"} -t "$HOME/.gnupg" gnupg
 fi
-stow "${FLAGS[@]}" iterm2
+stow ${FLAGS[@]+"${FLAGS[@]}"} iterm2
 if prepare_dir "$HOME/Library/Spelling"; then
-  stow "${FLAGS[@]}" -t "$HOME/Library/Spelling" dictionary
+  stow ${FLAGS[@]+"${FLAGS[@]}"} -t "$HOME/Library/Spelling" dictionary
 fi
-stow "${FLAGS[@]}" mise
-stow "${FLAGS[@]}" ruby
-stow "${FLAGS[@]}" tmux
-stow "${FLAGS[@]}" vim
-stow "${FLAGS[@]}" zsh
-stow "${FLAGS[@]}" zprezto
+stow ${FLAGS[@]+"${FLAGS[@]}"} mise
+stow ${FLAGS[@]+"${FLAGS[@]}"} ruby
+stow ${FLAGS[@]+"${FLAGS[@]}"} tmux
+stow ${FLAGS[@]+"${FLAGS[@]}"} vim
+stow ${FLAGS[@]+"${FLAGS[@]}"} zsh
+stow ${FLAGS[@]+"${FLAGS[@]}"} zprezto
 if prepare_dir "$HOME/.config/herdr" "$HOME/.config/herdr-app"; then
-  stow "${FLAGS[@]}" --ignore='herdr/plugins\.json' --ignore='herdr/\.plugins\.lock' -t "$HOME/.config" config
+  stow ${FLAGS[@]+"${FLAGS[@]}"} --ignore='herdr/plugins\.json' --ignore='herdr/\.plugins\.lock' -t "$HOME/.config" config
 fi
 if prepare_dir -m 700 "$HOME/.ssh"; then
-  stow "${FLAGS[@]}" -t "$HOME/.ssh" ssh
+  stow ${FLAGS[@]+"${FLAGS[@]}"} -t "$HOME/.ssh" ssh
 fi
