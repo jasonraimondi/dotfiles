@@ -1,7 +1,7 @@
 // A read-only browser for the notebook vault given in props.root, with rendered markdown previews.
 import { View, div, svg } from "gpui-kit";
 import { v_flex, h_flex, Editor, EditorState, TextView } from "gpui-base";
-import { props, exec, readTextFile, watchFolder, theme, settings, window } from "herdr";
+import { props, exec, readTextFile, watchFolder, theme, settings, window, shared, setShared } from "herdr";
 
 function location() {
   return { cwd: props()?.root, on: null };
@@ -10,7 +10,7 @@ const key = () => JSON.stringify(location());
 const LANG = { ts: "js", tsx: "js", mts: "js", cts: "js", jsx: "js", mjs: "js", toml: "yaml", jsonc: "json", svelte: "html", vue: "html" };
 const PER_FOLDER = 500, TOTAL = 5000;
 const WINDOWS = [["30m", 0.5], ["1h", 1], ["3h", 3], ["12h", 12], ["24h", 24], ["2d", 48], ["3d", 72], ["7d", 168], ["All", 0]];
-const DEFAULT_WINDOW = WINDOWS.findIndex(([label]) => label === "7d");
+const PREFS = "notebook.prefs";
 const VIEWS = ["Folders", "Flat"];
 const SORTS = ["Name", "Updated"];
 const KINDS = ["All", "MD"];
@@ -93,7 +93,12 @@ async function directory(path, on) {
 
 export default class Files extends View {
   init(_props, cx) {
-    this.saved = new Map(); this.reads = 0; this.recency = DEFAULT_WINDOW; this.view = "Flat"; this.sort = "Updated"; this.kind = "MD"; this.times = new Map();
+    const prefs = shared(PREFS) ?? {}, recency = WINDOWS.findIndex(([label]) => label === (prefs.recency ?? "3h"));
+    this.saved = new Map(); this.reads = 0; this.times = new Map();
+    this.recency = recency >= 0 ? recency : WINDOWS.findIndex(([label]) => label === "3h");
+    this.view = VIEWS.includes(prefs.view) ? prefs.view : "Flat";
+    this.sort = SORTS.includes(prefs.sort) ? prefs.sort : "Updated";
+    this.kind = KINDS.includes(prefs.kind) ? prefs.kind : "MD";
     this.entries = new Map(); this.folders = new Set(); this.pending = new Set(); this.marks = {};
     this.refresh(cx);
     cx.timer.every(10000, cx => this.refresh(cx));
@@ -281,16 +286,31 @@ export default class Files extends View {
     const open = this.folders.has(path), mark = this.marks[`${this.root}/${path}`];
     return h_flex().id(`file-${path}`).h(28).flex_none().pl(8 + depth * 18).pr(8).gap(7).items_center().rounded(7).cursor_pointer()
       .hover(s => s.bg(t.hover))
-      .on_click((_e, cx) => dir ? this.toggle(path, cx) : this.show(path, cx))
+      .on_hover((hovered, cx) => { if (hovered) this.hovered = path; else if (this.hovered === path) this.hovered = null; cx.notify(); })
+      .on_click((_e, cx) => dir ? this.toggle(path, cx) : this.copyPath(path, cx))
       .child(dir ? svg(`mods/notebook/chevron-${open ? "down" : "right"}.svg`).size(12).flex_none().text_color(t.dim) : div().w(12).flex_none())
       .child(svg(`mods/notebook/${dir ? "folder" : "file"}.svg`).size(14).flex_none().text_color(t.muted))
-      .child(div().flex_1().min_w(0).truncate().child(name))
+      .child(dir ? div().flex_1().min_w(0).truncate().child(name)
+        : div().id(`open-${path}`).min_w(0).truncate().on_click((_e, cx) => { cx.stop_propagation(); this.show(path, cx); }).child(name))
+      .when(!dir, el => el.child(div().flex_1()))
+      .when(!dir && this.copied === path, el => el.child(div().text_size(11).text_color(t.dim).child("Copied")))
+      .when(!dir && this.hovered === path && this.copied !== path, el => el.child(svg("mods/notebook/copy.svg").size(13).flex_none().text_color(t.dim)))
       .when(Boolean(mark), el => el.child(div().text_size(11).text_color(mark === "A" ? t.ansi2 : mark === "D" || mark === "U" ? t.ansi1 : t.blocked).child(mark)));
   }
 
   option(id, name, active, pick, t) {
     return div().id(id).cursor_pointer().text_color(active ? t.foreground : t.dim).when(active, s => s.font_semibold()).hover(s => s.text_color(t.foreground))
-      .on_click((_e, cx) => { pick(); cx.notify(); }).child(name);
+      .on_click((_e, cx) => { pick(); this.savePrefs(); cx.notify(); }).child(name);
+  }
+
+  copyPath(path, cx) {
+    cx.write_to_clipboard(`${this.root}/${path}`);
+    this.copied = path; cx.notify();
+    cx.timer.after(1500, cx => { if (this.copied === path) { this.copied = null; cx.notify(); } });
+  }
+
+  savePrefs() {
+    setShared(PREFS, { recency: WINDOWS[this.recency][0], view: this.view, sort: this.sort, kind: this.kind });
   }
 
   render(cx) {
@@ -310,7 +330,7 @@ export default class Files extends View {
       .when(!this.file, el => el.child(h_flex().h(30).flex_none().px(14).gap(12).items_center().border_b(1).border_color(t.border).text_size(12)
         .children(WINDOWS.map(([name], i) => div().id(`nb-window-${name}`).cursor_pointer()
           .text_color(i === this.recency ? t.foreground : t.dim).when(i === this.recency, s => s.font_semibold()).hover(s => s.text_color(t.foreground))
-          .on_click((_e, cx) => { this.recency = i; cx.notify(); }).child(name)))
+          .on_click((_e, cx) => { this.recency = i; this.savePrefs(); cx.notify(); }).child(name)))
         .child(div().flex_1())
         .children(SORTS.map(name => this.option(`nb-sort-${name}`, name, name === this.sort, () => { this.sort = name; }, t)))
         .child(div().text_color(t.border).child("|"))
