@@ -54,7 +54,7 @@ cask "devin-desktop"
 cask "inkscape"
 cask "kiwix"
 cask "linear"
-cask "mdlr"
+cask "thempatel/tap/mdlr", trusted: true
 cask "openzfs"
 cask "orcaslicer"
 cask "prisma-studio"
