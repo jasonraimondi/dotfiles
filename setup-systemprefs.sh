@@ -56,26 +56,6 @@ else
 fi
 
 # ========================================
-# SECURITY SETTINGS
-# ========================================
-
-echo "Configuring Gatekeeper..."
-# On macOS 26.x this requires confirmation in System Settings
-# --global-disable is the current flag; keep --master-disable fallback for older releases
-if [[ "$DRY_RUN" == true ]]; then
-  run sudo spctl --global-disable
-  run sudo spctl --master-disable
-  echo "⚠️  Gatekeeper global disable requires manual confirmation in System Settings > Privacy & Security"
-  echo "   If prompted, allow 'Anywhere' in 'Allow applications downloaded from:'"
-else
-  if ! run sudo spctl --global-disable; then
-    run sudo spctl --master-disable || true
-    echo "⚠️  Gatekeeper global disable requires manual confirmation in System Settings > Privacy & Security"
-    echo "   If prompted, allow 'Anywhere' in 'Allow applications downloaded from:'"
-  fi
-fi
-
-# ========================================
 # FINDER SETTINGS
 # ========================================
 
