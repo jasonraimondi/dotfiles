@@ -39,6 +39,8 @@ brew cleanup
 
 bash setup-dock.sh
 
+export PATH="$HOME/.local/bin:$PATH"
+command -v mise > /dev/null || curl -fsSL https://mise.run | sh
 mise install --yes
 mise reshim
 
