@@ -45,10 +45,29 @@ run_case() {
   rm -rf "$home"
 }
 
+run_dry_run_side_effects_case() {
+  local mode=$1 home mode_of
+  home="$(mktemp -d)"
+  echo "case: $mode leaves existing dirs untouched"
+  mkdir -m 755 "$home/.ssh" "$home/.gnupg"
+  chmod 755 "$home/.ssh" "$home/.gnupg"
+  (cd "$home" && HOME="$home" bash "$REPO/setup-stow.sh" "$mode") > "$home/.out" 2>&1 \
+    || { fail "exit nonzero"; tail -5 "$home/.out" >&2; }
+  for d in .ssh .gnupg; do
+    mode_of="$(stat -f %Lp "$home/$d")"
+    [[ "$mode_of" == 755 ]] || fail "$mode changed $d to $mode_of"
+  done
+  created="$(find "$home" -mindepth 1 -not -name .out -not -path "$home/.ssh" -not -path "$home/.gnupg" | head -3)"
+  [[ -z "$created" ]] || fail "$mode created: $created"
+  rm -rf "$home"
+}
+
 run_case "dry-run from HOME" home -n
 run_case "dry-run from /tmp" tmp -n
 run_case "real run from HOME" home ""
 run_case "real run from /tmp" tmp ""
+run_dry_run_side_effects_case -n
+run_dry_run_side_effects_case -D
 
 if (( failures > 0 )); then
   echo "$failures failure(s)" >&2
