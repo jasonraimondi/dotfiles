@@ -48,5 +48,8 @@ alias flushdns="sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder"
 alias glog='git log --graph --pretty=format:"%Cred%h%Creset %an: %s - %Creset %C(yellow)%d%Creset %Cgreen(%cr)%Creset" --abbrev-commit --date=relative'
 alias gfa='git fetch --all --prune'
 
+# Tmux
+alias tls="tmux list-sessions"
+
 # System
 alias speedtest="networkQuality -v -s"

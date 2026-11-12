@@ -45,6 +45,7 @@ if prepare_dir "$HOME/Library/Spelling"; then
 fi
 stow ${FLAGS[@]+"${FLAGS[@]}"} mise
 stow ${FLAGS[@]+"${FLAGS[@]}"} ruby
+stow ${FLAGS[@]+"${FLAGS[@]}"} tmux
 stow ${FLAGS[@]+"${FLAGS[@]}"} vim
 stow ${FLAGS[@]+"${FLAGS[@]}"} zsh
 stow ${FLAGS[@]+"${FLAGS[@]}"} zprezto

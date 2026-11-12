@@ -18,6 +18,7 @@ gnupg        > gpg and gpg-agent config
 mise         > mise for maintaining language versions
 ruby         > ruby config
 ssh          > ssh config
+tmux         > tmux config
 vim          > vim configs
 zprezto      > framework for Zsh 
 zsh          > shell configuration 🔥🔥
