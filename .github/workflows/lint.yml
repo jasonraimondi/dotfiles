@@ -14,7 +14,9 @@ jobs:
           submodules: recursive
 
       - name: Install tools
-        run: brew install shellcheck stow
+        run: |
+          brew install bash shellcheck stow
+          echo "$(brew --prefix)/bin" >> "$GITHUB_PATH"
 
       - name: Shellcheck
         run: |
