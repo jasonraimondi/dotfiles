@@ -5,7 +5,10 @@
 #   Sorin Ionescu <sorin.ionescu@gmail.com>
 #
 
-# Ensure that a non-login, non-interactive shell has a defined environment.
-if [[ ( "$SHLVL" -eq 1 && ! -o LOGIN ) && -s "${ZDOTDIR:-$HOME}/.zprofile" ]]; then
+# Ensure that a non-login shell has a defined environment. Keyed on the
+# environment zprofile exports rather than SHLVL: editors and GUI apps start zsh
+# with an inherited SHLVL but a sanitized PATH, while already-initialized
+# shells must keep the PATH they were given.
+if [[ ! -o LOGIN && -z "$DOTFILES_HOME" && -s "${ZDOTDIR:-$HOME}/.zprofile" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprofile"
 fi
