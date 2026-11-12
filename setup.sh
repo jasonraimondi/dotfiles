@@ -24,7 +24,7 @@ AGENTS_MD_TARGETS=(
 
 DELETE_MODE=false
 DRY_RUN=false
-STOW_FLAGS=(--verbose --restow --ignore='\.DS_Store' --ignore='\.bak$')
+STOW_FLAGS=(--restow --ignore='\.DS_Store' --ignore='\.bak$')
 
 usage() {
   cat <<'EOF'
