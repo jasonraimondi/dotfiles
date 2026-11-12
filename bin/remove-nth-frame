@@ -4,21 +4,21 @@
 # Usage: ./<scriptfilename> input.gif output.gif
 
 # Make a copy of the file
-cp $1 $2
+cp "$1" "$2"
 
 # Get the number of frames
-numframes=`gifsicle $1 -I | grep -oE "[0-9]+ images" | grep -oE "[0-9]+"`
+numframes=$(gifsicle "$1" -I | grep -oE "[0-9]+ images" | grep -oE "[0-9]+")
 
 # Deletion
-let i=0
+i=0
 while [[ $i -lt $numframes  ]]; do
-    rem=$(( $i % 2 ))
+    rem=$(( i % 2 ))
 
     if [ $rem -eq 0 ]
     then
-        gifsicle $2 --delete "#"$(($i/2)) -o $2 
+        gifsicle "$2" --delete "#$((i/2))" -o "$2"
     fi
 
-    let i=i+1 
+    i=$((i + 1))
 done
 
