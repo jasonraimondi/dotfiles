@@ -15,6 +15,7 @@ config       > for the noble apps using .config
 dictionary   > extend the macos dictionary
 git          > global git config and aliases
 gnupg        > gpg and gpg-agent config
+misc         > extras that are not stowed, like obs overlays
 mise         > mise for maintaining language versions
 ruby         > ruby config
 ssh          > ssh config

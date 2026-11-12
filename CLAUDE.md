@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-macOS development environment managed with [GNU Stow](https://www.gnu.org/software/stow/) symlinks. Each top-level directory is a stow "package" that maps into `$HOME`.
+macOS development environment managed with [GNU Stow](https://www.gnu.org/software/stow/) symlinks. Each directory that `setup-stow.sh` stows is a "package" that maps into `$HOME`. `misc/` is not stowed and holds files kept for reference, like the OBS overlays.
 
 ## Key Commands
 
