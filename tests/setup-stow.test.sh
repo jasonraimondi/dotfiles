@@ -79,6 +79,21 @@ run_herdr_runtime_files_case() {
   rm -rf "$src" "$home"
 }
 
+run_private_dir_modes_case() {
+  local home d mode_of
+  home="$(mktemp -d)"
+  echo "case: real run keeps existing 700 dirs at 700"
+  mkdir -p "$home/.claude" "$home/Library/Spelling"
+  chmod 700 "$home/.claude" "$home/Library/Spelling"
+  (cd "$home" && HOME="$home" bash "$REPO/setup-stow.sh") > "$home/.out" 2>&1 \
+    || { fail "exit nonzero"; tail -5 "$home/.out" >&2; }
+  for d in .claude Library/Spelling; do
+    mode_of="$(stat -f %Lp "$home/$d")"
+    [[ "$mode_of" == 700 ]] || fail "real run changed $d to $mode_of"
+  done
+  rm -rf "$home"
+}
+
 run_case "dry-run from HOME" home -n
 run_case "dry-run from /tmp" tmp -n
 run_case "real run from HOME" home ""
@@ -86,6 +101,7 @@ run_case "real run from /tmp" tmp ""
 run_dry_run_side_effects_case -n
 run_dry_run_side_effects_case -D
 run_herdr_runtime_files_case
+run_private_dir_modes_case
 
 if (( failures > 0 )); then
   echo "$failures failure(s)" >&2

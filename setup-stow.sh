@@ -21,7 +21,11 @@ done
 
 prepare_dir() {
   if (( PREPARE_DIRS )); then
-    install -d "$@"
+    if [[ "$1" == -m ]]; then
+      install -d "$@"
+    else
+      mkdir -p "$@"
+    fi
   elif [[ ! -d "${!#}" ]]; then
     echo "skipping: ${!#} does not exist" >&2
     return 1
