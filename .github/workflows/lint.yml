@@ -1,0 +1,42 @@
+name: lint
+
+on: push
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install tools
+        run: brew install shellcheck stow
+
+      - name: Shellcheck
+        run: |
+          status=0
+          for f in setup*.sh bin/* tests/*.sh; do
+            [ -f "$f" ] || continue
+            head -n 1 "$f" | grep -Eq '^#!.*\b(ba|da|k)?sh\b' || continue
+            echo "shellcheck $f"
+            shellcheck --severity=warning "$f" || status=1
+          done
+          exit "$status"
+
+      - name: Tests
+        run: |
+          for t in tests/*.sh; do
+            [ -f "$t" ] || continue
+            echo "bash $t"
+            bash "$t"
+          done
+
+      - name: Stow dry run
+        run: |
+          export HOME="$(dirname "$PWD")"
+          mkdir -p "$HOME/Library/Spelling"
+          bash setup-stow.sh -n
