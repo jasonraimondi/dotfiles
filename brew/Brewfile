@@ -35,9 +35,7 @@ brew "agent-browser"
 brew "cmake"
 brew "fdupes"
 brew "mkcert"
-brew "neovim"
 brew "nmap"
-brew "ruby-build"
 brew "docker-compose"
 brew "gitleaks"
 brew "libpq" # for postgres gem
@@ -62,7 +60,6 @@ brew "git-lfs"
 brew "lazygit"
 # brew "git-duet/tap/git-duet"
 # brew "potatolabs/git-redate/git-redate"
-brew "tuicr"
 
 # Media
 brew "ffmpeg"
@@ -74,9 +71,7 @@ brew "gifsicle"
 brew "tesseract"
 
 # CLI utilities
-brew "caddy"
 brew "fastfetch"
-brew "flyctl"
 brew "gnupg"
 brew "immich-go"
 brew "rclone"
