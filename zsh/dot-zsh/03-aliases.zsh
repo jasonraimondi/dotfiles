@@ -15,8 +15,6 @@ alias mv="mv -i"
 alias cp="cp -pi"
 alias mkdir="mkdir -p"
 alias rsync="rsync -vh"
-alias json="json -c"
-alias psgrep="psgrep -i"
 alias df="df -H"
 
 # folder helpers
@@ -39,9 +37,8 @@ alias reboot="sudo reboot"
 alias halt="sudo halt"
 alias shutdown="sudo shutdown"
 
-# List declared aliases, functions, paths
+# List declared aliases, paths
 alias aliases="alias | sed 's/=.*//'"
-alias functions="declare -f | grep '^[a-z].* ()' | sed 's/{$//'"
 alias paths='echo -e ${PATH//:/\\n}'
 
 # Network
