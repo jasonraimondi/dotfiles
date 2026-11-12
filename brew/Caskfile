@@ -13,7 +13,6 @@ cask "safari-technology-preview"
 # Editors & dev
 cask "codex"
 cask "docker-desktop"
-cask "iterm2"
 cask "jetbrains-toolbox"
 cask "ngrok"
 cask "postman"
