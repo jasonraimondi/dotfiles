@@ -27,3 +27,5 @@ zsh/dot-zsh/*-custom.zsh
 .plan-bender/
 .plan-bender.local.yaml
 .claude/skills/bender-*
+config/herdr/plugins.json
+config/herdr/.plugins.lock
