@@ -4,6 +4,7 @@ cask_args appdir: "/Applications"
 
 # Brews
 brew "atuin"
+brew "mise"
 brew "pipx"
 brew "stow"
 brew "tmux"
