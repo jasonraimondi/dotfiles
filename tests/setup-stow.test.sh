@@ -26,12 +26,16 @@ run_case() {
   home="$(mktemp -d)"
   if [[ "$cwd_mode" == home ]]; then cwd="$home"; else cwd=/tmp; fi
   echo "case: $label"
+  if [[ "$mode" == -n ]]; then
+    (cd "$home" && mkdir -p .claude .gnupg .ssh .config/herdr .config/herdr-app Library/Spelling)
+  fi
 
   (cd "$cwd" && HOME="$home" bash "$REPO/setup-stow.sh" ${mode:+"$mode"}) > "$home/.out" 2>&1 \
     || { fail "exit nonzero"; tail -5 "$home/.out" >&2; }
 
   if [[ "$mode" == -n ]]; then
     [[ ! -e "$home/.zshrc" ]] || fail "dry run created .zshrc"
+    ! grep -q '^skipping:' "$home/.out" || fail "dry run skipped: $(grep '^skipping:' "$home/.out" | head -1)"
   else
     assert_link_into_repo "$home" .zshrc
     assert_link_into_repo "$home" .config/herdr-app/keys.json
