@@ -16,6 +16,9 @@ sort = -committerdate
 
 template = ~/.gitcommit
 
+# Show the diff being committed in the commit message editor.
+verbose = true
+
 [core]
 
 excludesfile = ~/.gitignore
@@ -44,6 +47,8 @@ rebase = false
 [fetch]
 
 prune = true
+pruneTags = true
+all = true
 
 [init]
 
@@ -53,6 +58,10 @@ defaultBranch = main
 
 # Detect copies as well as renames.
 renames = copies
+algorithm = histogram
+colorMoved = default
+# Prefix paths with i/ (index), w/ (worktree), c/ (commit) instead of a/ and b/.
+mnemonicPrefix = true
 
 [diff "bin"]
 
@@ -112,6 +121,22 @@ new = green
 added = green
 changed = yellow
 untracked = cyan
+
+[rebase]
+
+# Move stacked branch pointers along with the rebased commits.
+updateRefs = true
+autoSquash = true
+autoStash = true
+
+[tag]
+
+# Sort v1.10 after v1.9.
+sort = version:refname
+
+[column]
+
+ui = auto
 
 [submodule]
 
