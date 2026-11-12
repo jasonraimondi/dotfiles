@@ -5,4 +5,4 @@ skills-lock.json
 .agents/skills/
 .idea/
 __pycache__/
-claude/settings.json
+claude/settings.json.bak
