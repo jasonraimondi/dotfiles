@@ -8,7 +8,7 @@ echo
 
 branches_to_delete=$(git branch -r \
     | awk '{print $1}' \
-    | { grep -Ev -f /dev/fd/0 <(git branch -vv | grep origin) || true; } \
+    | { grep -vF -f /dev/fd/0 <(git branch -vv | grep origin) || [ "$?" -eq 1 ]; } \
     | sed 's/^[+*] //' \
     | awk '{print $1}')
 
