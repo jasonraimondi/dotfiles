@@ -44,7 +44,7 @@ Most packages target `$HOME`. Exceptions with custom targets:
 - `05-*` — utility functions
 - `01.5-custom.zsh`, `99-custom.zsh` — private, git-ignored
 
-PATH, `DOTFILES_HOME` and `brew shellenv` live in `zprezto/dot-zprofile`, which login shells source; non-login top-level shells source it through `zprezto/dot-zshenv` when `DOTFILES_HOME` is unset.
+PATH, `DOTFILES_HOME` and `brew shellenv` live in `zprezto/dot-zprofile`, which login shells source; non-login shells source it through `zprezto/dot-zshenv` when `DOTFILES_HOME` is unset.
 
 ### Homebrew
 
