@@ -40,13 +40,11 @@ stow ${FLAGS[@]+"${FLAGS[@]}"} git
 if prepare_dir -m 700 "$HOME/.gnupg"; then
   stow ${FLAGS[@]+"${FLAGS[@]}"} -t "$HOME/.gnupg" gnupg
 fi
-stow ${FLAGS[@]+"${FLAGS[@]}"} iterm2
 if prepare_dir "$HOME/Library/Spelling"; then
   stow ${FLAGS[@]+"${FLAGS[@]}"} -t "$HOME/Library/Spelling" dictionary
 fi
 stow ${FLAGS[@]+"${FLAGS[@]}"} mise
 stow ${FLAGS[@]+"${FLAGS[@]}"} ruby
-stow ${FLAGS[@]+"${FLAGS[@]}"} tmux
 stow ${FLAGS[@]+"${FLAGS[@]}"} vim
 stow ${FLAGS[@]+"${FLAGS[@]}"} zsh
 stow ${FLAGS[@]+"${FLAGS[@]}"} zprezto
