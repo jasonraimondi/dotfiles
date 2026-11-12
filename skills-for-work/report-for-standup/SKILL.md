@@ -8,7 +8,16 @@ disable-model-invocation: true
 
 Jason pastes this into the async standup thread in Slack. Teammates skim it between their own posts, so it reads like one of theirs: a few terse bullets, in Jason's own voice. The samples at the bottom are the spec; the rules only name what they show.
 
-Source: the work in this conversation. If the conversation carries none, use `git log --author=jason --since=yesterday` across the repo, plus `gh pr list --author @me` for open PRs.
+## Source
+
+Sweep the last 24 hours from all four, whatever the conversation holds; the conversation is one input, not the whole picture:
+
+- Commits: `git log --all --author="Jason Raimondi" --since="24 hours ago"`. Group by ticket or scope into workstreams.
+- PRs: `gh pr list --author @me --state all --search "updated:>=<24h ago>"` for merged, open, and draft. Merged is shipped, open or draft is in hand.
+- Notebook: files created in the last 12 hours under `$AI_NOTEBOOK_PATH` (`find "$AI_NOTEBOOK_PATH" -type f -mmin -720`, skipping `.git` and `.obsidian`). Skim the head of each handoff, research, and plan; they carry in-hand work and next steps no commit shows.
+- Conversation: work done in this session.
+
+Open PRs untouched for the window have no bullet. Meeting prep and handoffs count as a workstream when a notebook file shows them.
 
 ## Shape
 
@@ -91,4 +100,4 @@ From Jason's past posts, with casing and punctuation normalized to the rules abo
 • Working on Account settings redesign, coming along nicely so far. Doing the first rounds of testing on dev-5.
 ```
 
-Done when the post sits inside the shape above, every piece of work from the source either has a bullet or was dropped on purpose, and the post is on the clipboard.
+Done when the post sits inside the shape above, every piece of work from all four sources either has a bullet or was dropped on purpose, and the post is on the clipboard.
