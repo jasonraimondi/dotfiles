@@ -118,7 +118,7 @@
       "autoCompactWindow": 500000
     },
     "claude-fable-5-2": {
-      "effortLevel": "medium"
+      "effortLevel": "high"
     }
   },
   "autoMemoryEnabled": false,
