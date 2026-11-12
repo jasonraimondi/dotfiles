@@ -787,21 +787,26 @@ export default function (pi): void {
 
   // Why: set only from a finished reply until its settle post, so a later /compact names no old turn.
   let replyFinishedAt: number | undefined
+  let replyAborted = false
 
   function takeCompletedReplyFields(): Record<string, unknown> {
-    const fields = replyFinishedAt === undefined ? {} : { turn_completed_at: replyFinishedAt }
+    const fields = replyAborted
+      ? { interrupted: true }
+      : replyFinishedAt === undefined ? {} : { turn_completed_at: replyFinishedAt }
     replyFinishedAt = undefined
+    replyAborted = false
     return fields
   }
 
   // Why: a run cut off mid-tool, failed or aborted has no finished reply to announce.
   function recordReplyFinish(event): void {
-    let reply: { stopReason?: unknown } | undefined
+    let reply: { stopReason?: unknown; errorMessage?: unknown } | undefined
     for (const message of Array.isArray(event?.messages) ? event.messages : []) {
       if (message?.role === 'assistant') reply = message
     }
     const finished = reply?.stopReason === 'stop' || reply?.stopReason === 'length'
     replyFinishedAt = finished && !isOmpRuntime() ? Date.now() : undefined
+    replyAborted = reply?.stopReason === 'aborted' || (reply?.stopReason === 'error' && /aborted/i.test(String(reply?.errorMessage ?? '')))
   }
 
   onStatus('session_before_compact', (event, ctx) => {
