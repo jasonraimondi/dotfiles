@@ -1,7 +1,3 @@
-# The following lines were added by Docker Desktop to add commands to your PATH.
-export PATH="$PATH:/Users/jraimondi/.docker/bin"
-# End of Docker Desktop section.
-
 #
 # Executes commands at login pre-zshrc.
 #
@@ -51,12 +47,34 @@ typeset -gU cdpath fpath mailpath path
 #   $cdpath
 # )
 
-# Set the list of directories that Zsh searches for programs.
+export DOTFILES_HOME=$HOME/dotfiles
+
+if [[ -x /opt/homebrew/bin/brew ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+
+if [[ "$OSTYPE" == darwin* ]]; then
+  export PNPM_HOME="$HOME/Library/pnpm"
+else
+  export PNPM_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/pnpm"
+fi
+
+# Set the list of directories that Zsh searches for programs. Personal bins
+# come before Homebrew so they can shadow a formula of the same name.
+# mise shims rather than `mise activate`: its per-prompt PATH rebuild fights
+# direnv, which hands ~/Code/intelligems/intelligems over to proto.
 path=(
+  $HOME/.local/share/mise/shims(N)
+  $DOTFILES_HOME/bin(N)
+  $HOME/.local/bin(N)
+  $HOME/.omlx/bin(N)
+  "$HOME/Library/Application Support/JetBrains/Toolbox/scripts"(N)
   $HOME/{,s}bin(N)
   /opt/{homebrew,local}/{,s}bin(N)
   /usr/local/{,s}bin(N)
   $path
+  $PNPM_HOME/bin(N)
+  $PNPM_HOME(N)
 )
 
 #

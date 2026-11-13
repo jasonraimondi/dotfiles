@@ -1,14 +1,12 @@
 zmodload zsh/datetime
-start=$EPOCHREALTIME
+_dotfiles_start=$EPOCHREALTIME
 
-export DOTFILES_HOME=$HOME/dotfiles
-
-# Loop over all the *.zsh files in this directory
-for filename in $HOME/.zsh/**/*.zsh; do
-  # Do not reload the _main.zsh file
-  if [ $(basename "$filename") != "_main.zsh" ]; then
-    source "$filename"
-  fi 
+for _dotfiles_file in $HOME/.zsh/[0-9]*.zsh; do
+  source $_dotfiles_file
 done
 
-printf "dotfiles in %.0fms\n" $(( (EPOCHREALTIME - start) * 1000 ))
+# Only on a terminal, so `zsh -i -c '...'` output stays clean for tools.
+if [[ -t 1 && -z $ZSH_EXECUTION_STRING ]]; then
+  printf "dotfiles in %.0fms\n" $(( (EPOCHREALTIME - _dotfiles_start) * 1000 ))
+fi
+unset _dotfiles_start _dotfiles_file

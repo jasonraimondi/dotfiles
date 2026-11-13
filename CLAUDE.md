@@ -4,13 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-macOS development environment managed with [GNU Stow](https://www.gnu.org/software/stow/) symlinks. Each top-level directory is a stow "package" that maps into `$HOME`.
+macOS development environment managed with [GNU Stow](https://www.gnu.org/software/stow/) symlinks. Each directory that `setup-stow.sh` stows is a "package" that maps into `$HOME`. `misc/` is not stowed and holds files kept for reference, like the OBS overlays.
 
 ## Key Commands
 
 ```bash
 bash setup.sh                    # Full setup (requires sudo)
-bash setup-linux.sh              # Linux: zsh + prezto only
 bash setup-stow.sh               # Re-apply all symlinks
 bash setup-stow.sh -n            # Dry-run symlinks
 bash setup-stow.sh -D            # Delete all symlinks
@@ -38,12 +37,14 @@ Most packages target `$HOME`. Exceptions with custom targets:
 
 `zsh/dot-zsh/` files are sourced by glob in numeric order:
 - `00-SECRETS.zsh` — credentials rendered from the committed `00-secrets.tpl` (1Password `op://` references) by a manual `bin/secrets-sync` run; `bin/secrets-sync --check` validates the references without writing (never read or edit `00-SECRETS.zsh`)
-- `01-*` — base config, exports, PATH
-- `02-*` — framework setup
+- `01-*` — base config, exports
+- `02-*` — framework setup, plus atuin/direnv/mise init cached under `~/.cache/zsh`
 - `03-*` — aliases (general, macOS, programming)
-- `04-*` — dev tool config
+- `04-*` — prompt tweaks
 - `05-*` — utility functions
 - `01.5-custom.zsh`, `99-custom.zsh` — private, git-ignored
+
+PATH, `DOTFILES_HOME` and `brew shellenv` live in `zprezto/dot-zprofile`, which login shells source; non-login shells source it through `zprezto/dot-zshenv` when `DOTFILES_HOME` is unset.
 
 ### Homebrew
 
@@ -51,7 +52,7 @@ Separated Brewfiles in `brew/`: `Requirefile` (essentials installed first), `Bre
 
 ### Submodules
 
-zprezto, tmux plugins (dracula, resurrect, sensible, tpm), and vim dracula theme are git submodules.
+zprezto and the vim dracula theme are git submodules.
 
 ## Conventions
 

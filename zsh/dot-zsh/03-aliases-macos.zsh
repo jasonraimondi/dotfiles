@@ -8,7 +8,7 @@ alias pbtext="pbpaste | textutil -convert txt -stdin -stdout -encoding 30 | pbco
 alias pbspaces="pbpaste | expand | pbcopy"
 
 # Exclude macOS specific files in ZIP archives
-alias zip="zip -x *.DS_Store -x *__MACOSX* -x *.AppleDouble*"
+function zip() { command zip "$@" -x '*.DS_Store' '*__MACOSX*' '*.AppleDouble*' }
 
 # Show/hide hidden files in Finder
 alias show="defaults write com.apple.finder AppleShowAllFiles -bool true && killall Finder"

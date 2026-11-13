@@ -31,14 +31,6 @@ function rcat() {
   done
 }
 
-function e() {
-  if [ "$1" = "" ] ; then
-    exec $EDITOR .
-  else
-    exec $EDITOR "$1"
-  fi
-}
-
 function latest() {
   curl -sL "https://api.github.com/repos/$1/releases/latest" | jq -r ".tag_name"
 }

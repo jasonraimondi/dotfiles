@@ -15,9 +15,8 @@ config       > for the noble apps using .config
 dictionary   > extend the macos dictionary
 git          > global git config and aliases
 gnupg        > gpg and gpg-agent config
-iterm2       > iterm2 utilities
+misc         > extras that are not stowed, like obs overlays
 mise         > mise for maintaining language versions
-obs          > various tools for obs
 ruby         > ruby config
 ssh          > ssh config
 tmux         > tmux config
@@ -39,12 +38,6 @@ cd dotfiles && bash setup.sh
 ```
 
 **What this does:** Sets up a complete macOS dev environment with shell configs, applications, and tools managed through GNU Stow symlinks.
-
-**Linux (zsh only):**
-```bash
-git clone https://github.com/jasonraimondi/dotfiles.git ~/dotfiles && bash ~/dotfiles/setup-linux.sh
-```
-Installs zsh, stow and git if missing (apt, dnf or pacman), stows the `zsh` and `zprezto` packages, and makes zsh the login shell.
 
 ## Post-Install Setup
 

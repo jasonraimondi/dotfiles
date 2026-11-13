@@ -40,7 +40,6 @@ stow ${FLAGS[@]+"${FLAGS[@]}"} git
 if prepare_dir -m 700 "$HOME/.gnupg"; then
   stow ${FLAGS[@]+"${FLAGS[@]}"} -t "$HOME/.gnupg" gnupg
 fi
-stow ${FLAGS[@]+"${FLAGS[@]}"} iterm2
 if prepare_dir "$HOME/Library/Spelling"; then
   stow ${FLAGS[@]+"${FLAGS[@]}"} -t "$HOME/Library/Spelling" dictionary
 fi
