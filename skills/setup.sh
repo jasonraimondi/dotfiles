@@ -18,7 +18,6 @@ AGENTS_MD_TARGETS=(
   "$HOME/.claude/CLAUDE.md"
   "$HOME/.cursor/rules/agent.md"
   "$HOME/.codeium/windsurf/memories/global_rules.md"
-  "$HOME/.junie/guidelines.md"
   "$HOME/.pi/agent/AGENTS.md"
 )
 
