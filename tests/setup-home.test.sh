@@ -30,6 +30,14 @@ assert_links_to() {
   [[ "$resolved" == "$expected" ]] || fail "$rel resolves to $resolved, not $expected"
 }
 
+# Nix and Home Manager keep state of their own in the home they activate into.
+find_outside_nix_state() {
+  local home=$1
+  shift
+  find "$home" -mindepth 1 \
+    -not -path "$home/.cache*" -not -path "$home/.local*" -not -path "$home/.nix-*" "$@"
+}
+
 links_into() {
   local home=$1 repo=$2 link
   find "$home" -type l | while read -r link; do
@@ -84,7 +92,7 @@ run_repo_case() {
   [[ -f "$home/.zprezto/modules/autosuggestions/external/zsh-autosuggestions.zsh" ]] || fail ".zprezto is missing its own submodules"
   [[ -f "$home/.vim/pack/themes/start/dracula/colors/dracula.vim" ]] || fail "the dracula vim theme is missing"
 
-  dangling="$(find "$home" -type l ! -exec test -e {} \; -print | head -3 | tr '\n' ' ')"
+  dangling="$(find_outside_nix_state "$home" -type l ! -exec test -e {} \; -print | head -3 | tr '\n' ' ')"
   [[ -z "$dangling" ]] || fail "links to a path that does not exist: $dangling"
 
   echo "case: -D removes what the real run linked"
@@ -101,7 +109,7 @@ run_dry_run_case() {
   home="$(new_dir)"
   echo "case: -n links nothing"
   setup_home "$home" "$REPO" -n || { fail "exit nonzero"; tail -5 "$home.log" >&2; }
-  created="$(find "$home" -mindepth 1 -not -path "$home/.cache*" -not -path "$home/.nix-*" | head -3 | tr '\n' ' ')"
+  created="$(find_outside_nix_state "$home" | head -3 | tr '\n' ' ')"
   [[ -z "$created" ]] || fail "-n created: $created"
   rm -rf "$home" "$home.log"
 }
