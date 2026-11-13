@@ -1,0 +1,3 @@
+interface:
+  display_name: "Handoff"
+  short_description: "Compact a conversation into a handoff"

@@ -1,0 +1,10 @@
+{
+  "lastChangelogVersion": "1.5.2",
+  "defaultThinkingLevel": "medium",
+  "doubleEscapeAction": "tree",
+  "defaultProvider": "openai-codex",
+  "defaultModel": "gpt-6-sol",
+  "theme": "dark",
+  "packages": [],
+  "enableInstallTelemetry": false
+}
