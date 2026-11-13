@@ -37,7 +37,7 @@ python3 scripts/spawn-fleet.py reviewer:/path/to/project researcher:/path/to/pro
 python3 scripts/spawn-fleet.py --peer-harness pi reviewer:/path/to/project
 ```
 
-Each argument is `NAME:DIR` or `NAME:DIR@MODEL`; a peer's own model overrides `--model`, and the peer harness interprets it (`haiku` for Claude, `openai-codex/gpt-6-sol` for pi). Names must match `[a-z][a-z0-9_-]{0,31}`. The name is the peer's tab title, so make it a logical name of at most four hyphenated words that says what the peer is doing (`auth-impl`, `auth-audit`, `final-review-gpt`), never a bare model name or number. Prefer existing trusted directories; new ones may require a human trust decision. Preserve the current directory unless the task needs another location. Use one writer per checkout; isolate intentionally concurrent writers in worktrees with the user's approval.
+Each argument is `NAME:DIR` or `NAME:DIR@MODEL`; a peer's own model overrides `--model`, and the peer harness interprets it (`haiku` for Claude, `openai-codex/gpt-6-sol` for pi). Names must match `[a-z][a-z0-9_-]{0,31}`. The name becomes the peer's tab title with `-tmp` appended by the launcher, which tells the user an agent opened the tab and closing it loses none of their own work. Make the name a logical name of at most three hyphenated words that says what the peer is doing (`auth-impl`, `auth-audit`, `final-review-gpt`), never a bare model name or number. Prefer existing trusted directories; new ones may require a human trust decision. Preserve the current directory unless the task needs another location. Use one writer per checkout; isolate intentionally concurrent writers in worktrees with the user's approval.
 
 The launcher checks coordinator messaging before starting any peer, starts each peer with `hc run --bg` in a terminal named after it, and prints terminal ids, addresses, and teardown instructions. Each peer opens as its own tab in the coordinator's Herdr space. A coordinator outside the window (its terminal has no `herdr.space` label) gets hidden peers, and the launcher says so; show one with the `herdr-app` skill. If startup partially fails, it leaves the started terminals for inspection and prints their cleanup. It never answers trust prompts automatically.
 
@@ -62,5 +62,14 @@ After sending the briefs, end your turn. Replies wake the coordinator. A Claude 
 ## 4. Tear the fleet down when its work is done
 
 Teardown is the default. Once every peer has replied and no follow-up is planned, tear the fleet down in that same turn: run the printed `hc kill <t> && hc rm <t>` for each terminal the launcher started, then confirm disappearance with `peer-addr.py --harness <peer harness>`. Clean up only those terminals; `hc ls` also lists the user's other live work. A Claude coordinator's bridge exits with the coordinator; stopping it earlier ends its `pi:` reachability. A coordinator launched by a lead tears down its own fleet; the lead tears down the coordinators and the services it started.
+
+When the coordinator's last task is done, after the teardown, mark its own tab done so the user knows it is safe to close. Find the tab, then rename it to a logical name of at most four words ending in `-done`, keeping its current name when it already fits:
+
+```bash
+herdr-app ls | jq -r --arg t "$HC_TERMINAL_ID" '.spaces[].tabs[] | select(any(.terminals[]; .terminal == $t)) | "\(.id)\t\(.name)"'
+herdr-app do tab.rename --id <tab id> --name <name>-done
+```
+
+Skip this when the user asked to keep the fleet or `herdr-app ls` does not list the coordinator's terminal.
 
 Keep the fleet only when the user asks, before launch or during the run. Then hand them the printed teardown block and say that the peers remain alive: they retain memory and processes, and additional messages or ongoing work can incur model usage. An idle peer need not call the model just to wait. Kept peers still end when the coordinator's terminal does; a peer that must outlive it needs `hc run --outlive-parent`, which the launcher does not pass, so start it by hand ([references/manual-rig.md](references/manual-rig.md)).

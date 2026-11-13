@@ -79,6 +79,6 @@ The grill closes when the frontier is empty and no veto is pending.
 1. Write the handoff per `grilling`.
 2. Send both peers the handoff path for one review: gaps, contradictions with the log, and facts the code disputes, with `file:line`, ≤400 words. A gap that needs a decision reopens the grill; fix the rest in the handoff.
 3. Show the user the handoff path, its summary, and the list of `(panel)` decisions.
-4. Tear down the panel and stop the bridge per `agent-fleet`, then confirm with `peer-addr.py`. Keep it only when the user asks.
+4. Tear down the panel and stop the bridge per `agent-fleet`, then confirm with `peer-addr.py`. Keep it only when the user asks. Then mark the coordinator tab `-done` per `agent-fleet`.
 
 Then stop, per `grilling`, until the user approves moving past the grill.

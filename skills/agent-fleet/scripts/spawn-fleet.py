@@ -19,6 +19,7 @@ from harness import (bridge_node, bridge_script, coordinator, detect_harness, li
 # hc terminal names and Claude session names come from the same argument, so a
 # spec name must satisfy the stricter of the two.
 PEER_NAME = re.compile(r"^[a-z][a-z0-9_-]{0,31}$")
+SAFE_TO_CLOSE_SUFFIX = "-tmp"
 ADDR_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "peer-addr.py")
 HOOK_TIMEOUT_S = 86400
 HOOK_DEADLINE_MARGIN_S = 60
@@ -171,7 +172,7 @@ def start_agent(name, directory, harness, permission_mode, extra, labels, settin
         native += ["--append-system-prompt", system_prompt]
     if model:
         native += ["--model", model]
-    launched = hc("run", "--bg", "--json", "--name", name, "--cwd", directory, *labels,
+    launched = hc("run", "--bg", "--json", "--name", name + SAFE_TO_CLOSE_SUFFIX, "--cwd", directory, *labels,
                   "--", os.environ.get("SHELL") or "/bin/zsh", "-ilc", EXEC_ARGS, harness, *native, *extra)
     return launched["address"]
 

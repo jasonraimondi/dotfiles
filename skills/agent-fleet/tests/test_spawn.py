@@ -110,9 +110,9 @@ class FleetTests(unittest.TestCase):
         ready = [{"name": "one", "pid": 111, "address": "pi:one"}, {"name": "two", "pid": 222, "address": "pi:two"}]
         self.assertEqual(self.launch([f"one:{self.peer_dir}", "two:."], ready), 0)
         first, second = self.starts()
-        self.assertEqual(first[:first.index("--")], ("run", "--bg", "--json", "--name", "one", "--cwd", self.peer_dir,
+        self.assertEqual(first[:first.index("--")], ("run", "--bg", "--json", "--name", "one-tmp", "--cwd", self.peer_dir,
                                                      "--label", "herdr.space=sp1"))
-        self.assertEqual(second[second.index("--name") + 1], "two")
+        self.assertEqual(second[second.index("--name") + 1], "two-tmp")
         self.assertIn("terminals t2, t3", self.output.getvalue())
 
     def test_peers_start_through_an_interactive_login_shell(self):
