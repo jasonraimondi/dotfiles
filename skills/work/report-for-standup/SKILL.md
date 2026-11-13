@@ -1,6 +1,6 @@
 ---
 name: report-for-standup
-description: Turn recent work into Jason's async standup post, formatted for Slack and copied to the clipboard.
+description: Turn recent work into Jason's async standup post or end-of-day stakeholder update, formatted for Slack and copied to the clipboard.
 disable-model-invocation: true
 ---
 
@@ -8,16 +8,27 @@ disable-model-invocation: true
 
 Jason pastes this into the async standup thread in Slack. Teammates skim it between their own posts, so it reads like one of theirs: a few terse bullets, in Jason's own voice. The samples at the bottom are the spec; the rules only name what they show.
 
+## Audience
+
+Pick the audience from Jason's request before writing a word:
+
+- **Engineers** (the default): the standup thread. Follow Shape through Samples below.
+- **Stakeholders**: any ask for non-technical readers, an end-of-day update, or an update for product, CS or leadership. Read [`STAKEHOLDERS.md`](STAKEHOLDERS.md); its shape replaces Shape, Casing and Samples here. Source and Deliver still apply.
+
+Take the date and weekday from `date "+%A %b %-d"`, and use them verbatim wherever the post names the day.
+
 ## Source
 
-Sweep the last 24 hours from all four, whatever the conversation holds; the conversation is one input, not the whole picture:
+Sweep the window Jason names ("today" means since local midnight), else the last 24 hours, from all four sources, whatever the conversation holds; the conversation is one input, not the whole picture:
 
 - Commits: `git log --all --author="Jason Raimondi" --since="24 hours ago"`. Group by ticket or scope into workstreams.
 - PRs: `gh pr list --author @me --state all --search "updated:>=<24h ago>"` for merged, open, and draft. Merged is shipped, open or draft is in hand.
-- Notebook: files created in the last 12 hours under `$AI_NOTEBOOK_PATH` (`find "$AI_NOTEBOOK_PATH" -type f -mmin -720`, skipping `.git` and `.obsidian`). Skim the head of each handoff, research, and plan; they carry in-hand work and next steps no commit shows.
+- Notebook: files changed in the window under `$AI_NOTEBOOK_PATH` (`find -L "$AI_NOTEBOOK_PATH" -name '*.md' -newermt "$(date +%F)"` for today, skipping `.git`, `.obsidian` and run-artifact folders). Skim the head of each; the topic `wiki/` pages' State and Open sections are the fastest digest of where a ticket stands. On agent-heavy days most work lives here on unpushed branches, so the notebook is often the main source.
 - Conversation: work done in this session.
 
 Open PRs untouched for the window have no bullet. Meeting prep and handoffs count as a workstream when a notebook file shows them.
+
+Distill by ticket: a ticket's plans, fleet reports, reviews, triage and handoffs fold into one workstream that says what changed for it. Reviews, audits and agent runs are legwork; report what they found, decided or unblocked. Personal repos (dotfiles, skills) stay out unless Jason asks for them.
 
 ## Shape
 
@@ -100,4 +111,4 @@ From Jason's past posts, with casing and punctuation normalized to the rules abo
 • Working on Account settings redesign, coming along nicely so far. Doing the first rounds of testing on dev-5.
 ```
 
-Done when the post sits inside the shape above, every piece of work from all four sources either has a bullet or was dropped on purpose, and the post is on the clipboard.
+Done when the post sits inside its audience's shape, the day it names matches `date`, every piece of work from all four sources either has a bullet or was dropped on purpose, and the post is on the clipboard.
