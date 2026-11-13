@@ -22,15 +22,14 @@ for brew_bin in /opt/homebrew/bin/brew /usr/local/bin/brew; do
   fi
 done
 
-git submodule update --init --recursive
 git config core.hooksPath .githooks
 
 # install the more important stuff first
 brew bundle --file brew/Requirefile
 
-# set symlinks using stow
-bash setup-stow.sh
-bash setup-skills.sh
+# nix builds the Home Manager generation that setup-home.sh links into $HOME
+[ -x /nix/var/nix/profiles/default/bin/nix ] || curl -fsSL https://nixos.org/nix/install | sh -s -- --daemon --yes
+bash setup-home.sh
 
 # Install applications using homebrew & casks
 for BREWFILE in Brewfile Fontfile Caskfile CaskfileQuicklook Macfile; do

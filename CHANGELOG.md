@@ -1,5 +1,63 @@
 # Changelog
 
+## 2026-11-13: Home Manager replaces GNU Stow
+
+Home Manager now links the dotfiles and agent skills into `$HOME`, in place of GNU Stow and the two setup scripts built on it. The files keep their paths and `dot-` names, and the links still point at the checkout, so editing a file works as before. Homebrew, mise and the macOS scripts are unchanged.
+
+### Changed
+
+| Before | After |
+|---|---|
+| `setup-stow.sh`, `setup-skills.sh` | `setup-home.sh`, with the same `-n` and `-D` flags |
+| `.stowrc` and stow's walk of each package | `nix/links.nix`, one line per link |
+| `stow!`, `reskill!` aliases | `relink!` |
+| `zprezto/dot-zprezto` submodule | `prezto` flake input, linked to `~/.zprezto` from the Nix store |
+| `vim/dot-vim/pack/themes/start/dracula` submodule | `dracula-vim` flake input, linked into a real `~/.vim` |
+| `git submodule update --init --recursive` | `nix flake update prezto dracula-vim` |
+| `tests/setup-stow.test.sh`, `tests/setup-skills.test.sh` | `tests/setup-home.test.sh`, which needs Nix |
+
+- `bash setup.sh` installs Nix when it is missing, then runs `setup-home.sh`.
+- A new file is linked only once it has a line in `nix/links.nix`. Stow linked whatever a package directory held.
+- `~/.git-user.gpg`, `~/.git-user.template` and `~/.ssh/config.gpg` are no longer linked. Nothing read them there.
+- The `vendor/` and `vendor-auto/` skills are linked from the Nix store with their invocation policy applied to the store copy. The tracked `SKILL.md` files are no longer rewritten, and a change to one of those skills reaches `$HOME` on the next `bash setup-home.sh`.
+- A regular file where a link belongs stops the whole run before anything is linked. `setup-skills.sh` skipped such a file with a warning.
+- Each app config is linked the same way on every machine: `~/.config/atuin`, `~/.config/karabiner` and `~/.config/mise` as whole directories, the rest as single entries. Stow chose per machine, depending on which directories already existed.
+
+### Removed
+
+- `stow` from `brew/Requirefile` and `brew/Brewfile`.
+- `.gitmodules` and both submodules.
+
+### Migrating a machine
+
+Stow removes links by walking the package directories, so the old links have to come down before the pull removes the stow scripts.
+
+```bash
+cd ~/dotfiles
+bash setup-stow.sh -D && bash setup-skills.sh -D
+git pull
+rm -rf zprezto/dot-zprezto vim/dot-vim
+find ~/.config/herdr-app ~/.config/zed -type d -empty -delete
+curl -fsSL https://nixos.org/nix/install | sh -s -- --daemon --yes
+bash setup-home.sh -n
+bash setup-home.sh
+exec zsh
+```
+
+The `rm` clears what the two submodules leave behind, and the `find` clears the empty directories stow leaves where Home Manager now puts a link. Done when `bash setup-home.sh` ends without an error and `readlink ~/.zshrc` prints a `/nix/store` path. If the run names an existing file or directory that would be clobbered, move it aside and run it again.
+
+Going back to stow:
+
+```bash
+cd ~/dotfiles
+bash setup-home.sh -D
+git switch --detach 87abaa9
+git submodule update --init --recursive
+bash setup-stow.sh && bash setup-skills.sh
+```
+
+Nix stays installed after that. Removing it follows the uninstall section of the Nix manual.
+
 ## 2026-11-13: skills folded into the dotfiles layout
 
 The merge left the old skills repo intact under `skills/`, with its own setup script, ignore file, gitleaks config and agent files. Those now sit where the rest of the dotfiles keep them, and `skills/` holds only skill packages.

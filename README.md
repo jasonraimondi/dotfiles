@@ -16,11 +16,12 @@ config       > for the noble apps using .config
 dictionary   > extend the macos dictionary
 git          > global git config and aliases
 gnupg        > gpg and gpg-agent config
-misc         > extras that are not stowed, like obs overlays
+misc         > extras that are not linked, like obs overlays
 mise         > mise for maintaining language versions
+nix          > home manager modules that link everything into ~
 pi           > pi settings and extensions
 ruby         > ruby config
-skills       > agent skills, linked by setup-skills.sh
+skills       > agent skills
 ssh          > ssh config
 tmux         > tmux config
 vim          > vim configs
@@ -40,7 +41,7 @@ zsh          > shell configuration 🔥🔥
 cd dotfiles && bash setup.sh
 ```
 
-**What this does:** Sets up a complete macOS dev environment with shell configs, applications, and tools managed through GNU Stow symlinks.
+**What this does:** Sets up a complete macOS dev environment with shell configs, applications, and tools, linked into place by Home Manager.
 
 ## Post-Install Setup
 
@@ -75,7 +76,7 @@ vim ~/.zsh/99-custom.zsh
 ## How It Works
 
 ### Symlink Management
-[GNU Stow](https://www.gnu.org/software/stow/) creates symlinks from `~/dotfiles/` to your home directory. The `--dotfiles` flag converts `dot-example` files to `.example` dotfiles.
+[Home Manager](https://github.com/nix-community/home-manager) creates symlinks from `~/dotfiles/` to your home directory. `nix/links.nix` lists every link, and `setup-home.sh` builds and activates them with [Nix](https://nixos.org/), which `setup.sh` installs. The links point at this checkout, so editing a file here takes effect without a rebuild. Prezto and the vim dracula theme are flake inputs pinned in `flake.lock`.
 
 ### Shell Configuration
 ZSH automatically sources all `*.zsh` files from `~/.zsh/` using the [Prezto](https://github.com/sorin-ionescu/prezto) framework for enhanced functionality.
@@ -105,18 +106,18 @@ mise install --yes && mise reshim
 
 **Re-apply symlinks:**
 ```bash
-bash setup-stow.sh
-bash setup-skills.sh
+bash setup-home.sh     # -n previews, -D removes every link
 ```
 
-**Update submodules:**
+**Update pinned dependencies:**
 ```bash
-git submodule update --init --recursive
+nix flake update prezto dracula-vim   # no names updates nixpkgs and home-manager too
+bash setup-home.sh
 ```
 
 ---
 
 **References:**
-- [Managing dotfiles with GNU Stow](https://alexpearce.me/2016/02/managing-dotfiles-with-stow/)
+- [Home Manager manual](https://nix-community.github.io/home-manager/)
 - [Brewfile: a Gemfile, but for Homebrew](https://thoughtbot.com/blog/brewfile-a-gemfile-but-for-homebrew)
 - [Ascii Art Generator with **big** font](https://www.coolgenerator.com/ascii-text-generator)
