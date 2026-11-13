@@ -57,6 +57,7 @@ zprezto and the vim dracula theme are git submodules.
 
 ## Conventions
 
+- **Public repo**: Every commit is published on GitHub. Before committing, read the staged diff for anything not meant for release: secrets and credentials, private hostnames or IPs, email addresses, and any text about work (employer, coworkers, clients, internal tools or repos), other people, or private life. If any appear, refuse to commit and report what you found. Sensitive values belong in the git-ignored private files or 1Password; terms that must never appear go in the git-ignored `.gitleaks.private.toml`, which the pre-commit hook enforces.
 - **Bash scripts**: Always `#!/usr/bin/env bash` + `set -euo pipefail`
 - **Stow files**: Use `dot-` prefix for dotfiles, never create raw `.` files in packages
 - **Commits**: Conventional format — `type(scope): description` (scopes: tool/component names)
