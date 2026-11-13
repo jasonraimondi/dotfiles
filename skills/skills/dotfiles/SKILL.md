@@ -5,15 +5,15 @@ description: Change Jason's macOS dotfiles in ~/dotfiles. Use when asked to add 
 
 # Dotfiles
 
-`~/dotfiles` is a GNU Stow repo. Every top-level directory is a package stowed into `$HOME`; `dot-foo` becomes `~/.foo`. Edit the file in the repo, never the symlink target in `$HOME`.
+`~/dotfiles` is a GNU Stow repo. Each directory `setup-stow.sh` stows is a package; most target `$HOME`, where `dot-foo` becomes `~/.foo`. Edit the file in the repo, never the symlink target in `$HOME`.
 
 ## Steps
 
 1. **Route.** Pick the file from the table below. One concern, one file. When the change fits no row, say so and propose the file before editing.
-2. **Edit** in `~/dotfiles`. Match the neighbouring style. Guard a tool init with `command -v` the way `02-setup.zsh` does.
+2. **Edit** in `~/dotfiles`. Match the neighbouring style. Add a tool init as a `_source_cached` line the way `02-setup.zsh` does.
 3. **Verify** with the command for that row. Done when it exits 0 and the new thing resolves.
 4. **Apply.** A new file in an existing package needs `bash setup-stow.sh -n` then `bash setup-stow.sh`. A conflict means a real file sits where a symlink belongs: stop and report it, never `--adopt`. An edit to an existing file needs nothing; tell the user `exec zsh` for shell changes.
-5. **Commit** to `main` as `type(scope): description`. Scope is the package directory, or the app name under `config/`. `git status --short` first: Herdr writes runtime files into `config/herdr/` through the folded symlink, so stage only your change.
+5. **Commit** to `macos` as `type(scope): description`. Scope is the package directory, or the app name under `config/`. `git status --short` first, and stage only your change.
 
 ## Routing
 
@@ -21,11 +21,11 @@ description: Change Jason's macOS dotfiles in ~/dotfiles. Use when asked to add 
 |---|---|---|
 | general alias | `zsh/dot-zsh/03-aliases.zsh` | `zsh -i -c 'whence -w NAME'` reports `alias` |
 | macOS alias | `zsh/dot-zsh/03-aliases-macos.zsh` | same |
-| dev or AI tool alias (`claude`, `opus`, `fable` live here) | `zsh/dot-zsh/03-aliases-programming.zsh` | same |
+| dev or AI tool alias (`sonnet`, `opus`, `fable` live here) | `zsh/dot-zsh/03-aliases-programming.zsh` | same |
 | function | `zsh/dot-zsh/05-functions.zsh`; git ones in `05-functions-git.zsh` | `whence -w` reports `function`; `return`, never `exit` |
 | env var | `zsh/dot-zsh/01-exports.zsh` | `zsh -i -c 'echo $NAME'` |
-| PATH entry | `zsh/dot-zsh/01-base.zsh` via `prepend_path` | `zsh -i -c 'echo $PATH'` |
-| tool init (`eval "$(x init zsh)"`) | `zsh/dot-zsh/02-setup.zsh` | `zsh -i -c exit` exits 0 |
+| PATH entry | the `path=( … )` array in `zprezto/dot-zprofile` | `zsh -l -c 'echo $PATH'` |
+| tool init (`_source_cached x init zsh`) | `zsh/dot-zsh/02-setup.zsh` | `zsh -i -c exit` exits 0 |
 | script | `bin/NAME`, `#!/usr/bin/env bash`, `set -euo pipefail`, `chmod +x` | `shellcheck bin/NAME` |
 | CLI formula | `brew/Brewfile` | `brew info NAME` resolves |
 | GUI app | `brew/Caskfile`; hobby or optional apps in `CaskfileExtended` (manual install only) | `brew info --cask NAME` |
@@ -44,7 +44,7 @@ description: Change Jason's macOS dotfiles in ~/dotfiles. Use when asked to add 
 
 Shell files load alphabetically, so `03-aliases-*.zsh` run before `03-aliases.zsh` and an alias defined later wins over an earlier function of the same name. Check `whence -w` after every alias or function.
 
-Mise is not activated globally, only its completions load. A tool added to `config/mise/config.toml` is on PATH only where a project activates mise.
+Mise is not activated in the shell: its shims directory leads PATH (`zprezto/dot-zprofile`) and only its completions load. A tool added to `config/mise/config.toml` resolves through its shim once `mise install` has run.
 
 ## Private files
 

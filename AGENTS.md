@@ -24,7 +24,7 @@ bin/secrets-sync                 # Render 00-SECRETS.zsh from 1Password (--check
 
 ### Stow Package Layout
 
-Each directory is a stow package. The `--dotfiles` flag (in `.stowrc`) converts `dot-` prefixed files to `.` dotfiles:
+The `--dotfiles` flag (in `.stowrc`) converts `dot-` prefixed files to `.` dotfiles:
 - `git/dot-gitconfig` → `~/.gitconfig`
 - `zsh/dot-zsh/03-aliases.zsh` → `~/.zsh/03-aliases.zsh`
 
