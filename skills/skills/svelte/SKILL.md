@@ -11,7 +11,7 @@ Follow this sequence when working on Svelte 5 code:
 
 1. **Check project version** — Inspect `package.json` for Svelte version. If < 5, consult [migration.md](references/migration.md) before writing any code.
 2. **Read relevant references** — Before writing or modifying a component, read the reference file(s) matching your task from the table below.
-3. **Write code** — Apply patterns from references and the quick patterns below.
+3. **Write code** — Apply the patterns from the references.
 4. **Validate** — Run the autofixer on modified components:
    ```bash
    npx @sveltejs/mcp svelte-autofixer ./src/lib/Component.svelte
