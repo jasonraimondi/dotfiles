@@ -10,12 +10,12 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
+
+      - uses: cachix/install-nix-action@v31
 
       - name: Install tools
         run: |
-          brew install bash shellcheck stow
+          brew install bash shellcheck
           echo "$(brew --prefix)/bin" >> "$GITHUB_PATH"
 
       - name: Shellcheck
@@ -36,9 +36,3 @@ jobs:
             echo "bash $t"
             bash "$t"
           done
-
-      - name: Stow dry run
-        run: |
-          export HOME="$(dirname "$PWD")"
-          (cd "$HOME" && mkdir -p .gnupg .ssh .config/herdr .config/herdr-app Library/Spelling .claude .pi/agent)
-          bash setup-stow.sh -n

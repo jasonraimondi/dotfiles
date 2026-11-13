@@ -1,6 +1,0 @@
-[submodule "zprezto/dot-zprezto"]
-	path = zprezto/dot-zprezto
-	url = https://github.com/sorin-ionescu/prezto.git
-[submodule "vim/dot-vim/pack/themes/start/dracula"]
-	path = vim/dot-vim/pack/themes/start/dracula
-	url = https://github.com/dracula/vim.git

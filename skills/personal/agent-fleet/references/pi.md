@@ -6,7 +6,7 @@ Pi peers use our local **pi-peer** extension, not pi-intercom or pi-subagents. I
 
 The extension lives at `pi/extensions/pi-peer/` in this repository. Install its production dependencies with `npm ci --omit=dev --ignore-scripts` from that directory. Link the directory into `~/.pi/agent/extensions/pi-peer`, or load its `index.ts` explicitly with `pi --extension /absolute/path/to/index.ts`. Respect `PI_CODING_AGENT_DIR` if the user has a custom config directory.
 
-`setup-stow.sh` links the extensions directory, but also restows every other package. Use a targeted link when only installing pi-peer; do not overwrite an existing installation without checking it. Restart or `/reload` after installation. The current session cannot gain a new tool merely by reading this skill.
+`setup-home.sh` links the extensions directory, but also relinks everything else in the repository. Use a targeted link when only installing pi-peer; do not overwrite an existing installation without checking it. Restart or `/reload` after installation. The current session cannot gain a new tool merely by reading this skill.
 
 Confirm:
 

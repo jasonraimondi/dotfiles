@@ -5,14 +5,14 @@ description: Change Jason's macOS dotfiles in ~/dotfiles. Use when asked to add 
 
 # Dotfiles
 
-`~/dotfiles` is a GNU Stow repo. Each directory `setup-stow.sh` stows is a package; most target `$HOME`, where `dot-foo` becomes `~/.foo`. Edit the file in the repo, never the symlink target in `$HOME`.
+`~/dotfiles` is linked into `$HOME` by Home Manager. `nix/links.nix` lists every link as `"path in $HOME" = "path in the repo"`, where a repo file named `dot-foo` lands as `~/.foo`. Edit the file in the repo, never the symlink target in `$HOME`.
 
 ## Steps
 
 1. **Route.** Pick the file from the table below. One concern, one file. When the change fits no row, say so and propose the file before editing.
 2. **Edit** in `~/dotfiles`. Match the neighbouring style. Add a tool init as a `_source_cached` line the way `02-setup.zsh` does.
 3. **Verify** with the command for that row. Done when it exits 0 and the new thing resolves.
-4. **Apply.** A new file in an existing package needs `bash setup-stow.sh -n` then `bash setup-stow.sh`. A conflict means a real file sits where a symlink belongs: stop and report it, never `--adopt`. An edit to an existing file needs nothing; tell the user `exec zsh` for shell changes.
+4. **Apply.** An edit to an existing file needs nothing, and neither does a new file inside a directory `nix/links.nix` links whole (`zsh/dot-zsh/`, `config/mise/`); tell the user `exec zsh` for shell changes. Any other new file needs its own line in `nix/links.nix`, then `bash setup-home.sh -n` and `bash setup-home.sh`. A run that stops on an existing file means a real file sits where a symlink belongs: report it and leave it in place.
 5. **Commit** to `macos` as `type(scope): description`. Scope is the package directory, or the app name under `config/`. `git status --short` first, and stage only your change.
 
 ## Routing
@@ -39,9 +39,10 @@ description: Change Jason's macOS dotfiles in ~/dotfiles. Use when asked to add 
 | macOS default | `setup-systemprefs.sh` with the `run` wrapper | `bash setup-systemprefs.sh -n` |
 | Dock app | `setup-dock.sh` | `bash setup-dock.sh` |
 | tmux, vim | `tmux/dot-tmux.conf`, `vim/dot-vimrc` | `tmux source-file`, `vim -c q` |
-| new package | new directory plus a line in `setup-stow.sh` | `bash setup-stow.sh -n` |
-| Claude or Pi setting | `claude/`, `pi/` | `bash setup-stow.sh -n` |
-| agent skill, global agent instructions | `skills/PACKAGE/NAME/`, `GLOBAL_AGENTS.md`, linked by `setup-skills.sh` in place of `setup-stow.sh` | `bash setup-skills.sh -n` |
+| new package | new directory plus its lines in `nix/links.nix` | `bash setup-home.sh -n` |
+| Claude or Pi setting | `claude/`, `pi/` | `bash setup-home.sh -n` |
+| agent skill, global agent instructions | `skills/PACKAGE/NAME/`, `GLOBAL_AGENTS.md`; a new skill is linked by `bash setup-home.sh` | `bash setup-home.sh -n` |
+| prezto or dracula vim theme version | `nix flake update prezto` or `dracula-vim`, which rewrites `flake.lock` | `bash setup-home.sh -n` |
 
 Shell files load alphabetically, so `03-aliases-*.zsh` run before `03-aliases.zsh` and an alias defined later wins over an earlier function of the same name. Check `whence -w` after every alias or function.
 
