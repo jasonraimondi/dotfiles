@@ -63,6 +63,13 @@ The current worktree's branch is the top of the gh-stack, and the fleet's work l
 
 Peers writing to the same checkout each get their own worktree and a track branch cut from that top, initialized the way the project's `AGENTS.md` says. Track branches are scaffolding: they merge back into the top in §4 and stay out of the stack, with no PRs of their own.
 
+Setting up a worktree is slow, so reuse one wherever you can:
+
+- Only writers get a worktree. Auditors, final reviewers and triage are read-only and work in the implementer's worktree or the current one.
+- Before adding a worktree, list them with `git worktree list`. Reuse one that is clean (`git status --porcelain` is empty), has no live peer in it, and whose branch is already merged into the top. Cut the track branch in place with `git switch -C <track branch> <top>`.
+- Rerun the project's install only when the dependency manifests or lockfile differ between the worktree's old HEAD and the top (`git diff --quiet <old HEAD> <top> -- <lockfile>`). Otherwise the installed dependencies are still valid.
+- Create a new worktree only when none qualifies, and leave every worktree in place after the run for the next one to reuse.
+
 ## 3. Brief
 
 Implementer brief:
