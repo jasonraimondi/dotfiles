@@ -65,6 +65,17 @@
           }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/herdr-tab-title.sh",
+            "timeout": 5
+          }
+        ]
+      }
     ]
   },
   "disableRemoteControl": true,
