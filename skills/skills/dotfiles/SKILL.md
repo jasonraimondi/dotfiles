@@ -40,6 +40,7 @@ description: Change Jason's macOS dotfiles in ~/dotfiles. Use when asked to add 
 | Dock app | `setup-dock.sh` | `bash setup-dock.sh` |
 | tmux, vim | `tmux/dot-tmux.conf`, `vim/dot-vimrc` | `tmux source-file`, `vim -c q` |
 | new package | new directory plus a line in `setup-stow.sh` | `bash setup-stow.sh -n` |
+| agent skill, Claude or Pi setting | `skills/`, linked by `skills/setup.sh` in place of `setup-stow.sh` | `bash skills/setup.sh -n` |
 
 Shell files load alphabetically, so `03-aliases-*.zsh` run before `03-aliases.zsh` and an alias defined later wins over an earlier function of the same name. Check `whence -w` after every alias or function.
 

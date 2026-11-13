@@ -18,6 +18,7 @@ gnupg        > gpg and gpg-agent config
 misc         > extras that are not stowed, like obs overlays
 mise         > mise for maintaining language versions
 ruby         > ruby config
+skills       > agent skills and ai tool config, linked by skills/setup.sh
 ssh          > ssh config
 tmux         > tmux config
 vim          > vim configs
@@ -103,6 +104,7 @@ mise install --yes && mise reshim
 **Re-apply symlinks:**
 ```bash
 bash setup-stow.sh
+bash skills/setup.sh
 ```
 
 **Update submodules:**

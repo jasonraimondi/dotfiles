@@ -121,6 +121,10 @@ main() {
     esac
   done
 
+  # stow reads .stowrc from the working directory, and the dotfiles one a level
+  # up sets --dotfiles and a $HOME target meant for the other packages.
+  cd "$REPO"
+
   [[ "$DELETE_MODE" == true ]] || apply_invocation_policies
   for target in "${SKILL_TARGETS[@]}"; do
     stow_into "$target" "${SKILL_PACKAGES[@]}"

@@ -29,6 +29,7 @@ brew bundle --file brew/Requirefile
 
 # set symlinks using stow
 bash setup-stow.sh
+bash skills/setup.sh
 
 # Install applications using homebrew & casks
 for BREWFILE in Brewfile Fontfile Caskfile CaskfileQuicklook Macfile; do
