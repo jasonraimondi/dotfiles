@@ -28,7 +28,7 @@ test("real Pi runtimes wake on messages, reply through the tool, persist provena
   await symlink(fileURLToPath(new URL("../", import.meta.url)), join(config, "extensions/pi-peer"));
   const commands = fileURLToPath(new URL("fixtures/commands.ts", import.meta.url));
   const cli = fileURLToPath(new URL("../node_modules/@earendil-works/pi-coding-agent/dist/cli.js", import.meta.url));
-  const scripts = fileURLToPath(new URL("../../../../skills/agent-fleet/scripts/", import.meta.url));
+  const scripts = fileURLToPath(new URL("../../../../skills/personal/agent-fleet/scripts/", import.meta.url));
   let modelCalls = 0;
   let releaseHold = () => {};
   let reportHeld = () => {};

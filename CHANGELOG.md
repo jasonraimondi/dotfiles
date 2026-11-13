@@ -1,5 +1,52 @@
 # Changelog
 
+## 2026-11-13: skills folded into the dotfiles layout
+
+The merge left the old skills repo intact under `skills/`, with its own setup script, ignore file, gitleaks config and agent files. Those now sit where the rest of the dotfiles keep them, and `skills/` holds only skill packages.
+
+### Changed
+
+| Before | After |
+|---|---|
+| `skills/claude/` | `claude/`, stowed into `~/.claude` by `setup-stow.sh` |
+| `skills/pi/` | `pi/`, stowed into `~/.pi/agent` by `setup-stow.sh` |
+| `skills/setup.sh` | `setup-skills.sh`, which links only the skills and the global agent instructions |
+| `skills/AGENTS.md` | `GLOBAL_AGENTS.md` |
+| `skills/GLOSSARY-MAP.md` | `GLOSSARY-MAP.md` |
+| `skills/.gitleaks.toml` | `.gitleaks.toml` |
+| `skills/.gitignore` | folded into `.gitignore` |
+| `skills/.claude/skills/sync-mattpocock-skills/` | `.claude/skills/sync-mattpocock-skills/` |
+| `skills/skills/` | `skills/personal/` |
+| `skills/skills-for-work/` | `skills/work/` |
+| `skills/skills-pending/` | `skills/pending/` |
+
+- `bash setup.sh` runs `setup-skills.sh` right after `setup-stow.sh`. Re-linking everything is `bash setup-stow.sh && bash setup-skills.sh`.
+- `.gitleaks.toml` is read again. Under `skills/` gitleaks never loaded it, so its allowlist for the OAuth RFC texts did nothing. A `.gitleaks.private.toml` has to extend it to keep that allowlist: replace `useDefault = true` under `[extend]` with `path = ".gitleaks.toml"`.
+
+### Added
+
+- The `reskill!` alias runs `setup-skills.sh`.
+- `tests/setup-skills.test.sh` covers the skills linker, and `tests/setup-stow.test.sh` covers the `claude` and `pi` packages.
+
+### Removed
+
+- `skills/add-skill.sh` and the `skills` alias that ran it.
+- `skills/.serena/`, the Serena project config of the old repo.
+
+### Migrating a machine
+
+For a machine already on the merged layout. Stow removes links by walking the package directories, so the old links have to come down before the pull moves those directories.
+
+```bash
+cd ~/dotfiles
+bash skills/setup.sh -D
+git pull
+bash setup-stow.sh && bash setup-skills.sh
+find ~/.claude ~/.agents ~/.pi/agent ~/.config/opencode -maxdepth 2 -type l ! -exec test -e {} \; -print
+```
+
+Done when the `find` prints nothing. If the pull already happened, the same `find` with `-delete` in place of `-print` clears the dangling links, and the last setup line puts the new ones in.
+
 ## 2026-11-13: the skills repo now lives in dotfiles
 
 The separate `jasonraimondi/skills` repo was merged into this one under `skills/`, with its full history. The old repo is archived and read-only, and its README points here.
@@ -27,7 +74,7 @@ The 331 skills commits keep their original hashes, and their paths have no `skil
 
 ### Migrating a machine
 
-For a machine that still has its own clone of the skills repo. A machine that never had one only needs `git pull` and `bash skills/setup.sh`.
+For a machine that still has its own clone of the skills repo. A machine that never had one only needs `git pull` and `bash setup-stow.sh && bash setup-skills.sh`. The commands below follow the layout from the entry above.
 
 Run the steps in order. The old clone's `setup.sh -D` is the only thing that cleanly removes the old links, so it has to run before the clone is deleted.
 
@@ -38,7 +85,7 @@ Run the steps in order. The old clone's `setup.sh -D` is the only thing that cle
    echo "$OLD"
    ```
 
-   Done when `$OLD` is the skills clone and `$OLD/setup.sh` exists. If it already prints a path ending in `dotfiles/skills`, this machine is migrated and there is nothing to do.
+   Done when `$OLD` is the skills clone and `$OLD/setup.sh` exists. If it already prints a path ending in `dotfiles`, this machine is migrated and there is nothing to do.
 
 2. **Carry over local-only work.** The old repo is archived, so nothing can be pushed to it.
 
@@ -67,7 +114,7 @@ Run the steps in order. The old clone's `setup.sh -D` is the only thing that cle
    git -C ~/dotfiles checkout macos && git -C ~/dotfiles pull
    ```
 
-   Done when `~/dotfiles/skills/setup.sh` exists.
+   Done when `~/dotfiles/setup-skills.sh` exists.
 
 4. **Apply the saved work**, if step 2 produced any.
 
@@ -77,14 +124,16 @@ Run the steps in order. The old clone's `setup.sh -D` is the only thing that cle
    [ -s /tmp/skills-wip.patch ] && git apply --directory=skills /tmp/skills-wip.patch
    ```
 
-   Done when `git status` shows the carried-over changes under `skills/`.
+   The patches carry the old repo's paths, so `--directory=skills` only places changes to the `vendor*` packages. Apply anything else by hand to its new path from the table in the entry above.
+
+   Done when `git status` shows the carried-over changes.
 
 5. **Switch the links.**
 
    ```bash
    bash "$OLD/setup.sh" -D
-   bash ~/dotfiles/skills/setup.sh -n
-   bash ~/dotfiles/skills/setup.sh
+   bash ~/dotfiles/setup-stow.sh -n && bash ~/dotfiles/setup-skills.sh -n
+   bash ~/dotfiles/setup-stow.sh && bash ~/dotfiles/setup-skills.sh
    ```
 
    A conflict in the dry run means a real file sits where a link belongs. Stop and look at that file; `--adopt` would overwrite the repo copy with it. If the new setup fails after the old links are gone, `bash "$OLD/setup.sh"` puts them back.
@@ -94,7 +143,7 @@ Run the steps in order. The old clone's `setup.sh -D` is the only thing that cle
 6. **Reinstall the Pi extension dependencies**, on machines that use Pi. `node_modules` is git-ignored, so it does not come with the pull.
 
    ```bash
-   cd ~/dotfiles/skills/pi/extensions/pi-peer && npm ci
+   cd ~/dotfiles/pi/extensions/pi-peer && npm ci
    ```
 
 7. **Verify.**
@@ -103,17 +152,14 @@ Run the steps in order. The old clone's `setup.sh -D` is the only thing that cle
    readlink ~/.claude/CLAUDE.md ~/.claude/settings.json ~/.config/opencode/AGENTS.md
    find ~/.claude ~/.agents ~/.pi ~/.config/opencode -maxdepth 3 -type l -lname "*${OLD#"$HOME"/}*" 2>/dev/null
    find ~/.claude/skills ~/.agents/skills -maxdepth 1 -type l ! -exec test -e {} \; -print
-   zsh -i -c 'alias skills'
    ```
 
-   Done when the three links resolve into `dotfiles/skills`, both `find` commands print nothing, and the alias points at `dotfiles/skills/add-skill.sh`.
+   Done when the three links resolve into `dotfiles`, and both `find` commands print nothing.
 
 8. **Delete the old clone**, from the same shell that set `$OLD` in step 1.
 
    ```bash
    echo "$OLD" && rm -rf "$OLD"
    ```
-
-   Open shells keep the old alias until restarted with `exec zsh`.
 
 9. **Clear leftovers from dropped tools**, where those tools are not installed: `~/.junie`, `~/.cursor` and `~/.codeium` held only links from older setups. Look inside before deleting; on a machine that uses Cursor or Windsurf they hold live config.

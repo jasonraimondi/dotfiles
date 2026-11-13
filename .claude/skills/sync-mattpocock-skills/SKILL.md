@@ -26,12 +26,12 @@ Stop here and present the report: per skill, the drift and the upstream reason. 
 
 For each skill taken, copy the upstream files over the local folder, then reapply that row's divergences and the invocation invariant. A divergence that no longer applies upstream (the change landed there) comes out of the manifest.
 
-**Invocation invariant**: everything lives in `vendor-mattpocock/`, and `setup.sh` leaves its frontmatter alone, so each skill keeps the invocation choice it has locally. User-invoked skills (`grill-me`, `retro`, `teach`, `to-questionnaire`, `wait-what`, `wizard`) carry `disable-model-invocation: true` in `SKILL.md` and `policy.allow_implicit_invocation: false` in `agents/openai.yaml`. The rest carry neither. Upstream's own invocation choice never overrides the local one.
+**Invocation invariant**: everything lives in `skills/vendor-mattpocock/`, and `setup-skills.sh` leaves its frontmatter alone, so each skill keeps the invocation choice it has locally. User-invoked skills (`grill-me`, `retro`, `teach`, `to-questionnaire`, `wait-what`, `wizard`) carry `disable-model-invocation: true` in `SKILL.md` and `policy.allow_implicit_invocation: false` in `agents/openai.yaml`. The rest carry neither. Upstream's own invocation choice never overrides the local one.
 
 Rewrite operative skill-to-skill references to local names where they differ (upstream `code-review` is `review-code` here).
 
-A new skill goes in `vendor-mattpocock/` with its invocation choice set in the frontmatter, and a new manifest row.
+A new skill goes in `skills/vendor-mattpocock/` with its invocation choice set in the frontmatter, and a new manifest row.
 
 ## 4. Record
 
-Update the manifest: last-synced commit, new rows, retired divergences. Done when a second diff pass shows drift only for skills the user declined, and `skills/setup.sh --dry-run` (the skills linker, not the repo-root `setup.sh`) reports no name collisions or errors. Leave committing to the user.
+Update the manifest: last-synced commit, new rows, retired divergences. Done when a second diff pass shows drift only for skills the user declined, and `setup-skills.sh --dry-run` reports no name collisions or errors. Leave committing to the user.

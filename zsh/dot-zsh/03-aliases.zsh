@@ -1,6 +1,7 @@
 # Reload zsh config
 alias setup!="bash $DOTFILES_HOME/setup.sh"
 alias stow!="cd ~/; bash $DOTFILES_HOME/setup-stow.sh; cd -"
+alias reskill!="bash $DOTFILES_HOME/setup-skills.sh"
 alias reload!="exec $SHELL"
 alias redock!="bash $DOTFILES_HOME/setup-dock.sh"
 

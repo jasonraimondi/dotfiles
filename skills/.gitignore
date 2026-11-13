@@ -1,8 +1,0 @@
-# explicitly keep vendor
-!vendor/
-
-skills-lock.json
-.agents/skills/
-.idea/
-__pycache__/
-claude/settings.json.bak
