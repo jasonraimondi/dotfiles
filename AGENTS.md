@@ -29,7 +29,7 @@ The `--dotfiles` flag (in `.stowrc`) converts `dot-` prefixed files to `.` dotfi
 - `zsh/dot-zsh/03-aliases.zsh` → `~/.zsh/03-aliases.zsh`
 
 Most packages target `$HOME`. Exceptions with custom targets:
-- `config/` → `~/.config` (XDG apps: atuin, herdr, karabiner, mise, zed)
+- `config/` → `~/.config` (XDG apps: atuin, gh, herdr, herdr-app, karabiner, mise, zed)
 - `ssh/` → `~/.ssh`
 - `gnupg/` → `~/.gnupg`
 - `dictionary/` → `~/Library/Spelling`
@@ -43,6 +43,7 @@ Most packages target `$HOME`. Exceptions with custom targets:
 - `03-*` — aliases (general, macOS, programming)
 - `04-*` — prompt tweaks
 - `05-*` — utility functions
+- `98-agent-shell.zsh` — when `$AI_AGENT` or `$CLAUDECODE` is set, drops the `rm`/`cp`/`mv` aliases and relaxes clobber, nomatch, correct and equals, so agent-run commands don't hang or abort
 - `01.5-custom.zsh`, `99-custom.zsh` — private, git-ignored
 
 PATH, `DOTFILES_HOME` and `brew shellenv` live in `zprezto/dot-zprofile`, which login shells source; non-login shells source it through `zprezto/dot-zshenv` when `DOTFILES_HOME` is unset.
