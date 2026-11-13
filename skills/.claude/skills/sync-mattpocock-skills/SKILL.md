@@ -26,7 +26,7 @@ Stop here and present the report: per skill, the drift and the upstream reason. 
 
 For each skill taken, copy the upstream files over the local folder, then reapply that row's divergences and the invocation invariant. A divergence that no longer applies upstream (the change landed there) comes out of the manifest.
 
-**Invocation invariant**: everything lives in `vendor-mattpocock/`, and `setup.sh` leaves its frontmatter alone, so each skill keeps the invocation choice it has locally. User-invoked skills (`grill-me`, `grill-with-docs`, `retro`, `teach`, `to-questionnaire`, `wait-what`, `wizard`) carry `disable-model-invocation: true` in `SKILL.md` and `policy.allow_implicit_invocation: false` in `agents/openai.yaml`. The rest carry neither. Upstream's own invocation choice never overrides the local one.
+**Invocation invariant**: everything lives in `vendor-mattpocock/`, and `setup.sh` leaves its frontmatter alone, so each skill keeps the invocation choice it has locally. User-invoked skills (`grill-me`, `retro`, `teach`, `to-questionnaire`, `wait-what`, `wizard`) carry `disable-model-invocation: true` in `SKILL.md` and `policy.allow_implicit_invocation: false` in `agents/openai.yaml`. The rest carry neither. Upstream's own invocation choice never overrides the local one.
 
 Rewrite operative skill-to-skill references to local names where they differ (upstream `code-review` is `review-code` here).
 
