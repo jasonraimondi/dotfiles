@@ -16,6 +16,7 @@ SKILL_TARGETS=("$HOME/.claude/skills" "$HOME/.agents/skills")
 
 AGENTS_MD_TARGETS=(
   "$HOME/.claude/CLAUDE.md"
+  "$HOME/.config/opencode/AGENTS.md"
   "$HOME/.pi/agent/AGENTS.md"
 )
 
