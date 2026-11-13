@@ -37,7 +37,7 @@ Most packages target `$HOME`. Exceptions with custom targets:
 ### Shell (ZSH)
 
 `zsh/dot-zsh/` files are sourced by glob in numeric order:
-- `00-SECRETS.zsh` — credentials rendered from the committed `00-secrets.tpl` (1Password `op://` references) by a manual `bin/secrets-sync` run; `bin/secrets-sync --check` validates the references without writing (never read or edit `00-SECRETS.zsh` or any `.gpg` file)
+- `00-SECRETS.zsh` — credentials rendered from the committed `00-secrets.tpl` (1Password `op://` references) by a manual `bin/secrets-sync` run; `bin/secrets-sync --check` validates the references without writing (never read or edit `00-SECRETS.zsh`)
 - `01-*` — base config, exports, PATH
 - `02-*` — framework setup
 - `03-*` — aliases (general, macOS, programming)
