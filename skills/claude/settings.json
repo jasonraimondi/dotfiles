@@ -1,20 +1,7 @@
 {
   "cleanupPeriodDays": 365,
   "permissions": {
-    "allow": [
-      "mcp__claude_ai_mixpanel__Get-Business-Context",
-      "mcp__claude_ai_mixpanel__Get-Projects",
-      "mcp__claude_ai_mixpanel__Get-Events",
-      "mcp__claude_ai_mixpanel__Get-Live-Events",
-      "mcp__claude_ai_mixpanel__Get-Query-Schema",
-      "mcp__claude_ai_mixpanel__Get-User-Replays-Data",
-      "mcp__claude_ai_mixpanel__Get-Report",
-      "mcp__claude_ai_mixpanel__Get-Dashboard",
-      "mcp__claude_ai_mixpanel__Get-Property-Values",
-      "mcp__claude_ai_mixpanel__List-Properties",
-      "mcp__claude_ai_mixpanel__Search-Entities",
-      "mcp__claude_ai_mixpanel__Run-Query"
-    ],
+    "allow": [],
     "deny": [
       "EnterPlanMode",
       "ExitPlanMode",
