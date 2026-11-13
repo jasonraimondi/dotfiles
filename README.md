@@ -11,14 +11,16 @@
 aws          > amazon is taking over the world
 bin          > custom bin scripts
 brew         > homebrew all the things
+claude       > claude code settings and hooks
 config       > for the noble apps using .config
 dictionary   > extend the macos dictionary
 git          > global git config and aliases
 gnupg        > gpg and gpg-agent config
 misc         > extras that are not stowed, like obs overlays
 mise         > mise for maintaining language versions
+pi           > pi settings and extensions
 ruby         > ruby config
-skills       > agent skills and ai tool config, linked by skills/setup.sh
+skills       > agent skills, linked by setup-skills.sh
 ssh          > ssh config
 tmux         > tmux config
 vim          > vim configs
@@ -104,7 +106,7 @@ mise install --yes && mise reshim
 **Re-apply symlinks:**
 ```bash
 bash setup-stow.sh
-bash skills/setup.sh
+bash setup-skills.sh
 ```
 
 **Update submodules:**
