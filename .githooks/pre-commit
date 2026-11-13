@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if ! command -v gitleaks > /dev/null; then
+  echo "pre-commit: gitleaks not found; install it with 'brew install gitleaks'" >&2
+  exit 1
+fi
+
+args=(git --staged --redact --no-banner --verbose)
+private_config="$(git rev-parse --show-toplevel)/.gitleaks.private.toml"
+[ -f "$private_config" ] && args+=(--config "$private_config")
+
+gitleaks "${args[@]}"

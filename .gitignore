@@ -28,3 +28,5 @@ zsh/dot-zsh/*-custom.zsh
 .claude/skills/bender-*
 config/herdr/plugins.json
 config/herdr/.plugins.lock
+
+.gitleaks.private.toml

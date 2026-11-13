@@ -23,6 +23,7 @@ for brew_bin in /opt/homebrew/bin/brew /usr/local/bin/brew; do
 done
 
 git submodule update --init --recursive
+git config core.hooksPath .githooks
 
 # install the more important stuff first
 brew bundle --file brew/Requirefile
