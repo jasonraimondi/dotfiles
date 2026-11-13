@@ -60,7 +60,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash '/Users/jraimondi/.claude/hooks/herdr-agent-state.sh' session",
+            "command": "bash \"$HOME/.claude/hooks/herdr-agent-state.sh\" session",
             "timeout": 10
           }
         ]
@@ -149,7 +149,7 @@
       "**Protected IaC scopes**: IAM, RBAC, networking, quota, and node-pool resources; anything whose name or tag carries prod or production as a whole word or name segment",
       "### User-specific",
       "**Primary use of Claude Code**: software development",
-      "**Trusted repo**: /Users/jraimondi/dotfiles (github.com:jasonraimondi/dotfiles.git) — public on GitHub, so every commit and push publishes its contents; per CLAUDE.md, routine commits go directly to macos in this repo unless already on another branch",
+      "**Trusted repo**: ~/dotfiles (github.com:jasonraimondi/dotfiles.git) — public on GitHub, so every commit and push publishes its contents; per CLAUDE.md, routine commits go directly to macos in this repo unless already on another branch",
       "**Org-specific CLIs**: None configured",
       "No additional routine-under-<user>/ prefix qualifiers found"
     ]
