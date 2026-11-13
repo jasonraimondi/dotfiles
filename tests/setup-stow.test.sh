@@ -27,7 +27,7 @@ run_case() {
   if [[ "$cwd_mode" == home ]]; then cwd="$home"; else cwd=/tmp; fi
   echo "case: $label"
   if [[ "$mode" == -n ]]; then
-    (cd "$home" && mkdir -p .claude .gnupg .ssh .config/herdr .config/herdr-app Library/Spelling)
+    (cd "$home" && mkdir -p .gnupg .ssh .config/herdr .config/herdr-app Library/Spelling)
   fi
 
   (cd "$cwd" && HOME="$home" bash "$REPO/setup-stow.sh" ${mode:+"$mode"}) > "$home/.out" 2>&1 \
@@ -40,7 +40,6 @@ run_case() {
     assert_link_into_repo "$home" .zshrc
     assert_link_into_repo "$home" .config/herdr-app/keys.json
     assert_link_into_repo "$home" .config/herdr-app/settings.json
-    assert_link_into_repo "$home" .claude/keybindings.json
     assert_link_into_repo "$home" .config/herdr/config.toml
     [[ ! -e "$home/.config/herdr/plugins.json" && ! -e "$home/.config/herdr/.plugins.lock" ]] || fail "generated herdr plugin files were linked"
     [[ -d "$home/.config/herdr" && ! -L "$home/.config/herdr" ]] || fail ".config/herdr is not a real directory"
@@ -84,17 +83,15 @@ run_herdr_runtime_files_case() {
 }
 
 run_private_dir_modes_case() {
-  local home d mode_of
+  local home mode_of
   home="$(mktemp -d)"
-  echo "case: real run keeps existing 700 dirs at 700"
-  mkdir -p "$home/.claude" "$home/Library/Spelling"
-  chmod 700 "$home/.claude" "$home/Library/Spelling"
+  echo "case: real run keeps an existing 700 dir at 700"
+  mkdir -p "$home/Library/Spelling"
+  chmod 700 "$home/Library/Spelling"
   (cd "$home" && HOME="$home" bash "$REPO/setup-stow.sh") > "$home/.out" 2>&1 \
     || { fail "exit nonzero"; tail -5 "$home/.out" >&2; }
-  for d in .claude Library/Spelling; do
-    mode_of="$(stat -f %Lp "$home/$d")"
-    [[ "$mode_of" == 700 ]] || fail "real run changed $d to $mode_of"
-  done
+  mode_of="$(stat -f %Lp "$home/Library/Spelling")"
+  [[ "$mode_of" == 700 ]] || fail "real run changed Library/Spelling to $mode_of"
   rm -rf "$home"
 }
 

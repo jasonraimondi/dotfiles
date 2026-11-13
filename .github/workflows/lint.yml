@@ -40,5 +40,5 @@ jobs:
       - name: Stow dry run
         run: |
           export HOME="$(dirname "$PWD")"
-          (cd "$HOME" && mkdir -p .claude .gnupg .ssh .config/herdr .config/herdr-app Library/Spelling)
+          (cd "$HOME" && mkdir -p .gnupg .ssh .config/herdr .config/herdr-app Library/Spelling)
           bash setup-stow.sh -n
