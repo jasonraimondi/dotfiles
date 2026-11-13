@@ -73,5 +73,6 @@ zprezto and the vim dracula theme are git submodules.
 - **Bash scripts**: Always `#!/usr/bin/env bash` + `set -euo pipefail`
 - **Stow files**: Use `dot-` prefix for dotfiles, never create raw `.` files in packages
 - **Commits**: Conventional format — `type(scope): description` (scopes: tool/component names)
+- **Changelog**: A breaking change gets a dated entry at the top of `CHANGELOG.md` in the same PR. Breaking means a machine that is already set up needs action after pulling, or a path, script, alias or link target it relies on was moved, renamed or removed. The entry lists what changed and the commands to migrate.
 - **Private files**: `01.5-custom.zsh`, `99-custom.zsh`, `dot-git-user`, `00-SECRETS.zsh` are git-ignored
 - **New scripts**: Add to `bin/` — automatically on `$PATH` via `$DOTFILES_HOME/bin`
