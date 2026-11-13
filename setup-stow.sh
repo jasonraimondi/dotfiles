@@ -33,9 +33,6 @@ prepare_dir() {
 }
 
 stow ${FLAGS[@]+"${FLAGS[@]}"} aws
-if prepare_dir "$HOME/.claude"; then
-  stow ${FLAGS[@]+"${FLAGS[@]}"} claude
-fi
 stow ${FLAGS[@]+"${FLAGS[@]}"} git
 if prepare_dir -m 700 "$HOME/.gnupg"; then
   stow ${FLAGS[@]+"${FLAGS[@]}"} -t "$HOME/.gnupg" gnupg
