@@ -43,7 +43,7 @@ Recommends a merge sequence for every open PR Jason authored or is assigned to. 
    2. **Conflict cost**: put the rebase burden on whichever PR is cheapest to carry it. A small focused PR rebases cheaply onto a large one. A mechanical PR is cheaper to regenerate than to rebase, so it goes after the PRs it collides with, unless they build on it.
    3. **Readiness**: among PRs still unordered, approved, green, `CLEAN` PRs go first. Drafts, failing checks, and requested changes go later and show as blockers.
 
-   For a "risk" constraint, grade each PR by the reversibility tiers in [`../review-code/lenses/merge-risk.md`](../review-code/lenses/merge-risk.md).
+   For a "risk" constraint, grade each PR by the reversibility tiers in [`../deep-review-code/lenses/merge-risk.md`](../deep-review-code/lenses/merge-risk.md).
 
 7. **Report.** Print the plan in the shape below. Done when every collected PR appears exactly once.
 

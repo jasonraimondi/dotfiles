@@ -25,7 +25,7 @@ The other four lenses — `correctness`, `tests`, `standards`, `modularity` — 
 
 ## Dispatch
 
-`/review-code [<mode>] [<scope>]`. **No mode means `quick`.**
+`/deep-review-code [<mode>] [<scope>]`. **No mode means `quick`.**
 
 Match the user's phrasing to a mode or lens:
 

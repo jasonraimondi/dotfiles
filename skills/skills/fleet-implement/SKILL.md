@@ -32,7 +32,7 @@ These roles are working assignments from price tier and past runs, not benchmark
 Rules:
 
 - An auditor comes from the other model family than its implementer: a Claude track gets sol or astra, a GPT track gets opus.
-- The `/review-code quick` inside `/implement` is same-family self-review. The audit is in addition to it.
+- The `/deep-review-code quick` inside `/implement` is same-family self-review. The audit is in addition to it.
 - A GPT peer implements a track only when its brief inlines what `/implement` and `/tdd` would supply: pre-agreed seams, red before green, one slice at a time, the project's lint and test commands, and the commit step. Pi peers have none of those skills.
 
 ## Subagents
@@ -79,7 +79,7 @@ Implementer brief:
 - The agreed seams.
 - Discovery and design go to an Explore subagent.
 - Context budget: when it writes its handoff, it asks the coordinator to respawn it.
-- Run `/implement`: tdd, typecheck and single-file tests as it goes, `/review-code quick`, fix Blocker and Major findings, commit.
+- Run `/implement`: tdd, typecheck and single-file tests as it goes, `/deep-review-code quick`, fix Blocker and Major findings, commit.
 - Reply format: commits, files touched, test results, anything skipped or blocked.
 - The coordinator's literal return address from `peer-addr.py --me`: `uds:` for a Claude peer, `pi:` for a GPT peer, which replies with `bridge.ts send`.
 

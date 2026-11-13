@@ -13,6 +13,6 @@ Use /agent-fleet when the work splits into independent tracks.
 
 Run typechecking regularly, single test files regularly, and the full test suite once at the end.
 
-Once done, call the Skill tool with "review-code" in `quick` mode to review the work, passing the spec or ticket path if you have one. Fix every Blocker and Major finding, then re-run the affected tests.
+Once done, call the Skill tool with "deep-review-code" in `quick` mode to review the work, passing the spec or ticket path if you have one. Fix every Blocker and Major finding, then re-run the affected tests.
 
 Commit your work to the current branch.
