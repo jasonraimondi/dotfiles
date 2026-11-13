@@ -7,7 +7,7 @@ Read this when `spawn-fleet.py` does not fit: a peer that must outlive the coord
 This is what the launcher runs for each peer:
 
 ```bash
-hc run --bg --json --name alpha --cwd /tmp/lab/alpha --label herdr.space=<space> \
+hc run --bg --json --name alpha-tmp --cwd /tmp/lab/alpha --label herdr.space=<space> \
   -- "$SHELL" -ilc 'exec "$0" "$@"' claude --name alpha --permission-mode auto
 # → .address, e.g. t7
 ```
@@ -15,7 +15,7 @@ hc run --bg --json --name alpha --cwd /tmp/lab/alpha --label herdr.space=<space>
 - `<space>` is the coordinator's own space: `hc get "$HC_TERMINAL_ID"` → `.labels["herdr.space"]`. The label opens the peer as its own tab there; without it the peer runs hidden.
 - The interactive login shell wrapper restores the PATH a peer's tools expect. hc gives an explicit command only the bare login-session environment, with no mise shims and no pnpm bin.
 - That bare environment also means a peer never inherits the coordinator's `CLAUDE_CODE_CHILD_SESSION` marker.
-- The `--name` before `--` names the hc terminal; the `--name` after it binds the Claude session name that `SendMessage` and `peer-addr.py` resolve. Keep them identical.
+- The `--name` before `--` names the hc terminal; the `--name` after it binds the Claude session name that `SendMessage` and `peer-addr.py` resolve. The launcher appends `-tmp` to the first, which marks the tab as safe to close; the second stays the bare peer name.
 - The peer is an hc child of your terminal and ends when your program ends. Add `--outlive-parent` before `--` for a peer that must survive you.
 
 Teardown is the default once the work is done (SKILL.md section 4): `hc kill <t> && hc rm <t>` for each terminal you started.
