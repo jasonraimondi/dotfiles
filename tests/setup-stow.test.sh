@@ -27,7 +27,7 @@ run_case() {
   if [[ "$cwd_mode" == home ]]; then cwd="$home"; else cwd=/tmp; fi
   echo "case: $label"
   if [[ "$mode" == -n ]]; then
-    (cd "$home" && mkdir -p .gnupg .ssh .config/herdr .config/herdr-app Library/Spelling)
+    (cd "$home" && mkdir -p .gnupg .ssh .config/herdr .config/herdr-app Library/Spelling .claude .pi/agent)
   fi
 
   (cd "$cwd" && HOME="$home" bash "$REPO/setup-stow.sh" ${mode:+"$mode"}) > "$home/.out" 2>&1 \
@@ -41,6 +41,8 @@ run_case() {
     assert_link_into_repo "$home" .config/herdr-app/keys.json
     assert_link_into_repo "$home" .config/herdr-app/settings.json
     assert_link_into_repo "$home" .config/herdr/config.toml
+    assert_link_into_repo "$home" .claude/settings.json
+    assert_link_into_repo "$home" .pi/agent/settings.json
     [[ ! -e "$home/.config/herdr/plugins.json" && ! -e "$home/.config/herdr/.plugins.lock" ]] || fail "generated herdr plugin files were linked"
     [[ -d "$home/.config/herdr" && ! -L "$home/.config/herdr" ]] || fail ".config/herdr is not a real directory"
     [[ "$(stat -f %Lp "$home/.ssh" 2>/dev/null || echo missing)" == 700 ]] || fail ".ssh mode is not 700"
@@ -82,6 +84,20 @@ run_herdr_runtime_files_case() {
   rm -rf "$src" "$home"
 }
 
+run_claude_backup_case() {
+  local src home
+  src="$(mktemp -d)"
+  home="$(mktemp -d)"
+  echo "case: a settings backup beside claude/settings.json is not linked"
+  rsync -a --exclude .git --exclude node_modules "$REPO/" "$src/"
+  touch "$src/claude/settings.json.bak"
+  (cd "$home" && HOME="$home" bash "$src/setup-stow.sh") > "$home/.out" 2>&1 \
+    || { fail "exit nonzero"; tail -5 "$home/.out" >&2; }
+  [[ -L "$home/.claude/settings.json" ]] || fail ".claude/settings.json is not a symlink"
+  [[ ! -e "$home/.claude/settings.json.bak" ]] || fail ".claude/settings.json.bak was linked"
+  rm -rf "$src" "$home"
+}
+
 run_private_dir_modes_case() {
   local home mode_of
   home="$(mktemp -d)"
@@ -102,6 +118,7 @@ run_case "real run from /tmp" tmp ""
 run_dry_run_side_effects_case -n
 run_dry_run_side_effects_case -D
 run_herdr_runtime_files_case
+run_claude_backup_case
 run_private_dir_modes_case
 
 if (( failures > 0 )); then

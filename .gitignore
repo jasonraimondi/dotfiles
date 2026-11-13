@@ -29,4 +29,7 @@ zsh/dot-zsh/*-custom.zsh
 config/herdr/plugins.json
 config/herdr/.plugins.lock
 
+claude/settings.json.bak
+__pycache__/
+
 .gitleaks.private.toml

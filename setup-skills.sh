@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 #
-# Symlinks this repo's skills and shared AI editor config into the locations
-# each agent expects. Skills, Pi, and Claude settings go through GNU Stow;
-# AGENTS.md is linked by hand because it lands under several different names.
+# Symlinks the agent skills under skills/ into each agent's skills directory
+# through GNU Stow. GLOBAL_AGENTS.md is linked by hand because it lands under
+# several different names.
 #
-# Usage: setup.sh [-n|--dry-run] [-D|--delete] [-h|--help]
+# Usage: setup-skills.sh [-n|--dry-run] [-D|--delete] [-h|--help]
 
 set -euo pipefail
 
 REPO="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 
 # A skill name in two packages is a stow conflict, so the run aborts.
-SKILL_PACKAGES=(skills skills-for-work vendor vendor-auto vendor-mattpocock)
+SKILL_PACKAGES=(personal work vendor vendor-auto vendor-mattpocock)
 SKILL_TARGETS=("$HOME/.claude/skills" "$HOME/.agents/skills")
 
 AGENTS_MD_TARGETS=(
@@ -22,13 +22,13 @@ AGENTS_MD_TARGETS=(
 
 DELETE_MODE=false
 DRY_RUN=false
-STOW_FLAGS=(--restow --ignore='\.DS_Store' --ignore='\.bak$')
+STOW_FLAGS=(--restow --ignore='\.DS_Store')
 
 usage() {
   cat <<'EOF'
-Usage: setup.sh [-n|--dry-run] [-D|--delete] [-h|--help]
+Usage: setup-skills.sh [-n|--dry-run] [-D|--delete] [-h|--help]
 
-  (no args)        symlink skills + shared AI editor config into place
+  (no args)        symlink skills + the global agent instructions into place
   -n, --dry-run    print what would change without touching anything
   -D, --delete     remove the symlinks this script created
   -h, --help       show this message
@@ -48,7 +48,7 @@ run() {
 stow_into() {
   local target="$1"; shift
   run mkdir -p "$target"
-  stow "${STOW_FLAGS[@]}" -d "$REPO" -t "$target" "$@"
+  stow "${STOW_FLAGS[@]}" -d "$REPO/skills" -t "$target" "$@"
 }
 
 link_agents_md() {
@@ -60,7 +60,7 @@ link_agents_md() {
       [[ -L "$dest" ]] && run rm "$dest"
     else
       run mkdir -p "$(dirname "$dest")"
-      run ln -sfn "$REPO/AGENTS.md" "$dest"
+      run ln -sfn "$REPO/GLOBAL_AGENTS.md" "$dest"
     fi
   done
 }
@@ -100,10 +100,10 @@ apply_invocation_policy() {
 
 apply_invocation_policies() {
   local file
-  for file in "$REPO"/vendor/*/SKILL.md; do
+  for file in "$REPO"/skills/vendor/*/SKILL.md; do
     apply_invocation_policy "$file" disable
   done
-  for file in "$REPO"/vendor-auto/*/SKILL.md; do
+  for file in "$REPO"/skills/vendor-auto/*/SKILL.md; do
     apply_invocation_policy "$file" auto
   done
 }
@@ -119,16 +119,14 @@ main() {
     esac
   done
 
-  # stow reads .stowrc from the working directory, and the dotfiles one a level
-  # up sets --dotfiles and a $HOME target meant for the other packages.
-  cd "$REPO"
+  # stow reads .stowrc from the working directory, and the one at the repo root
+  # turns on --dotfiles, which would rename a skill whose name starts with dot-.
+  cd "$REPO/skills"
 
   [[ "$DELETE_MODE" == true ]] || apply_invocation_policies
   for target in "${SKILL_TARGETS[@]}"; do
     stow_into "$target" "${SKILL_PACKAGES[@]}"
   done
-  stow_into "$HOME/.pi/agent" pi
-  stow_into "$HOME/.claude" claude
   link_agents_md
 }
 

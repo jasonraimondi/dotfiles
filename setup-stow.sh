@@ -52,3 +52,9 @@ fi
 if prepare_dir -m 700 "$HOME/.ssh"; then
   stow ${FLAGS[@]+"${FLAGS[@]}"} -t "$HOME/.ssh" ssh
 fi
+if prepare_dir "$HOME/.claude"; then
+  stow ${FLAGS[@]+"${FLAGS[@]}"} --ignore='\.bak$' -t "$HOME/.claude" claude
+fi
+if prepare_dir "$HOME/.pi/agent"; then
+  stow ${FLAGS[@]+"${FLAGS[@]}"} -t "$HOME/.pi/agent" pi
+fi

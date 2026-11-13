@@ -31,5 +31,5 @@ Local paths are relative to `skills/` in the dotfiles repo; upstream paths are r
 ## Related, not tracked
 
 - `vendor-auto/resolving-merge-conflicts`: upstream removed it in v1.3. Kept locally on purpose.
-- `vendor/show-me`: credited to humanlayer, not upstream. Upstream's `skills/engineering/pr` adapts its Summary visuals and overlaps `skills/pr-template`. Compare for ideas.
-- `skills/agent-fleet`: overlaps upstream's `skills/in-progress/chief-of-staff` (one session coordinating subagents toward a long-running goal). Compare for ideas.
+- `vendor/show-me`: credited to humanlayer, not upstream. Upstream's `skills/engineering/pr` adapts its Summary visuals and overlaps `personal/pr-template`. Compare for ideas.
+- `personal/agent-fleet`: overlaps upstream's `skills/in-progress/chief-of-staff` (one session coordinating subagents toward a long-running goal). Compare for ideas.
