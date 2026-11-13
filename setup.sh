@@ -2,6 +2,8 @@
 
 set -euo pipefail
 
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
 # Ask for the administrator password
 sudo -v
 
@@ -11,6 +13,16 @@ sudo -v
 
 # configure mac system preferences
 bash setup-systemprefs.sh
+
+# brew is not on PATH in a fresh shell
+for brew_bin in /opt/homebrew/bin/brew /usr/local/bin/brew; do
+  if [ -x "$brew_bin" ]; then
+    eval "$("$brew_bin" shellenv)"
+    break
+  fi
+done
+
+git submodule update --init --recursive
 
 # install the more important stuff first
 brew bundle --file brew/Requirefile

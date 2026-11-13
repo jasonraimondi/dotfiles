@@ -61,6 +61,15 @@ cat ~/.ssh/id_ed25519.pub | pbcopy  # copies to clipboard
 ```
 Add to [GitHub](https://github.com/settings/keys)
 
+**Configure secrets (1Password):**
+
+Shell secrets come from 1Password through `op`. Edit `zsh/dot-zsh/00-secrets.tpl` and replace the example names with your real ones, keeping each value a single-quoted `op://Private/dotfiles/NAME` reference.
+```bash
+bin/secrets-sync --check  # confirms every reference resolves, writes nothing
+bin/secrets-sync          # writes zsh/dot-zsh/00-SECRETS.zsh
+```
+Shell startup never calls `op`; it only sources the generated file. Refreshing is manual: rerun `bin/secrets-sync` whenever a secret or the template changes.
+
 **Customize shell:**
 ```bash
 # Private customizations (not tracked)

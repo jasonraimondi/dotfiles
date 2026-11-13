@@ -7,4 +7,4 @@
 #
 #   movieme <path> <destination>
 
-ffmpeg -i $1 -vcodec libx264 $2
+ffmpeg -i "$1" -vcodec libx264 "$2"

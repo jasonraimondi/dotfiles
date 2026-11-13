@@ -18,13 +18,12 @@ brew "fzf"
 brew "jq"
 brew "moreutils"
 brew "mtr"
-brew "neofetch"
 brew "overmind"
 brew "ripgrep"
 brew "safe-rm"
 brew "stow"
 brew "switchaudio-osx"
-brew "task"
+brew "go-task"
 brew "tmux"
 brew "tree"
 brew "watch"
@@ -33,20 +32,21 @@ brew "yq"
 
 # Dev tools
 brew "agent-browser"
-brew "awscli"
+brew "cmake"
+brew "fdupes"
+brew "mkcert"
+brew "nmap"
 brew "docker-compose"
-brew "getsentry/tools/sentry-cli"
 brew "gitleaks"
 brew "libpq" # for postgres gem
 # brew "minikube"
 brew "mysql@8.0"
-brew "node"
 brew "php" # mise php is a pain in the ass
 brew "playwright-cli"
-brew "safedep/tap/vet"
-brew "schpet/tap/linear"
+brew "vet"
+brew "schpet/tap/linear", trusted: true
 brew "shellcheck"
-brew "stripe/stripe-cli/stripe"
+brew "stripe/stripe-cli/stripe", trusted: true
 brew "trufflehog"
 brew "usage" # mise completion
 
@@ -60,9 +60,19 @@ brew "git-lfs"
 brew "lazygit"
 # brew "git-duet/tap/git-duet"
 # brew "potatolabs/git-redate/git-redate"
-brew "agavra/tap/tuicr"
 
 # Media
 brew "ffmpeg"
 brew "imagemagick"
+brew "jhead"
 brew "librsvg"
+brew "exiftool"
+brew "gifsicle"
+brew "tesseract"
+
+# CLI utilities
+brew "fastfetch"
+brew "gnupg"
+brew "immich-go"
+brew "rclone"
+brew "yt-dlp"

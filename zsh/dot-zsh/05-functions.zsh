@@ -59,15 +59,6 @@ function circular-deps() {
   pnpx madge --circular --extensions ts "$1"
 }
 
-# function blast-with-requests() {
-#   local NUM_OF_REQUESTS=200
-#   if [ test -e $2 ]; then
-#       local NUM_OF_REQUESTS=$2
-#   fi
-#   # seq 1 1000000 | xargs -n1 -P100 curl --silent --output /dev/null "https://hitrecord:staging@staging.hitrecordvr.tv"
-#   seq 1 $NUM_OF_REQUESTS | xargs -n1 -P10  curl --silent --output /dev/null "$1"
-# }
-
 function slugify() {
   echo "$1" | sed -E s/[^a-zA-Z0-9]+/-/g | sed -E s/^-+\|-+$//g | tr "[:upper:]" "[:lower:]"
 }

@@ -21,7 +21,11 @@ ssh/config
 vim/dot-vim/.netrwhist
 
 zsh/dot-zsh/00-SECRETS.zsh
+zsh/dot-zsh/00-SECRETS.zsh.*
+!zsh/dot-zsh/00-SECRETS.zsh.gpg
 zsh/dot-zsh/*-custom.zsh
 .plan-bender/
 .plan-bender.local.yaml
 .claude/skills/bender-*
+config/herdr/plugins.json
+config/herdr/.plugins.lock
