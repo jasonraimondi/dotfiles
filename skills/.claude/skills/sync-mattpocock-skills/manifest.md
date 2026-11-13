@@ -2,7 +2,7 @@
 
 Last-synced upstream commit: `4ae2317` (post-v1.3.2, 2026-10-31)
 
-Paths are relative to this repo (local) and to the upstream repo root (upstream).
+Local paths are relative to `skills/` in the dotfiles repo; upstream paths are relative to the upstream repo root.
 
 ## Tracked
 

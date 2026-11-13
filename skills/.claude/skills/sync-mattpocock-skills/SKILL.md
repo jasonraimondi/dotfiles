@@ -34,4 +34,4 @@ A new skill goes in `vendor-mattpocock/` with its invocation choice set in the f
 
 ## 4. Record
 
-Update the manifest: last-synced commit, new rows, retired divergences. Done when a second diff pass shows drift only for skills the user declined, and `./setup.sh --dry-run` reports no name collisions or errors. Leave committing to the user.
+Update the manifest: last-synced commit, new rows, retired divergences. Done when a second diff pass shows drift only for skills the user declined, and `skills/setup.sh --dry-run` (the skills linker, not the repo-root `setup.sh`) reports no name collisions or errors. Leave committing to the user.
