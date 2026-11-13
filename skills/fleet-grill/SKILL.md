@@ -25,11 +25,11 @@ When `domain-modeling` is loaded, as in a `/grill-with-docs` session, keep its d
 
 Follow the `agent-fleet` preflight, then `references/cross-harness.md` → *Preflight*, *Spawn*, *Send a brief*. Without `$HC_TERMINAL_ID`, stop and tell the user the panel needs a herdr-core terminal.
 
-From the `agent-fleet` skill directory, spawn in the directory the grill is about, `sol` first because it starts the coordinator's bridge:
+From the `agent-fleet` skill directory, spawn in the directory the grill is about, `panel-sol` first because it starts the coordinator's bridge:
 
 ```bash
-python3 scripts/spawn-fleet.py --peer-harness pi sol:<dir>@openai-codex/gpt-6.1-sol:high
-python3 scripts/spawn-fleet.py opus:<dir>@opus
+python3 scripts/spawn-fleet.py --peer-harness pi panel-sol:<dir>@openai-codex/gpt-6.1-sol:high
+python3 scripts/spawn-fleet.py panel-opus:<dir>@opus
 ```
 
 Send each peer one standing brief:

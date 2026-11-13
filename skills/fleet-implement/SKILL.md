@@ -55,7 +55,7 @@ Dispatch, end the turn, and act on the summary when it arrives.
 
 ## 2. Launch
 
-Follow the `agent-fleet` preflight from its SKILL.md and `references/cross-harness.md` → *Preflight*, *Spawn* and *Send a brief*. Open another reference only for the flag or failure in front of you; a launcher failure goes to a subagent that returns the workaround. Then spawn with one `NAME:DIR@MODEL` per peer; each opens as its own tab.
+Follow the `agent-fleet` preflight from its SKILL.md and `references/cross-harness.md` → *Preflight*, *Spawn* and *Send a brief*. Open another reference only for the flag or failure in front of you; a launcher failure goes to a subagent that returns the workaround. Then spawn with one `NAME:DIR@MODEL` per peer; each opens as its own tab titled with its name. Name every peer this skill spawns for its track and role in at most four words: `<track>-impl`, `<track>-audit`, `final-review-claude`, `final-review-gpt`, `triage`, with `<track>` one or two words from the plan.
 
 Spawn each peer just in time, when its work is ready. Launch only the implementers here: GPT implementers in one call with `--peer-harness pi`, Claude implementers in another. Each auditor spawns when its implementer replies (§3), and the final reviewers and triage peer spawn in their own phases. Auditors reply to the coordinator, which relays their findings, so a Claude implementer launched before the bridge exists needs no bridge hooks.
 
