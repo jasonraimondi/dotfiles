@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-macOS development environment managed with [GNU Stow](https://www.gnu.org/software/stow/) symlinks. Each directory that `setup-stow.sh` stows is a "package" that maps into `$HOME`. `misc/` is not stowed and holds files kept for reference, like the OBS overlays.
+macOS development environment managed with [GNU Stow](https://www.gnu.org/software/stow/) symlinks. Each directory that `setup-stow.sh` stows is a "package" that maps into `$HOME`. `misc/` is not stowed and holds files kept for reference, like the OBS overlays. `skills/` holds agent skills plus the Claude and Pi settings, linked by its own `skills/setup.sh`; `skills/AGENTS.md` is the global agent instructions file that script links to `~/.claude/CLAUDE.md`.
 
 ## Key Commands
 
@@ -13,6 +13,7 @@ bash setup.sh                    # Full setup (requires sudo)
 bash setup-stow.sh               # Re-apply all symlinks
 bash setup-stow.sh -n            # Dry-run symlinks
 bash setup-stow.sh -D            # Delete all symlinks
+bash skills/setup.sh             # Link agent skills and settings (-n dry-run, -D delete)
 brew bundle --file brew/Brewfile  # Install a specific Brewfile category
 mise install --yes && mise reshim # Install/update language versions
 git submodule update --init --recursive  # Update submodules
