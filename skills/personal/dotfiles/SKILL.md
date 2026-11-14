@@ -27,7 +27,8 @@ description: Change Jason's macOS dotfiles in ~/dotfiles. Use when asked to add 
 | PATH entry | the `path=( … )` array in `zprezto/dot-zprofile` | `zsh -l -c 'echo $PATH'` |
 | tool init (`_source_cached x init zsh`) | `zsh/dot-zsh/02-setup.zsh` | `zsh -i -c exit` exits 0 |
 | script | `bin/NAME`, `#!/usr/bin/env bash`, `set -euo pipefail`, `chmod +x` | `shellcheck bin/NAME` |
-| CLI formula | `brew/Brewfile` | `brew info NAME` resolves |
+| CLI tool | `nix/packages.nix`, by nixpkgs attribute (`nix search nixpkgs NAME`), then `bash setup-home.sh` | `whence -p NAME` prints a `~/.nix-profile/bin` path |
+| CLI formula nixpkgs lacks, or a library native builds link against | `brew/Brewfile` | `brew info NAME` resolves |
 | GUI app | `brew/Caskfile`; hobby or optional apps in `CaskfileExtended` (manual install only) | `brew info --cask NAME` |
 | font | `brew/Fontfile` | same |
 | Mac App Store app | `brew/Macfile` | `mas search NAME` |

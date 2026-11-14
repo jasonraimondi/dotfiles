@@ -3,10 +3,7 @@
 cask_args appdir: "/Applications"
 
 # Brews
-brew "atuin"
 brew "pipx"
-brew "tmux"
-brew "zsh"
 
 # Casks
 cask "1password"

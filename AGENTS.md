@@ -17,7 +17,8 @@ bash setup-home.sh -b            # Move a file in the way to FILE.hm-backup, the
 bash tests/setup-home.test.sh    # Activate into throwaway homes and check the links
 brew bundle --file brew/Brewfile  # Install a specific Brewfile category
 mise install --yes && mise reshim # Install/update language versions
-nix flake update prezto          # Move a pinned dependency (prezto, dracula-vim, nixpkgs, home-manager)
+nix flake update nixpkgs         # Upgrade the command-line tools; apply with bash setup-home.sh
+nix flake update prezto          # Move another pinned dependency (prezto, dracula-vim, home-manager)
 bin/secrets-sync                 # Render 00-SECRETS.zsh from 1Password (--check validates only)
 ```
 
@@ -33,6 +34,15 @@ bin/secrets-sync                 # Render 00-SECRETS.zsh from 1Password (--check
 - **Impure by design.** The username, home directory and checkout path come from `$USER`, `$HOME` and `$DOTFILES_HOME`, so no machine's values are committed. `setup-home.sh` sets `DOTFILES_HOME` to its own checkout and passes `--impure`.
 - **Tracked files only.** A flake sees only files git tracks. `git add` a new file under `nix/`, `skills/vendor/` or `skills/vendor-auto/` before running `setup-home.sh`.
 - **A real file in the way stops the run.** Home Manager names it and links nothing. Move it aside and re-run.
+
+### Packages
+
+`nix/packages.nix` lists the command-line tools by nixpkgs attribute. `setup-home.sh` installs them into `~/.nix-profile`, and `-D` leaves them installed. Every machine gets the versions `flake.lock` pins, and they move only on `nix flake update nixpkgs`.
+
+- **A nixpkgs attribute is not always the Homebrew name**: `yq` is `yq-go`, `stripe` is `stripe-cli`, `gnu-sed` is `gnused`. Find it with `nix search nixpkgs NAME`.
+- **GNU sed and grep are installed as `gsed` and `ggrep`** through the `gPrefixed` helper, and coreutils with the `g` prefix, so `sed`, `grep` and `ls` stay the BSD tools macOS ships.
+- **Two packages that ship the same file fail the build.** Wrap the one whose copy should lose in `lib.lowPrio`.
+- **macOS-only tools** go in the `isDarwin` list.
 
 ### Agent Skills
 
@@ -57,11 +67,13 @@ A change to a `vendor/` or `vendor-auto/` skill reaches `$HOME` on the next `bas
 - `98-agent-shell.zsh` — when `$AI_AGENT` or `$CLAUDECODE` is set, drops the `rm`/`cp`/`mv` aliases and relaxes clobber, nomatch, correct and equals, so agent-run commands don't hang or abort
 - `01.5-custom.zsh`, `99-custom.zsh` — private, git-ignored
 
-PATH, `DOTFILES_HOME` and `brew shellenv` live in `zprezto/dot-zprofile`, which login shells source; non-login shells source it through `zprezto/dot-zshenv` when `DOTFILES_HOME` is unset.
+PATH, `DOTFILES_HOME`, `brew shellenv` and Nix's profile script live in `zprezto/dot-zprofile`, which login shells source; non-login shells source it through `zprezto/dot-zshenv` when `DOTFILES_HOME` is unset.
 
 ### Homebrew
 
 Separated Brewfiles in `brew/`: `Requirefile` (essentials installed first), `Brewfile`, `Caskfile`, `CaskfileQuicklook`, `Fontfile`, `Macfile`. `CaskfileExtended` holds optional apps and is installed manually.
+
+Homebrew installs the apps, fonts and the few formulae `nix/packages.nix` cannot take. A formula belongs in `brew/Brewfile` when nixpkgs does not package it, ships an older release line (gnupg), or when native builds link against it (`libpq`, `mysql@8.0`, `cmake`, `php`). `pipx` stays because the environments it creates point at its own Python, which a Nix upgrade would remove.
 
 ### Pinned Dependencies
 

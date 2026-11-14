@@ -64,7 +64,7 @@ make_fixture() {
 }
 
 run_repo_case() {
-  local home dangling left
+  local home dangling left profile
   home="$(new_dir)"
   echo "case: a real run links this repository into an empty home"
   setup_home "$home" "$REPO" || { fail "exit nonzero"; tail -5 "$home.log" >&2; }
@@ -95,12 +95,20 @@ run_repo_case() {
   dangling="$(find_outside_nix_state "$home" -type l ! -exec test -e {} \; -print | head -3 | tr '\n' ' ')"
   [[ -z "$dangling" ]] || fail "links to a path that does not exist: $dangling"
 
+  profile="$home/.nix-profile/bin"
+  "$profile/rg" --version > /dev/null 2>&1 || fail "ripgrep does not run from the profile"
+  "$profile/gsed" --version 2> /dev/null | grep -q 'GNU sed' || fail "gsed is not GNU sed"
+  "$profile/ggrep" --version 2> /dev/null | grep -q 'GNU grep' || fail "ggrep is not GNU grep"
+  [[ -x "$profile/gls" ]] || fail "coreutils is not installed with the g prefix"
+  [[ ! -e "$profile/sed" && ! -e "$profile/grep" && ! -e "$profile/ls" ]] || fail "a GNU tool shadows the one macOS ships"
+
   echo "case: -D removes what the real run linked"
   setup_home "$home" "$REPO" -D || { fail "exit nonzero"; tail -5 "$home.log" >&2; }
   left="$(links_into "$home" "$REPO")"
   [[ -z "$left" ]] || fail "-D left: $left"
   [[ ! -e "$home/.zprezto" && ! -e "$home/.vim/pack/themes/start/dracula" ]] || fail "-D left a pinned dependency linked"
   [[ -z "$(ls -A "$home/.claude/skills" 2>/dev/null)" ]] || fail "-D left skills linked"
+  [[ -x "$profile/rg" ]] || fail "-D uninstalled the packages"
   rm -rf "$home" "$home.log"
 }
 

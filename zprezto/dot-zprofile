@@ -57,6 +57,14 @@ if [[ -x /opt/homebrew/bin/brew ]]; then
   eval "$(/opt/homebrew/bin/brew shellenv)"
 fi
 
+# Sourced here rather than left to /etc/zshrc so that non-interactive shells
+# get Nix too. The script marks itself sourced, which stops /etc/zshrc from
+# prepending Nix to PATH afterwards and leaves its position to the array below.
+if [[ -r /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
+  source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+  fpath=($HOME/.nix-profile/share/zsh/site-functions(N) $fpath)
+fi
+
 if [[ "$OSTYPE" == darwin* ]]; then
   export PNPM_HOME="$HOME/Library/pnpm"
 else
@@ -64,7 +72,9 @@ else
 fi
 
 # Set the list of directories that Zsh searches for programs. Personal bins
-# come before Homebrew so they can shadow a formula of the same name.
+# come before Nix and Homebrew so they can shadow a package of the same name.
+# Nix comes before Homebrew so a tool in nix/packages.nix wins over a formula
+# that is still installed.
 # mise shims rather than `mise activate`: its per-prompt PATH rebuild fights
 # direnv, which hands ~/Code/intelligems/intelligems over to proto.
 path=(
@@ -74,6 +84,8 @@ path=(
   $HOME/.omlx/bin(N)
   "$HOME/Library/Application Support/JetBrains/Toolbox/scripts"(N)
   $HOME/{,s}bin(N)
+  $HOME/.nix-profile/bin(N)
+  /nix/var/nix/profiles/default/bin(N)
   /opt/{homebrew,local}/{,s}bin(N)
   /usr/local/{,s}bin(N)
   $path
