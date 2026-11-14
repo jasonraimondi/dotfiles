@@ -105,7 +105,8 @@ run_repo_case() {
     [[ ! -e "$profile/sed" && ! -e "$profile/grep" && ! -e "$profile/ls" ]] || fail "a GNU tool shadows the one macOS ships"
   else
     [[ ! -e "$home/.config/karabiner" && ! -e "$home/Library" ]] || fail "a macOS-only path is linked on Linux"
-    ! grep -q pinentry-program "$home/.gnupg/gpg-agent.conf" || fail "gpg-agent.conf names pinentry-mac on Linux"
+    grep -q '^pinentry-program /nix/store/.*/bin/pinentry-curses$' "$home/.gnupg/gpg-agent.conf" || fail "gpg-agent.conf does not name pinentry-curses on Linux"
+    "$profile/gpg" --version > /dev/null 2>&1 || fail "gpg does not run from the profile on Linux"
     grep -qx 'default-cache-ttl 28800' "$home/.gnupg/gpg-agent.conf" || fail "gpg-agent.conf lost its cache settings on Linux"
     "$profile/sed" --version 2> /dev/null | grep -q 'GNU sed' || fail "sed is not GNU sed"
     "$profile/grep" --version 2> /dev/null | grep -q 'GNU grep' || fail "grep is not GNU grep"

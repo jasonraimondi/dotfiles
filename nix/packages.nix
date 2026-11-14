@@ -79,10 +79,13 @@ in
       rclone
       yt-dlp
     ]
+    # On macOS Homebrew supplies gnupg; Linux has no Homebrew.
     ++ lib.optionals stdenv.hostPlatform.isLinux [
       coreutils
       gnused
       gnugrep
+      gnupg
+      pinentry-curses
     ]
     ++ lib.optionals stdenv.hostPlatform.isDarwin [
       coreutils-prefixed

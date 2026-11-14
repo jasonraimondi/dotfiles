@@ -73,14 +73,16 @@ let
     ".config/karabiner" = "config/karabiner";
   };
 
-  # The tracked file names pinentry-mac, which Linux lacks. Without a
-  # pinentry-program line, gpg-agent falls back to the one gnupg ships with.
+  # The tracked file names pinentry-mac. Linux machines are terminal-only, so
+  # they get the curses pinentry that nix/packages.nix installs.
   gpgAgent = "${checkout}/gnupg/gpg-agent.conf";
-  linuxGpgAgent = lib.concatLines (
-    lib.filter (line: line != "" && !lib.hasPrefix "pinentry-program" line) (
-      lib.splitString "\n" (builtins.readFile gpgAgent)
-    )
-  );
+  linuxGpgAgent = lib.concatMapStringsSep "\n" (
+    line:
+    if lib.hasPrefix "pinentry-program" line then
+      "pinentry-program ${pkgs.pinentry-curses}/bin/pinentry-curses"
+    else
+      line
+  ) (lib.splitString "\n" (builtins.readFile gpgAgent));
 
   # Git-ignored, so each exists only on a machine that created it.
   private = {

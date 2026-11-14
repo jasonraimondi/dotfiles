@@ -73,7 +73,7 @@ PATH, `DOTFILES_HOME`, `brew shellenv` and Nix's profile script live in `zprezto
 
 Separated Brewfiles in `brew/`: `Requirefile` (essentials installed first), `Brewfile`, `Caskfile`, `CaskfileQuicklook`, `Fontfile`, `Macfile`. `CaskfileExtended` holds optional apps and is installed manually.
 
-Homebrew installs the apps, fonts and the few formulae `nix/packages.nix` cannot take. A formula belongs in `brew/Brewfile` when nixpkgs does not package it, ships an older release line (gnupg), or when native builds link against it (`libpq`, `mysql@8.0`, `cmake`, `php`). `pipx` stays because the environments it creates point at its own Python, which a Nix upgrade would remove.
+Homebrew is macOS only: on Linux `setup.sh` skips it, the system preferences and the Dock, and Nix supplies everything, gnupg included. Homebrew installs the apps, fonts and the few formulae `nix/packages.nix` cannot take. A formula belongs in `brew/Brewfile` when nixpkgs does not package it, ships an older release line (gnupg), or when native builds link against it (`libpq`, `mysql@8.0`, `cmake`, `php`). `pipx` stays because the environments it creates point at its own Python, which a Nix upgrade would remove.
 
 ### Pinned Dependencies
 

@@ -2,6 +2,11 @@
 
 set -euo pipefail
 
+if [[ "$(uname)" != Darwin ]]; then
+  echo "install.sh prepares a Mac; on Linux, clone the repository and run setup.sh" >&2
+  exit 1
+fi
+
 # Ask for the administrator password
 sudo -v
 
