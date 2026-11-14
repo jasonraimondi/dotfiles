@@ -10,6 +10,7 @@ Home Manager now installs the command-line tools, from the list in `nix/packages
 - `mise` comes from `nix/packages.nix` in place of the `mise.run` installer in `setup.sh`, so the lock pins it with the other tools and `mise self-update` no longer applies. mise still installs and upgrades the language runtimes. Its shims point at `~/.nix-profile/bin/mise`, which stays put across upgrades.
 - `zprezto/dot-zprofile` sources Nix's profile script and puts `~/.nix-profile/bin` on PATH after the personal bin directories and before Homebrew, so a tool from Nix wins over a formula that is still installed.
 - Zsh completions for these tools come from `~/.nix-profile/share/zsh/site-functions`.
+- The atuin, direnv and mise init scripts cached in `~/.cache/zsh` are rebuilt when the tool's resolved path changes, not when its binary looks newer than the cache. Every file in the Nix store is dated 1970, so the old check never rebuilt them, and a cache made from a Homebrew binary kept calling it after `brew uninstall`. That error was `_direnv_hook:5: no such file or directory: /opt/homebrew/bin/direnv`. The first shell after the pull rebuilds all three, so nothing needs doing.
 - Upgrading is `nix flake update nixpkgs && bash setup-home.sh`. `brew upgrade` no longer touches these tools.
 - The flake follows `nixpkgs-unstable` and Home Manager's main branch, because the stable channel trails Homebrew by months for these tools.
 - `bash setup-home.sh -D` removes the links and leaves the tools installed.
