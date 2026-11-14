@@ -1,5 +1,48 @@
 # Changelog
 
+## 2026-11-13: command-line tools move from Homebrew to Nix
+
+Home Manager now installs the command-line tools, from the list in `nix/packages.nix`, into `~/.nix-profile`. Every machine gets the versions `flake.lock` pins. Homebrew keeps the apps, fonts and a short list of formulae.
+
+### Changed
+
+- 54 formulae left `brew/Brewfile` and `brew/Requirefile` for `nix/packages.nix`. Three have another name there: `yq` is `yq-go`, `stripe` is `stripe-cli`, and `vim` is `vim-darwin`.
+- `zprezto/dot-zprofile` sources Nix's profile script and puts `~/.nix-profile/bin` on PATH after the personal bin directories and before Homebrew, so a tool from Nix wins over a formula that is still installed.
+- Zsh completions for these tools come from `~/.nix-profile/share/zsh/site-functions`.
+- Upgrading is `nix flake update nixpkgs && bash setup-home.sh`. `brew upgrade` no longer touches these tools.
+- The flake follows `nixpkgs-unstable` and Home Manager's main branch, because the stable channel trails Homebrew by months for these tools.
+- `bash setup-home.sh -D` removes the links and leaves the tools installed.
+
+### Still in Homebrew
+
+| Formula | Why |
+|---|---|
+| `playwright-cli`, `vet`, `schpet/tap/linear` | not in nixpkgs |
+| `gnupg` | nixpkgs ships the 2.4 line, Homebrew 2.5 |
+| `libpq`, `mysql@8.0`, `cmake`, `php` | native gem and extension builds link against them |
+| `pipx` | the environments it creates point at its own Python, which a Nix upgrade would remove |
+| `curl` | keg-only, so it was never on PATH |
+
+### Migrating a machine
+
+```bash
+cd ~/dotfiles
+git pull
+bash setup-home.sh
+exec zsh -l
+whence -p rg git gh
+```
+
+Done when `whence` prints three paths under `~/.nix-profile/bin`. The first run downloads about 1.3 GB.
+
+The old formulae stay installed and are shadowed. To remove them:
+
+```bash
+brew uninstall bash coreutils gnu-sed grep rsync vim zsh atuin tmux direnv asciinema dockutil fd fzf jq moreutils mtr overmind ripgrep safe-rm switchaudio-osx go-task tree watch wget yq agent-browser fdupes mkcert nmap docker-compose gitleaks shellcheck stripe trufflehog usage diff-so-fancy difftastic gh git git-extras git-lfs lazygit ffmpeg imagemagick jhead librsvg exiftool gifsicle tesseract fastfetch immich-go rclone yt-dlp
+```
+
+Homebrew refuses to remove a formula that another installed formula depends on and names it. Leave those in place.
+
 ## 2026-11-13: Home Manager replaces GNU Stow
 
 Home Manager now links the dotfiles and agent skills into `$HOME`, in place of GNU Stow and the two setup scripts built on it. The files keep their paths and `dot-` names, and the links still point at the checkout, so editing a file works as before. Homebrew, mise and the macOS scripts are unchanged.

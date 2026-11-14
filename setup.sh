@@ -31,6 +31,9 @@ brew bundle --file brew/Requirefile
 [ -x /nix/var/nix/profiles/default/bin/nix ] || curl -fsSL https://nixos.org/nix/install | sh -s -- --daemon --yes
 bash setup-home.sh
 
+# the Home Manager profile holds dockutil, which setup-dock.sh calls
+export PATH="$HOME/.nix-profile/bin:$PATH"
+
 # Install applications using homebrew & casks
 for BREWFILE in Brewfile Fontfile Caskfile CaskfileQuicklook Macfile; do
   brew bundle --file "brew/$BREWFILE"

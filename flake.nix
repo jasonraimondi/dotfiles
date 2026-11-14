@@ -2,9 +2,11 @@
   description = "macOS dotfiles, linked into $HOME by Home Manager";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-26.05-darwin";
+    # The unstable channel, because the stable one trails Homebrew by months
+    # for the command-line tools in nix/packages.nix.
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     home-manager = {
-      url = "github:nix-community/home-manager/release-26.05";
+      url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     prezto = {
@@ -49,12 +51,13 @@
     {
       homeConfigurations = {
         default = homeWith [
+          ./nix/packages.nix
           ./nix/links.nix
           ./nix/skills.nix
         ];
         # Activating a generation with no files removes every link the previous
-        # generation created.
-        unlinked = homeWith [ ];
+        # generation created. The packages stay installed.
+        unlinked = homeWith [ ./nix/packages.nix ];
       };
     };
 }

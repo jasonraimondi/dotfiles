@@ -82,7 +82,7 @@ vim ~/.zsh/99-custom.zsh
 ZSH automatically sources all `*.zsh` files from `~/.zsh/` using the [Prezto](https://github.com/sorin-ionescu/prezto) framework for enhanced functionality.
 
 ### Package Management
-Homebrew installs software through categorized Brewfiles: Requirefile (essentials), Brewfile (CLI tools), Caskfile (GUI apps), Fontfile, and Macfile (Mac App Store). CaskfileExtended (optional apps) is installed manually.
+Command-line tools are listed in `nix/packages.nix` and installed by Home Manager into `~/.nix-profile`, at the versions `flake.lock` pins. Homebrew installs everything else through categorized Brewfiles: Requirefile (essentials), Brewfile (formulae Nix cannot take), Caskfile (GUI apps), Fontfile, and Macfile (Mac App Store). CaskfileExtended (optional apps) is installed manually.
 
 ### Language Versions
 [mise](https://mise.jdx.dev/) manages programming language versions defined in `config/mise/config.toml` for consistent development environments.
@@ -93,12 +93,15 @@ Homebrew installs software through categorized Brewfiles: Requirefile (essential
 ```bash
 # Install/update individual brew categories
 brew bundle --file brew/Requirefile        # essentials first
-brew bundle --file brew/Brewfile           # CLI tools  
+brew bundle --file brew/Brewfile           # formulae Nix cannot take
 brew bundle --file brew/Caskfile           # GUI apps
 brew bundle --file brew/CaskfileQuicklook  # quicklook extensions
 brew bundle --file brew/Fontfile           # fonts
 brew bundle --file brew/Macfile            # Mac App Store apps
 brew bundle --file brew/CaskfileExtended   # optional apps, manual only
+
+# Upgrade the command-line tools in nix/packages.nix
+nix flake update nixpkgs && bash setup-home.sh
 
 # Update language versions
 mise install --yes && mise reshim
