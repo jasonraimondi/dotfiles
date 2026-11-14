@@ -7,6 +7,7 @@ Home Manager now installs the command-line tools, from the list in `nix/packages
 ### Changed
 
 - 54 formulae left `brew/Brewfile` and `brew/Requirefile` for `nix/packages.nix`. Three have another name there: `yq` is `yq-go`, `stripe` is `stripe-cli`, and `vim` is `vim-darwin`.
+- `mise` comes from `nix/packages.nix` in place of the `mise.run` installer in `setup.sh`, so the lock pins it with the other tools and `mise self-update` no longer applies. mise still installs and upgrades the language runtimes. Its shims point at `~/.nix-profile/bin/mise`, which stays put across upgrades.
 - `zprezto/dot-zprofile` sources Nix's profile script and puts `~/.nix-profile/bin` on PATH after the personal bin directories and before Homebrew, so a tool from Nix wins over a formula that is still installed.
 - Zsh completions for these tools come from `~/.nix-profile/share/zsh/site-functions`.
 - Upgrading is `nix flake update nixpkgs && bash setup-home.sh`. `brew upgrade` no longer touches these tools.
@@ -29,11 +30,13 @@ Home Manager now installs the command-line tools, from the list in `nix/packages
 cd ~/dotfiles
 git pull
 bash setup-home.sh
+rm ~/.local/bin/mise
 exec zsh -l
-whence -p rg git gh
+mise reshim
+whence -p rg git gh mise
 ```
 
-Done when `whence` prints three paths under `~/.nix-profile/bin`. The first run downloads about 1.3 GB.
+The `rm` removes the binary the `mise.run` installer put in `~/.local/bin`, which comes before `~/.nix-profile/bin` on PATH. `mise reshim` points the shims at the Nix copy. Done when `whence` prints four paths under `~/.nix-profile/bin`. The first run downloads about 1.3 GB.
 
 The old formulae stay installed and are shadowed. To remove them:
 

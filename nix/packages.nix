@@ -27,6 +27,7 @@ in
       # Shell & utilities
       atuin
       direnv
+      mise
       asciinema
       fd
       fzf
