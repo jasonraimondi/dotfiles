@@ -40,7 +40,7 @@ bin/secrets-sync                 # Render 00-SECRETS.zsh from 1Password (--check
 `nix/packages.nix` lists the command-line tools by nixpkgs attribute. `setup-home.sh` installs them into `~/.nix-profile`, and `-D` leaves them installed. Every machine gets the versions `flake.lock` pins, and they move only on `nix flake update nixpkgs`.
 
 - **A nixpkgs attribute is not always the Homebrew name**: `yq` is `yq-go`, `stripe` is `stripe-cli`, `gnu-sed` is `gnused`. Find it with `nix search nixpkgs NAME`.
-- **GNU sed and grep are installed as `gsed` and `ggrep`** through the `gPrefixed` helper, and coreutils with the `g` prefix, so `sed`, `grep` and `ls` stay the BSD tools macOS ships.
+- **On macOS, GNU sed and grep are installed as `gsed` and `ggrep`** through the `gPrefixed` helper, and coreutils with the `g` prefix, so `sed`, `grep` and `ls` stay the BSD tools macOS ships. Linux gets them under their plain names.
 - **Two packages that ship the same file fail the build.** Wrap the one whose copy should lose in `lib.lowPrio`.
 - **macOS-only tools** go in the `isDarwin` list.
 
