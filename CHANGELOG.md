@@ -8,7 +8,7 @@ Home Manager now links the dotfiles and agent skills into `$HOME`, in place of G
 
 | Before | After |
 |---|---|
-| `setup-stow.sh`, `setup-skills.sh` | `setup-home.sh`, with the same `-n` and `-D` flags |
+| `setup-stow.sh`, `setup-skills.sh` | `setup-home.sh`, with the same `-n` and `-D` flags, plus `-b` to back up a file in the way |
 | `.stowrc` and stow's walk of each package | `nix/links.nix`, one line per link |
 | `stow!`, `reskill!` aliases | `relink!` |
 | `zprezto/dot-zprezto` submodule | `prezto` flake input, linked to `~/.zprezto` from the Nix store |
@@ -32,6 +32,8 @@ Home Manager now links the dotfiles and agent skills into `$HOME`, in place of G
 
 Stow removes links by walking the package directories, so the old links have to come down before the pull removes the stow scripts.
 
+Quit Herdr, Zed and Karabiner first. Once its link is gone, a running app writes its settings back as a regular file within seconds, and that file stops `setup-home.sh`. If an app has to stay open, run `bash setup-home.sh -b` in place of `bash setup-home.sh`: it moves each file in the way to `FILE.hm-backup` and links in the same step.
+
 ```bash
 cd ~/dotfiles
 bash setup-stow.sh -D && bash setup-skills.sh -D
@@ -45,6 +47,26 @@ exec zsh
 ```
 
 The `rm` clears what the two submodules leave behind, and the `find` clears the empty directories stow leaves where Home Manager now puts a link. Done when `bash setup-home.sh` ends without an error and `readlink ~/.zshrc` prints a `/nix/store` path. If the run names an existing file or directory that would be clobbered, move it aside and run it again.
+
+From the `rm` on, the shell running these commands has lost prezto, so its prompt prints errors such as `prompt-pwd: function definition file not found` until the `exec zsh`.
+
+#### A machine with an earlier Nix install
+
+The install line is for a machine without Nix. If `/nix` exists but `/nix/var/nix/profiles/default/bin/nix` does not, an earlier install is there with its store volume locked. Skip the install line and load its daemons:
+
+```bash
+sudo launchctl bootstrap system /Library/LaunchDaemons/org.nixos.darwin-store.plist
+sudo launchctl bootstrap system /Library/LaunchDaemons/org.nixos.nix-daemon.plist
+```
+
+If `setup-home.sh` then fails with `error: the user '_nixbld1' in the group 'nixbld' does not exist`, a macOS upgrade took the UIDs of Nix's build users. Nix's migration script recreates them at free UIDs:
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSfL https://github.com/NixOS/nix/raw/master/scripts/sequoia-nixbld-user-migration.sh -o /tmp/nixbld-migrate.sh
+bash /tmp/nixbld-migrate.sh
+```
+
+Both steps prompt for a sudo password, so run them in a terminal, not through an agent.
 
 Going back to stow:
 
