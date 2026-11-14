@@ -1,5 +1,0 @@
---verbose
---restow
---dotfiles
---ignore=\.DS_Store
---target=~

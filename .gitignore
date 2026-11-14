@@ -18,8 +18,6 @@ git/dot-git-user
 
 ssh/config
 
-vim/dot-vim/.netrwhist
-
 zsh/dot-zsh/00-SECRETS.zsh
 zsh/dot-zsh/00-SECRETS.zsh.*
 zsh/dot-zsh/*-custom.zsh

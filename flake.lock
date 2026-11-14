@@ -1,0 +1,84 @@
+{
+  "nodes": {
+    "dracula-vim": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1793369138,
+        "narHash": "sha256-3nGBw9Q1AHfLD8aYnKQOkoHkBZ6EQz0IXl6E/POF2X0=",
+        "owner": "dracula",
+        "repo": "vim",
+        "rev": "c689958744a93851b870e17ede7e9cbd28bc7cf8",
+        "type": "github"
+      },
+      "original": {
+        "owner": "dracula",
+        "repo": "vim",
+        "type": "github"
+      }
+    },
+    "home-manager": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1794278858,
+        "narHash": "sha256-rkrJwLgLSHBnXfgoSKIDa+2LLGdTqynsV3GAxOTGhUU=",
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "rev": "82ce401aa350502897c3f2e85f384d61cd3b0b6d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1794495034,
+        "narHash": "sha256-E0hYoioqUtM2XmPPvYYpJgdADF5AW9oOoPSEiM9dTHQ=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "2074cc672349f14240fb7ea90d509e0b643e9dd4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "prezto": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1777062554,
+        "narHash": "sha256-TgdyG1XiQh61F2JPUChXe2srUxnJYOa5K1wLaRnmTlA=",
+        "ref": "refs/heads/master",
+        "rev": "cff2d01871425b1b80710f8ec6a475c5a53145b4",
+        "revCount": 2071,
+        "submodules": true,
+        "type": "git",
+        "url": "https://github.com/sorin-ionescu/prezto"
+      },
+      "original": {
+        "submodules": true,
+        "type": "git",
+        "url": "https://github.com/sorin-ionescu/prezto"
+      }
+    },
+    "root": {
+      "inputs": {
+        "dracula-vim": "dracula-vim",
+        "home-manager": "home-manager",
+        "nixpkgs": "nixpkgs",
+        "prezto": "prezto"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}

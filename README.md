@@ -16,11 +16,12 @@ config       > for the noble apps using .config
 dictionary   > extend the macos dictionary
 git          > global git config and aliases
 gnupg        > gpg and gpg-agent config
-misc         > extras that are not stowed, like obs overlays
+misc         > extras that are not linked, like obs overlays
 mise         > mise for maintaining language versions
+nix          > home manager modules that link everything into ~
 pi           > pi settings and extensions
 ruby         > ruby config
-skills       > agent skills, linked by setup-skills.sh
+skills       > agent skills
 ssh          > ssh config
 tmux         > tmux config
 vim          > vim configs
@@ -40,7 +41,7 @@ zsh          > shell configuration 🔥🔥
 cd dotfiles && bash setup.sh
 ```
 
-**What this does:** Sets up a complete macOS dev environment with shell configs, applications, and tools managed through GNU Stow symlinks.
+**What this does:** Sets up a complete macOS dev environment with shell configs, applications, and tools, linked into place by Home Manager.
 
 ## Post-Install Setup
 
@@ -75,13 +76,13 @@ vim ~/.zsh/99-custom.zsh
 ## How It Works
 
 ### Symlink Management
-[GNU Stow](https://www.gnu.org/software/stow/) creates symlinks from `~/dotfiles/` to your home directory. The `--dotfiles` flag converts `dot-example` files to `.example` dotfiles.
+[Home Manager](https://github.com/nix-community/home-manager) creates symlinks from `~/dotfiles/` to your home directory. `nix/links.nix` lists every link, and `setup-home.sh` builds and activates them with [Nix](https://nixos.org/), which `setup.sh` installs. The links point at this checkout, so editing a file here takes effect without a rebuild. Prezto and the vim dracula theme are flake inputs pinned in `flake.lock`.
 
 ### Shell Configuration
 ZSH automatically sources all `*.zsh` files from `~/.zsh/` using the [Prezto](https://github.com/sorin-ionescu/prezto) framework for enhanced functionality.
 
 ### Package Management
-Homebrew installs software through categorized Brewfiles: Requirefile (essentials), Brewfile (CLI tools), Caskfile (GUI apps), Fontfile, and Macfile (Mac App Store). CaskfileExtended (optional apps) is installed manually.
+Command-line tools are listed in `nix/packages.nix` and installed by Home Manager into `~/.nix-profile`, at the versions `flake.lock` pins. Homebrew installs everything else through categorized Brewfiles: Requirefile (essentials), Brewfile (formulae Nix cannot take), Caskfile (GUI apps), Fontfile, and Macfile (Mac App Store). CaskfileExtended (optional apps) is installed manually.
 
 ### Language Versions
 [mise](https://mise.jdx.dev/) manages programming language versions defined in `config/mise/config.toml` for consistent development environments.
@@ -92,12 +93,15 @@ Homebrew installs software through categorized Brewfiles: Requirefile (essential
 ```bash
 # Install/update individual brew categories
 brew bundle --file brew/Requirefile        # essentials first
-brew bundle --file brew/Brewfile           # CLI tools  
+brew bundle --file brew/Brewfile           # formulae Nix cannot take
 brew bundle --file brew/Caskfile           # GUI apps
 brew bundle --file brew/CaskfileQuicklook  # quicklook extensions
 brew bundle --file brew/Fontfile           # fonts
 brew bundle --file brew/Macfile            # Mac App Store apps
 brew bundle --file brew/CaskfileExtended   # optional apps, manual only
+
+# Upgrade the command-line tools in nix/packages.nix
+nix flake update nixpkgs && bash setup-home.sh
 
 # Update language versions
 mise install --yes && mise reshim
@@ -105,18 +109,18 @@ mise install --yes && mise reshim
 
 **Re-apply symlinks:**
 ```bash
-bash setup-stow.sh
-bash setup-skills.sh
+bash setup-home.sh     # -n previews, -D removes every link, -b backs up a file in the way
 ```
 
-**Update submodules:**
+**Update pinned dependencies:**
 ```bash
-git submodule update --init --recursive
+nix flake update prezto dracula-vim   # no names updates nixpkgs and home-manager too
+bash setup-home.sh
 ```
 
 ---
 
 **References:**
-- [Managing dotfiles with GNU Stow](https://alexpearce.me/2016/02/managing-dotfiles-with-stow/)
+- [Home Manager manual](https://nix-community.github.io/home-manager/)
 - [Brewfile: a Gemfile, but for Homebrew](https://thoughtbot.com/blog/brewfile-a-gemfile-but-for-homebrew)
 - [Ascii Art Generator with **big** font](https://www.coolgenerator.com/ascii-text-generator)

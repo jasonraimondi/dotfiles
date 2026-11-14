@@ -1,5 +1,131 @@
 # Changelog
 
+## 2026-11-13: command-line tools move from Homebrew to Nix
+
+Home Manager now installs the command-line tools, from the list in `nix/packages.nix`, into `~/.nix-profile`. Every machine gets the versions `flake.lock` pins. Homebrew keeps the apps, fonts and a short list of formulae.
+
+### Changed
+
+- 54 formulae left `brew/Brewfile` and `brew/Requirefile` for `nix/packages.nix`. Three have another name there: `yq` is `yq-go`, `stripe` is `stripe-cli`, and `vim` is `vim-darwin`.
+- `mise` comes from `nix/packages.nix` in place of the `mise.run` installer in `setup.sh`, so the lock pins it with the other tools and `mise self-update` no longer applies. mise still installs and upgrades the language runtimes. Its shims point at `~/.nix-profile/bin/mise`, which stays put across upgrades.
+- `zprezto/dot-zprofile` sources Nix's profile script and puts `~/.nix-profile/bin` on PATH after the personal bin directories and before Homebrew, so a tool from Nix wins over a formula that is still installed.
+- Zsh completions for these tools come from `~/.nix-profile/share/zsh/site-functions`.
+- Upgrading is `nix flake update nixpkgs && bash setup-home.sh`. `brew upgrade` no longer touches these tools.
+- The flake follows `nixpkgs-unstable` and Home Manager's main branch, because the stable channel trails Homebrew by months for these tools.
+- `bash setup-home.sh -D` removes the links and leaves the tools installed.
+
+### Still in Homebrew
+
+| Formula | Why |
+|---|---|
+| `playwright-cli`, `vet`, `schpet/tap/linear` | not in nixpkgs |
+| `gnupg` | nixpkgs ships the 2.4 line, Homebrew 2.5 |
+| `libpq`, `mysql@8.0`, `cmake`, `php` | native gem and extension builds link against them |
+| `pipx` | the environments it creates point at its own Python, which a Nix upgrade would remove |
+| `curl` | keg-only, so it was never on PATH |
+
+### Migrating a machine
+
+```bash
+cd ~/dotfiles
+git pull
+bash setup-home.sh
+rm ~/.local/bin/mise
+exec zsh -l
+mise reshim
+whence -p rg git gh mise
+```
+
+The `rm` removes the binary the `mise.run` installer put in `~/.local/bin`, which comes before `~/.nix-profile/bin` on PATH. `mise reshim` points the shims at the Nix copy. Done when `whence` prints four paths under `~/.nix-profile/bin`. The first run downloads about 1.3 GB.
+
+The old formulae stay installed and are shadowed. To remove them:
+
+```bash
+brew uninstall bash coreutils gnu-sed grep rsync vim zsh atuin tmux direnv asciinema dockutil fd fzf jq moreutils mtr overmind ripgrep safe-rm switchaudio-osx go-task tree watch wget yq agent-browser fdupes mkcert nmap docker-compose gitleaks shellcheck stripe trufflehog usage diff-so-fancy difftastic gh git git-extras git-lfs lazygit ffmpeg imagemagick jhead librsvg exiftool gifsicle tesseract fastfetch immich-go rclone yt-dlp
+```
+
+Homebrew refuses to remove a formula that another installed formula depends on and names it. Leave those in place.
+
+## 2026-11-13: Home Manager replaces GNU Stow
+
+Home Manager now links the dotfiles and agent skills into `$HOME`, in place of GNU Stow and the two setup scripts built on it. The files keep their paths and `dot-` names, and the links still point at the checkout, so editing a file works as before. Homebrew, mise and the macOS scripts are unchanged.
+
+### Changed
+
+| Before | After |
+|---|---|
+| `setup-stow.sh`, `setup-skills.sh` | `setup-home.sh`, with the same `-n` and `-D` flags, plus `-b` to back up a file in the way |
+| `.stowrc` and stow's walk of each package | `nix/links.nix`, one line per link |
+| `stow!`, `reskill!` aliases | `relink!` |
+| `zprezto/dot-zprezto` submodule | `prezto` flake input, linked to `~/.zprezto` from the Nix store |
+| `vim/dot-vim/pack/themes/start/dracula` submodule | `dracula-vim` flake input, linked into a real `~/.vim` |
+| `git submodule update --init --recursive` | `nix flake update prezto dracula-vim` |
+| `tests/setup-stow.test.sh`, `tests/setup-skills.test.sh` | `tests/setup-home.test.sh`, which needs Nix |
+
+- `bash setup.sh` installs Nix when it is missing, then runs `setup-home.sh`.
+- A new file is linked only once it has a line in `nix/links.nix`. Stow linked whatever a package directory held.
+- `~/.git-user.gpg`, `~/.git-user.template` and `~/.ssh/config.gpg` are no longer linked. Nothing read them there.
+- The `vendor/` and `vendor-auto/` skills are linked from the Nix store with their invocation policy applied to the store copy. The tracked `SKILL.md` files are no longer rewritten, and a change to one of those skills reaches `$HOME` on the next `bash setup-home.sh`.
+- A regular file where a link belongs stops the whole run before anything is linked. `setup-skills.sh` skipped such a file with a warning.
+- Each app config is linked the same way on every machine: `~/.config/atuin`, `~/.config/karabiner` and `~/.config/mise` as whole directories, the rest as single entries. Stow chose per machine, depending on which directories already existed.
+
+### Removed
+
+- `stow` from `brew/Requirefile` and `brew/Brewfile`.
+- `.gitmodules` and both submodules.
+
+### Migrating a machine
+
+Stow removes links by walking the package directories, so the old links have to come down before the pull removes the stow scripts.
+
+Quit Herdr, Zed and Karabiner first. Once its link is gone, a running app writes its settings back as a regular file within seconds, and that file stops `setup-home.sh`. If an app has to stay open, run `bash setup-home.sh -b` in place of `bash setup-home.sh`: it moves each file in the way to `FILE.hm-backup` and links in the same step.
+
+```bash
+cd ~/dotfiles
+bash setup-stow.sh -D && bash setup-skills.sh -D
+git pull
+rm -rf zprezto/dot-zprezto vim/dot-vim
+find ~/.config/herdr-app ~/.config/zed -type d -empty -delete
+curl -fsSL https://nixos.org/nix/install | sh -s -- --daemon --yes
+bash setup-home.sh -n
+bash setup-home.sh
+exec zsh
+```
+
+The `rm` clears what the two submodules leave behind, and the `find` clears the empty directories stow leaves where Home Manager now puts a link. Done when `bash setup-home.sh` ends without an error and `readlink ~/.zshrc` prints a `/nix/store` path. If the run names an existing file or directory that would be clobbered, move it aside and run it again.
+
+From the `rm` on, the shell running these commands has lost prezto, so its prompt prints errors such as `prompt-pwd: function definition file not found` until the `exec zsh`.
+
+#### A machine with an earlier Nix install
+
+The install line is for a machine without Nix. If `/nix` exists but `/nix/var/nix/profiles/default/bin/nix` does not, an earlier install is there with its store volume locked. Skip the install line and load its daemons:
+
+```bash
+sudo launchctl bootstrap system /Library/LaunchDaemons/org.nixos.darwin-store.plist
+sudo launchctl bootstrap system /Library/LaunchDaemons/org.nixos.nix-daemon.plist
+```
+
+If `setup-home.sh` then fails with `error: the user '_nixbld1' in the group 'nixbld' does not exist`, a macOS upgrade took the UIDs of Nix's build users. Nix's migration script recreates them at free UIDs:
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSfL https://github.com/NixOS/nix/raw/master/scripts/sequoia-nixbld-user-migration.sh -o /tmp/nixbld-migrate.sh
+bash /tmp/nixbld-migrate.sh
+```
+
+Both steps prompt for a sudo password, so run them in a terminal, not through an agent.
+
+Going back to stow:
+
+```bash
+cd ~/dotfiles
+bash setup-home.sh -D
+git switch --detach 87abaa9
+git submodule update --init --recursive
+bash setup-stow.sh && bash setup-skills.sh
+```
+
+Nix stays installed after that. Removing it follows the uninstall section of the Nix manual.
+
 ## 2026-11-13: skills folded into the dotfiles layout
 
 The merge left the old skills repo intact under `skills/`, with its own setup script, ignore file, gitleaks config and agent files. Those now sit where the rest of the dotfiles keep them, and `skills/` holds only skill packages.
