@@ -56,6 +56,7 @@ let
     ".config/herdr-app/settings.json" = "config/herdr-app/settings.json";
     ".config/herdr-app/layouts/notebook-main.json" = "config/herdr-app/layouts/notebook-main.json";
     ".config/herdr-app/mods/notebook" = "config/herdr-app/mods/notebook";
+    ".config/nix/nix.conf" = "config/nix/nix.conf";
     ".config/zed/settings.json" = "config/zed/settings.json";
     ".config/zed/themes" = "config/zed/themes";
 
