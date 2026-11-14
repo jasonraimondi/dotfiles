@@ -191,23 +191,15 @@ function ghdl() {
 }
 
 function upgrade!() {
-  if [[ $# -eq 0 ]]; then
-    (cd "$DOTFILES_HOME" && nix flake update && bash setup-home.sh && brew update && brew upgrade && mise upgrade && git diff --stat flake.lock)
-    return
+  local name="$1"
+  if [[ -n "$name" ]] && ! jq -e --arg name "$name" '.nodes.root.inputs | has($name)' "$DOTFILES_HOME/flake.lock" > /dev/null; then
+    if grep -Eq "^[[:space:]]*${name}([[:space:]]|\$)" "$DOTFILES_HOME/nix/packages.nix"; then
+      echo "$name comes from nixpkgs, which moves all its tools together: upgrade! nixpkgs" >&2
+    else
+      echo "$name is not a flake input: $(jq -r '.nodes.root.inputs | keys | join(", ")' "$DOTFILES_HOME/flake.lock")" >&2
+    fi
+    return 1
   fi
 
-  local name="$1"
-  if jq -e --arg name "$name" '.nodes.root.inputs | has($name)' "$DOTFILES_HOME/flake.lock" > /dev/null; then
-    (cd "$DOTFILES_HOME" && nix flake update "$name" && bash setup-home.sh && git diff --stat flake.lock)
-  elif grep -Eq "^[[:space:]]*${name}([[:space:]]|\$)" "$DOTFILES_HOME/nix/packages.nix"; then
-    echo "$name comes from nixpkgs, which moves all its tools together: upgrade! nixpkgs" >&2
-    return 1
-  elif mise ls --installed "$name" 2> /dev/null | grep -q .; then
-    mise upgrade "$name"
-  elif brew list "$name" > /dev/null 2>&1; then
-    brew upgrade "$name"
-  else
-    echo "$name is not a flake input, nix package, mise tool or brew package" >&2
-    return 1
-  fi
+  (cd "$DOTFILES_HOME" && nix flake update $name && bash setup-home.sh && git diff --stat flake.lock)
 }
