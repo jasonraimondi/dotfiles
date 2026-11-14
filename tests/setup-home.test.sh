@@ -164,11 +164,26 @@ run_existing_file_case() {
   rm -rf "$src" "$home" "$home.log"
 }
 
+run_backup_case() {
+  local src home
+  src="$(new_dir)"
+  home="$(new_dir)"
+  echo "case: -b moves a real CLAUDE.md aside and links"
+  make_fixture "$src"
+  mkdir -p "$home/.claude"
+  echo mine > "$home/.claude/CLAUDE.md"
+  setup_home "$home" "$src" -b || { fail "exit nonzero"; tail -5 "$home.log" >&2; }
+  assert_links_to "$home" .claude/CLAUDE.md "$src/GLOBAL_AGENTS.md"
+  [[ "$(cat "$home/.claude/CLAUDE.md.hm-backup" 2>/dev/null)" == mine ]] || fail "CLAUDE.md was not backed up"
+  rm -rf "$src" "$home" "$home.log"
+}
+
 run_repo_case
 run_dry_run_case
 run_skills_case
 run_duplicate_skill_case
 run_existing_file_case
+run_backup_case
 
 if (( failures > 0 )); then
   echo "$failures failure(s)" >&2

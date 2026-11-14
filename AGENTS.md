@@ -13,6 +13,7 @@ bash setup.sh                    # Full setup (requires sudo)
 bash setup-home.sh               # Re-apply all symlinks (dotfiles, agent skills, GLOBAL_AGENTS.md)
 bash setup-home.sh -n            # Build, then print what activating would do
 bash setup-home.sh -D            # Delete all symlinks
+bash setup-home.sh -b            # Move a file in the way to FILE.hm-backup, then link
 bash tests/setup-home.test.sh    # Activate into throwaway homes and check the links
 brew bundle --file brew/Brewfile  # Install a specific Brewfile category
 mise install --yes && mise reshim # Install/update language versions

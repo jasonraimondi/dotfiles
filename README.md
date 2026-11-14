@@ -106,7 +106,7 @@ mise install --yes && mise reshim
 
 **Re-apply symlinks:**
 ```bash
-bash setup-home.sh     # -n previews, -D removes every link
+bash setup-home.sh     # -n previews, -D removes every link, -b backs up a file in the way
 ```
 
 **Update pinned dependencies:**
