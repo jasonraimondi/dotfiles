@@ -56,7 +56,4 @@ fi
 
 cd $_DOTFILE_PATH
 
-# Clone submodules to get deps
-git submodule update --init --recursive
-
 # bash setup.sh

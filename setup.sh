@@ -22,15 +22,17 @@ for brew_bin in /opt/homebrew/bin/brew /usr/local/bin/brew; do
   fi
 done
 
-git submodule update --init --recursive
 git config core.hooksPath .githooks
 
 # install the more important stuff first
 brew bundle --file brew/Requirefile
 
-# set symlinks using stow
-bash setup-stow.sh
-bash setup-skills.sh
+# nix builds the Home Manager generation that setup-home.sh links into $HOME
+[ -x /nix/var/nix/profiles/default/bin/nix ] || curl -fsSL https://nixos.org/nix/install | sh -s -- --daemon --yes
+bash setup-home.sh
+
+# the Home Manager profile holds dockutil and mise, which the steps below call
+export PATH="$HOME/.nix-profile/bin:$PATH"
 
 # Install applications using homebrew & casks
 for BREWFILE in Brewfile Fontfile Caskfile CaskfileQuicklook Macfile; do
@@ -41,8 +43,6 @@ brew cleanup
 
 bash setup-dock.sh
 
-export PATH="$HOME/.local/bin:$PATH"
-command -v mise > /dev/null || curl -fsSL https://mise.run | sh
 mise install --yes
 mise reshim
 

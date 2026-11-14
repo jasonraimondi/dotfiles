@@ -189,3 +189,17 @@ function ghdl() {
   mv "$tmp/$dir" .
   rm -rf "$tmp"
 }
+
+function upgrade!() {
+  local name="$1"
+  if [[ -n "$name" ]] && ! jq -e --arg name "$name" '.nodes.root.inputs | has($name)' "$DOTFILES_HOME/flake.lock" > /dev/null; then
+    if grep -Eq "^[[:space:]]*${name}([[:space:]]|\$)" "$DOTFILES_HOME/nix/packages.nix"; then
+      echo "$name comes from nixpkgs, which moves all its tools together: upgrade! nixpkgs" >&2
+    else
+      echo "$name is not a flake input: $(jq -r '.nodes.root.inputs | keys | join(", ")' "$DOTFILES_HOME/flake.lock")" >&2
+    fi
+    return 1
+  fi
+
+  (cd "$DOTFILES_HOME" && nix flake update $name && bash setup-home.sh && git diff --stat flake.lock)
+}

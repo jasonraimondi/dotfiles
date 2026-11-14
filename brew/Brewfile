@@ -1,43 +1,12 @@
-# Core
-brew "bash"
-brew "coreutils" # Those that come with macOS are outdated
-brew "curl"
-brew "gnu-sed"
-brew "grep"
-brew "rsync"
-brew "vim"
-brew "zsh"
+# Command-line tools live in nix/packages.nix. A formula stays here when
+# nixpkgs does not package it, ships an older release line, or when native
+# builds link against it.
 
-# Shell & utilities
-brew "atuin"
-brew "direnv"
-brew "asciinema"
-brew "dockutil"
-brew "fd"
-brew "fzf"
-brew "jq"
-brew "moreutils"
-brew "mtr"
-brew "overmind"
-brew "ripgrep"
-brew "safe-rm"
-brew "stow"
-brew "switchaudio-osx"
-brew "go-task"
-brew "tmux"
-brew "tree"
-brew "watch"
-brew "wget"
-brew "yq"
+# Core
+brew "curl"
 
 # Dev tools
-brew "agent-browser"
 brew "cmake"
-brew "fdupes"
-brew "mkcert"
-brew "nmap"
-brew "docker-compose"
-brew "gitleaks"
 brew "libpq" # for postgres gem
 # brew "minikube"
 brew "mysql@8.0"
@@ -45,34 +14,10 @@ brew "php" # mise php is a pain in the ass
 brew "playwright-cli"
 brew "vet"
 brew "schpet/tap/linear", trusted: true
-brew "shellcheck"
-brew "stripe/stripe-cli/stripe", trusted: true
-brew "trufflehog"
-brew "usage" # mise completion
 
 # Git
-brew "diff-so-fancy"
-brew "difftastic"
-brew "gh"
-brew "git"
-brew "git-extras"
-brew "git-lfs"
-brew "lazygit"
 # brew "git-duet/tap/git-duet"
 # brew "potatolabs/git-redate/git-redate"
 
-# Media
-brew "ffmpeg"
-brew "imagemagick"
-brew "jhead"
-brew "librsvg"
-brew "exiftool"
-brew "gifsicle"
-brew "tesseract"
-
 # CLI utilities
-brew "fastfetch"
 brew "gnupg"
-brew "immich-go"
-brew "rclone"
-brew "yt-dlp"
