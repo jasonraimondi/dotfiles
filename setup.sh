@@ -31,7 +31,7 @@ brew bundle --file brew/Requirefile
 [ -x /nix/var/nix/profiles/default/bin/nix ] || curl -fsSL https://nixos.org/nix/install | sh -s -- --daemon --yes
 bash setup-home.sh
 
-# the Home Manager profile holds dockutil, which setup-dock.sh calls
+# the Home Manager profile holds dockutil and mise, which the steps below call
 export PATH="$HOME/.nix-profile/bin:$PATH"
 
 # Install applications using homebrew & casks
@@ -43,8 +43,6 @@ brew cleanup
 
 bash setup-dock.sh
 
-export PATH="$HOME/.local/bin:$PATH"
-command -v mise > /dev/null || curl -fsSL https://mise.run | sh
 mise install --yes
 mise reshim
 
