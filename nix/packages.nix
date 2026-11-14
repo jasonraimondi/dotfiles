@@ -18,9 +18,6 @@ in
     [
       # Core
       bashInteractive
-      coreutils-prefixed
-      (gPrefixed gnused)
-      (gPrefixed gnugrep)
       rsync
       zsh
 
@@ -82,7 +79,18 @@ in
       rclone
       yt-dlp
     ]
+    # On macOS Homebrew supplies gnupg; Linux has no Homebrew.
+    ++ lib.optionals stdenv.hostPlatform.isLinux [
+      coreutils
+      gnused
+      gnugrep
+      gnupg
+      pinentry-curses
+    ]
     ++ lib.optionals stdenv.hostPlatform.isDarwin [
+      coreutils-prefixed
+      (gPrefixed gnused)
+      (gPrefixed gnugrep)
       dockutil
       switchaudio-osx
       vim-darwin

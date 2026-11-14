@@ -40,7 +40,7 @@ bin/secrets-sync                 # Render 00-SECRETS.zsh from 1Password (--check
 `nix/packages.nix` lists the command-line tools by nixpkgs attribute. `setup-home.sh` installs them into `~/.nix-profile`, and `-D` leaves them installed. Every machine gets the versions `flake.lock` pins, and they move only on `nix flake update nixpkgs`.
 
 - **A nixpkgs attribute is not always the Homebrew name**: `yq` is `yq-go`, `stripe` is `stripe-cli`, `gnu-sed` is `gnused`. Find it with `nix search nixpkgs NAME`.
-- **GNU sed and grep are installed as `gsed` and `ggrep`** through the `gPrefixed` helper, and coreutils with the `g` prefix, so `sed`, `grep` and `ls` stay the BSD tools macOS ships.
+- **On macOS, GNU sed and grep are installed as `gsed` and `ggrep`** through the `gPrefixed` helper, and coreutils with the `g` prefix, so `sed`, `grep` and `ls` stay the BSD tools macOS ships. Linux gets them under their plain names.
 - **Two packages that ship the same file fail the build.** Wrap the one whose copy should lose in `lib.lowPrio`.
 - **macOS-only tools** go in the `isDarwin` list.
 
@@ -73,7 +73,7 @@ PATH, `DOTFILES_HOME`, `brew shellenv` and Nix's profile script live in `zprezto
 
 Separated Brewfiles in `brew/`: `Requirefile` (essentials installed first), `Brewfile`, `Caskfile`, `CaskfileQuicklook`, `Fontfile`, `Macfile`. `CaskfileExtended` holds optional apps and is installed manually.
 
-Homebrew installs the apps, fonts and the few formulae `nix/packages.nix` cannot take. A formula belongs in `brew/Brewfile` when nixpkgs does not package it, ships an older release line (gnupg), or when native builds link against it (`libpq`, `mysql@8.0`, `cmake`, `php`). `pipx` stays because the environments it creates point at its own Python, which a Nix upgrade would remove.
+Homebrew is macOS only: on Linux `setup.sh` skips it, the system preferences and the Dock, and Nix supplies everything, gnupg included. Homebrew installs the apps, fonts and the few formulae `nix/packages.nix` cannot take. A formula belongs in `brew/Brewfile` when nixpkgs does not package it, ships an older release line (gnupg), or when native builds link against it (`libpq`, `mysql@8.0`, `cmake`, `php`). `pipx` stays because the environments it creates point at its own Python, which a Nix upgrade would remove.
 
 ### Pinned Dependencies
 

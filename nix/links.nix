@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   inputs,
   checkout,
   ...
@@ -19,10 +20,7 @@ let
     ".gitignore" = "git/dot-gitignore";
 
     ".gnupg/dirmngr.conf" = "gnupg/dirmngr.conf";
-    ".gnupg/gpg-agent.conf" = "gnupg/gpg-agent.conf";
     ".gnupg/gpg.conf" = "gnupg/gpg.conf";
-
-    "Library/Spelling/LocalDictionary" = "dictionary/LocalDictionary";
 
     ".default-gems" = "mise/dot-default-gems";
     ".default-npm-packages" = "mise/dot-default-npm-packages";
@@ -45,7 +43,6 @@ let
     # Whole directories: these apps replace their config file on save, which
     # would swap a file link for a regular file.
     ".config/atuin" = "config/atuin";
-    ".config/karabiner" = "config/karabiner";
     ".config/mise" = "config/mise";
 
     # Single entries: the rest of each directory is runtime state that belongs
@@ -70,6 +67,23 @@ let
     ".pi/agent/AGENTS.md" = "GLOBAL_AGENTS.md";
   };
 
+  darwin = {
+    ".gnupg/gpg-agent.conf" = "gnupg/gpg-agent.conf";
+    "Library/Spelling/LocalDictionary" = "dictionary/LocalDictionary";
+    ".config/karabiner" = "config/karabiner";
+  };
+
+  # The tracked file names pinentry-mac. Linux machines are terminal-only, so
+  # they get the curses pinentry that nix/packages.nix installs.
+  gpgAgent = "${checkout}/gnupg/gpg-agent.conf";
+  linuxGpgAgent = lib.concatMapStringsSep "\n" (
+    line:
+    if lib.hasPrefix "pinentry-program" line then
+      "pinentry-program ${pkgs.pinentry-curses}/bin/pinentry-curses"
+    else
+      line
+  ) (lib.splitString "\n" (builtins.readFile gpgAgent));
+
   # Git-ignored, so each exists only on a machine that created it.
   private = {
     ".git-user" = "git/dot-git-user";
@@ -79,10 +93,17 @@ let
   present = lib.filterAttrs (_: path: builtins.pathExists "${checkout}/${path}") private;
 in
 {
-  home.file = lib.mapAttrs (_: live) (tracked // present) // {
-    ".zprezto".source = inputs.prezto;
-    ".vim/pack/themes/start/dracula".source = inputs.dracula-vim;
-  };
+  home.file =
+    lib.mapAttrs (_: live) (
+      tracked // present // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin darwin
+    )
+    // lib.optionalAttrs (pkgs.stdenv.hostPlatform.isLinux && builtins.pathExists gpgAgent) {
+      ".gnupg/gpg-agent.conf".text = linuxGpgAgent;
+    }
+    // {
+      ".zprezto".source = inputs.prezto;
+      ".vim/pack/themes/start/dracula".source = inputs.dracula-vim;
+    };
 
   # Home Manager would create these with the default mode when it links into
   # them, and gpg and ssh reject a directory that others can read.

@@ -71,12 +71,10 @@ run_repo_case() {
 
   assert_links_to "$home" .zshrc "$REPO/zsh/dot-zshrc"
   assert_links_to "$home" .zsh "$REPO/zsh/dot-zsh"
-  assert_links_to "$home" .config/karabiner "$REPO/config/karabiner"
   assert_links_to "$home" .config/herdr/config.toml "$REPO/config/herdr/config.toml"
   assert_links_to "$home" .config/herdr-app/keys.json "$REPO/config/herdr-app/keys.json"
   assert_links_to "$home" .claude/settings.json "$REPO/claude/settings.json"
   assert_links_to "$home" .pi/agent/settings.json "$REPO/pi/settings.json"
-  assert_links_to "$home" Library/Spelling/LocalDictionary "$REPO/dictionary/LocalDictionary"
   assert_links_to "$home" .claude/CLAUDE.md "$REPO/GLOBAL_AGENTS.md"
   assert_links_to "$home" .config/opencode/AGENTS.md "$REPO/GLOBAL_AGENTS.md"
   assert_links_to "$home" .pi/agent/AGENTS.md "$REPO/GLOBAL_AGENTS.md"
@@ -97,10 +95,23 @@ run_repo_case() {
 
   profile="$home/.nix-profile/bin"
   "$profile/rg" --version > /dev/null 2>&1 || fail "ripgrep does not run from the profile"
-  "$profile/gsed" --version 2> /dev/null | grep -q 'GNU sed' || fail "gsed is not GNU sed"
-  "$profile/ggrep" --version 2> /dev/null | grep -q 'GNU grep' || fail "ggrep is not GNU grep"
-  [[ -x "$profile/gls" ]] || fail "coreutils is not installed with the g prefix"
-  [[ ! -e "$profile/sed" && ! -e "$profile/grep" && ! -e "$profile/ls" ]] || fail "a GNU tool shadows the one macOS ships"
+  if [[ "$(uname)" == Darwin ]]; then
+    assert_links_to "$home" .config/karabiner "$REPO/config/karabiner"
+    assert_links_to "$home" Library/Spelling/LocalDictionary "$REPO/dictionary/LocalDictionary"
+    assert_links_to "$home" .gnupg/gpg-agent.conf "$REPO/gnupg/gpg-agent.conf"
+    "$profile/gsed" --version 2> /dev/null | grep -q 'GNU sed' || fail "gsed is not GNU sed"
+    "$profile/ggrep" --version 2> /dev/null | grep -q 'GNU grep' || fail "ggrep is not GNU grep"
+    [[ -x "$profile/gls" ]] || fail "coreutils is not installed with the g prefix"
+    [[ ! -e "$profile/sed" && ! -e "$profile/grep" && ! -e "$profile/ls" ]] || fail "a GNU tool shadows the one macOS ships"
+  else
+    [[ ! -e "$home/.config/karabiner" && ! -e "$home/Library" ]] || fail "a macOS-only path is linked on Linux"
+    grep -q '^pinentry-program /nix/store/.*/bin/pinentry-curses$' "$home/.gnupg/gpg-agent.conf" || fail "gpg-agent.conf does not name pinentry-curses on Linux"
+    "$profile/gpg" --version > /dev/null 2>&1 || fail "gpg does not run from the profile on Linux"
+    grep -qx 'default-cache-ttl 28800' "$home/.gnupg/gpg-agent.conf" || fail "gpg-agent.conf lost its cache settings on Linux"
+    "$profile/sed" --version 2> /dev/null | grep -q 'GNU sed' || fail "sed is not GNU sed"
+    "$profile/grep" --version 2> /dev/null | grep -q 'GNU grep' || fail "grep is not GNU grep"
+    [[ -x "$profile/ls" && ! -e "$profile/gsed" ]] || fail "GNU tools are installed with the g prefix on Linux"
+  fi
 
   echo "case: -D removes what the real run linked"
   setup_home "$home" "$REPO" -D || { fail "exit nonzero"; tail -5 "$home.log" >&2; }
