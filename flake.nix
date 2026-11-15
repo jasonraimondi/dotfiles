@@ -54,6 +54,7 @@
           ./nix/packages.nix
           ./nix/links.nix
           ./nix/skills.nix
+          ./nix/launchd.nix
         ];
         # Activating a generation with no files removes every link the previous
         # generation created. The packages stay installed.
