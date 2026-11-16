@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+#
+# Updates flake.lock, builds the new Home Manager generation without
+# activating it, and lists the package versions that would change.
+#
+# Usage: nix-upgrade-diff [INPUT...]
+
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: nix-upgrade-diff [INPUT...]
+
+  Update the named flake inputs (all of them when none are given), build the
+  new generation and compare it with the running one. Nothing is activated.
+
+  Apply:   bash setup-home.sh
+  Discard: git checkout flake.lock
+EOF
+}
+
+case "${1:-}" in
+  -h|--help) usage; exit 0 ;;
+esac
+
+repo="${DOTFILES_HOME:?DOTFILES_HOME is not set}"
+current="${XDG_STATE_HOME:-$HOME/.local/state}/nix/profiles/home-manager"
+nix=(nix --extra-experimental-features 'nix-command flakes')
+
+"${nix[@]}" flake update --flake "$repo" "$@"
+
+new="$(
+  DOTFILES_HOME="$repo" "${nix[@]}" build --impure --no-link --print-out-paths \
+    "$repo#homeConfigurations.default.activationPackage"
+)"
+
+if [[ "$(readlink -f "$current")" == "$new" ]]; then
+  echo "No changes: the new generation is the one already running."
+  exit 0
+fi
+
+"${nix[@]}" store diff-closures "$current" "$new"
