@@ -26,11 +26,11 @@ A background subagent reads every argument and returns, in ≤40 lines: ticket, 
 - Data target: local by default; shared **dev-11** when the scope touches schedules, workers, or Slack.
 - Current holders of `:3000`, `:3001`, `:13557`: `lsof -nP -iTCP:3000,3001,13557 -sTCP:LISTEN` then `lsof -a -p <pid> -d cwd -Fn`.
 - Standing fix branches to merge into the integration branch.
-- Known failures: `known-failures.md` beside the ledger, started from the failing tests and lint the digest found.
+- Known failures: `known-failures.md` in the ledger note's artifacts folder, started from the failing tests and lint the digest found.
 - Models per role.
 - Standing decisions: restart own services **yes**; reset or rebuild own integration branch **yes**; shared-DB migration **ask**; stopping a server Jason started **ask**; widening the service set **ask**; push and PR **ask**.
 
-Create the ledger at `$AI_NOTEBOOK_PATH/plans/<stamp>-<ticket>-fleet-lead/ledger.md` with the notebook skill and write Jason's answers verbatim with timestamps. The screen appears once per run; later questions are gates.
+Create the ledger as a `plan` note on the ticket's topic with the notebook skill, and write Jason's answers verbatim with timestamps. The screen appears once per run; later questions are gates.
 
 ## 2. Worktree
 

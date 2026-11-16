@@ -13,7 +13,7 @@ This session is the coordinator. It computes the frontier, briefs the panel, mer
 
 ## 1. Start
 
-- A path under the notebook's `decisions/grills/` resumes that grill: read the log, rebuild the tree from its Decisions, and take its Open questions as the frontier.
+- A path to a `grill` note in the notebook resumes that grill: read the log, rebuild the tree from its Decisions, and take its Open questions as the frontier.
 - No argument with a grill already running in this conversation: take it over at its current frontier and keep its decision log.
 - Anything else is a new grill on that topic. With no argument and no running grill, read it with `pbpaste`.
 

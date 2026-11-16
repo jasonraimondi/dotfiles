@@ -11,7 +11,7 @@ Local paths are relative to `skills/` in the dotfiles repo; upstream paths are r
 | `vendor-pending/claude-handoff` | `skills/in-progress/claude-handoff` | parked in `vendor-pending/` (not installed) |
 | `vendor-mattpocock/grill-me` | `skills/productivity/grill-me` | none |
 | `vendor-mattpocock/grill-with-docs` | `skills/engineering/grill-with-docs` | none |
-| `vendor-mattpocock/handoff` | `skills/productivity/handoff` | saves to the notebook's `handoff/` through the notebook skill, not the OS temp dir |
+| `vendor-mattpocock/handoff` | `skills/productivity/handoff` | files a `handoff` note through the notebook skill, not the OS temp dir |
 | `vendor-mattpocock/teach` | `skills/productivity/teach` | none |
 | `vendor-mattpocock/to-questionnaire` | `skills/productivity/to-questionnaire` | none |
 | `vendor-mattpocock/wait-what` | `skills/productivity/wait-what` | none |
@@ -22,10 +22,10 @@ Local paths are relative to `skills/` in the dotfiles repo; upstream paths are r
 | `vendor-mattpocock/implement` | `skills/engineering/implement` | model-invoked locally: upstream's `disable-model-invocation` dropped. Adds "Use /agent-fleet when the work splits into independent tracks." Review step calls the Skill tool with `deep-review-code` in `quick` mode, passing the spec path, and fixes every Blocker and Major finding |
 | `vendor-mattpocock/prototype` | `skills/engineering/prototype` | none |
 | `vendor-mattpocock/tdd` | `skills/engineering/tdd` | `code-review` reference renamed to `review-code` |
-| `vendor-mattpocock/grilling` | `skills/productivity/grilling` | extended with "Frame the questions that need it", "Keep a decision log" (`references/decision-log.md`) and "Close with a handoff" (`references/handoff.md`). Upstream's "Word each question so \"yes\" accepts your recommended answer." stays out on every sync: the user takes recommendations by saying "accept recommendations", so questions keep whatever wording fits them |
+| `vendor-mattpocock/grilling` | `skills/productivity/grilling` | extended with "Frame the questions that need it", "Keep a decision log" (`references/decision-log.md`) and "Close with a handoff" (`references/handoff.md`). The decision log is filed as a `grill` note through the notebook skill, not the repo. Upstream's "Word each question so \"yes\" accepts your recommended answer." stays out on every sync: the user takes recommendations by saying "accept recommendations", so questions keep whatever wording fits them |
 | `vendor-mattpocock/review-code` | `skills/engineering/code-review` | renamed: frontmatter `name` is `review-code` |
 | `vendor-mattpocock/writing-for-agents` | `skills/productivity/writing-for-agents` | none |
-| `vendor-mattpocock/research` | `skills/engineering/research` | saves to the notebook's `research/` through the notebook skill, not the repo (description and step 3) |
+| `vendor-mattpocock/research` | `skills/engineering/research` | files a `research` note through the notebook skill, not the repo (description and step 3) |
 | `vendor-mattpocock/retro` | `skills/engineering/retro` | none |
 
 ## Related, not tracked

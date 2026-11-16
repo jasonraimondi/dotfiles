@@ -9,4 +9,4 @@ Its job:
 
 1. Investigate the question against **primary sources** (official docs, source code, specs, first-party APIs), not a secondary write-up of them. Follow every claim back to the source that owns it.
 2. Write the findings to a single Markdown file, citing each claim's source.
-3. Save it in the notebook's `research/` dir through the notebook skill, and say where.
+3. File it as a `research` note through the notebook skill, and say where.

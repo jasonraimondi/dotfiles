@@ -23,7 +23,7 @@ Sweep the window Jason names ("today" means since local midnight), else the last
 
 - Commits: `git log --all --author="Jason Raimondi" --since="24 hours ago"`. Group by ticket or scope into workstreams.
 - PRs: `gh pr list --author @me --state all --search "updated:>=<24h ago>"` for merged, open, and draft. Merged is shipped, open or draft is in hand.
-- Notebook: files changed in the window under `$AI_NOTEBOOK_PATH` (`find -L "$AI_NOTEBOOK_PATH" -name '*.md' -newermt "$(date +%F)"` for today, skipping `.git`, `.obsidian` and run-artifact folders). Skim the head of each; the topic `wiki/` pages' State and Open sections are the fastest digest of where a ticket stands. On agent-heavy days most work lives here on unpushed branches, so the notebook is often the main source.
+- Notebook: files changed in the window under `$AI_NOTEBOOK_PATH` (`find -L "$AI_NOTEBOOK_PATH" -name '*.md' -newermt "$(date +%F)"` for today, skipping `.git`, `.obsidian`, `archive`, `_bulk` and `artifacts` folders). Skim the head of each; the topic pages' State and Open sections are the fastest digest of where a ticket stands. On agent-heavy days most work lives here on unpushed branches, so the notebook is often the main source.
 - Conversation: work done in this session.
 
 Open PRs untouched for the window have no bullet. Meeting prep and handoffs count as a workstream when a notebook file shows them.
