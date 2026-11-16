@@ -6,7 +6,7 @@
 | |__| | |__| | | |  | |     _| |_| |____| |____ ____) |
 |_____/ \____/  |_|  |_|    |_____|______|______|_____/ 
 
-> macOS development environment setup with modular dotfiles
+> macOS and Linux development environment setup with modular dotfiles
 
 aws          > amazon is taking over the world
 bin          > custom bin scripts
@@ -43,6 +43,8 @@ cd dotfiles && bash setup.sh
 
 **What this does:** Sets up a complete macOS dev environment with shell configs, applications, and tools, linked into place by Home Manager.
 
+**On Linux:** `install.sh` is macOS only. Clone the repository and run `bash setup.sh`, which installs Nix, links the dotfiles and installs the command-line tools and mise, with no Homebrew, apps, system preferences or Dock.
+
 ## Post-Install Setup
 
 **Configure git user (required):**
@@ -78,11 +80,13 @@ vim ~/.zsh/99-custom.zsh
 ### Symlink Management
 [Home Manager](https://github.com/nix-community/home-manager) creates symlinks from `~/dotfiles/` to your home directory. `nix/links.nix` lists every link, and `setup-home.sh` builds and activates them with [Nix](https://nixos.org/), which `setup.sh` installs. The links point at this checkout, so editing a file here takes effect without a rebuild. Prezto and the vim dracula theme are flake inputs pinned in `flake.lock`.
 
+The links were made with [GNU Stow](https://www.gnu.org/software/stow/) before Home Manager. The last commit that used Stow is [`a2c16a6`](https://github.com/jasonraimondi/dotfiles/tree/a2c16a642209ca4b39b61f94a8628fe04054461a).
+
 ### Shell Configuration
 ZSH automatically sources all `*.zsh` files from `~/.zsh/` using the [Prezto](https://github.com/sorin-ionescu/prezto) framework for enhanced functionality.
 
 ### Package Management
-Command-line tools are listed in `nix/packages.nix` and installed by Home Manager into `~/.nix-profile`, at the versions `flake.lock` pins. Homebrew installs everything else through categorized Brewfiles: Requirefile (essentials), Brewfile (formulae Nix cannot take), Caskfile (GUI apps), Fontfile, and Macfile (Mac App Store). CaskfileExtended (optional apps) is installed manually.
+Command-line tools are listed in `nix/packages.nix` and installed by Home Manager into `~/.nix-profile`, at the versions `flake.lock` pins, on macOS and Linux alike. Homebrew is macOS only and installs everything else through categorized Brewfiles: Requirefile (essentials), Brewfile (formulae Nix cannot take), Caskfile (GUI apps), Fontfile, and Macfile (Mac App Store). CaskfileExtended (optional apps) is installed manually.
 
 ### Language Versions
 [mise](https://mise.jdx.dev/) manages programming language versions defined in `config/mise/config.toml` for consistent development environments.
