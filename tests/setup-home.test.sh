@@ -17,7 +17,7 @@ new_dir() {
 setup_home() {
   local home=$1 repo=$2
   shift 2
-  HOME="$home" bash "$repo/setup-home.sh" "$@" > "$home.log" 2>&1
+  HOME="$home" DOTFILES_NO_LAUNCHD=1 bash "$repo/setup-home.sh" "$@" > "$home.log" 2>&1
 }
 
 assert_links_to() {
@@ -97,6 +97,7 @@ run_repo_case() {
   "$profile/rg" --version > /dev/null 2>&1 || fail "ripgrep does not run from the profile"
   if [[ "$(uname)" == Darwin ]]; then
     assert_links_to "$home" .config/karabiner "$REPO/config/karabiner"
+    [[ ! -e "$home/Library/LaunchAgents/org.nix-community.home.herdr-core-serve.plist" ]] || fail "a test run installed the herdr-core LaunchAgent"
     assert_links_to "$home" Library/Spelling/LocalDictionary "$REPO/dictionary/LocalDictionary"
     assert_links_to "$home" .gnupg/gpg-agent.conf "$REPO/gnupg/gpg-agent.conf"
     "$profile/gsed" --version 2> /dev/null | grep -q 'GNU sed' || fail "gsed is not GNU sed"

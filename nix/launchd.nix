@@ -13,7 +13,10 @@ in
   # does every terminal it spawns: none of them can reach the login keychain or
   # pinentry, so GPG signing and `docker login` fail. Starting it at GUI login
   # keeps it in the Aqua session.
-  launchd.agents.herdr-core-serve = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
+  #
+  # Tests activate into throwaway homes, but the launchd domain is per user, so
+  # loading the agent there would collide with, or replace, the real one.
+  launchd.agents.herdr-core-serve = lib.mkIf (pkgs.stdenv.hostPlatform.isDarwin && builtins.getEnv "DOTFILES_NO_LAUNCHD" == "") {
     enable = true;
     config = {
       ProgramArguments = [
