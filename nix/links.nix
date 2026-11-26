@@ -73,6 +73,13 @@ let
     ".config/karabiner" = "config/karabiner";
   };
 
+  # Distributions ship their own ~/.profile and ~/.bashrc, which do not know
+  # about Nix. On macOS the login shell is zsh and zprezto/dot-zprofile does it.
+  linux = {
+    ".profile" = "bash/dot-profile";
+    ".bashrc" = "bash/dot-bashrc";
+  };
+
   # The tracked file names pinentry-mac. Linux machines are terminal-only, so
   # they get the curses pinentry that nix/packages.nix installs.
   gpgAgent = "${checkout}/gnupg/gpg-agent.conf";
@@ -95,7 +102,10 @@ in
 {
   home.file =
     lib.mapAttrs (_: live) (
-      tracked // present // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin darwin
+      tracked
+      // present
+      // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin darwin
+      // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux linux
     )
     // lib.optionalAttrs (pkgs.stdenv.hostPlatform.isLinux && builtins.pathExists gpgAgent) {
       ".gnupg/gpg-agent.conf".text = linuxGpgAgent;

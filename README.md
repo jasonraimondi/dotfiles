@@ -43,7 +43,28 @@ cd dotfiles && bash setup.sh
 
 **What this does:** Sets up a complete macOS dev environment with shell configs, applications, and tools, linked into place by Home Manager.
 
-**On Linux:** `install.sh` is macOS only. Clone the repository and run `bash setup.sh`, which installs Nix, links the dotfiles and installs the command-line tools and mise, with no Homebrew, apps, system preferences or Dock.
+**On Linux:** `install.sh` is macOS only. Clone the repository and run `bash setup.sh`, which installs Nix, links the dotfiles and installs the command-line tools and mise, with no Homebrew, apps, system preferences or Dock. The steps below do the same by hand.
+
+### Linux Bootstrap
+
+1. **Install Nix** as a multi-user install, which `setup.sh` also uses:
+   ```bash
+   curl -fsSL https://nixos.org/nix/install | sh -s -- --daemon --yes
+   ```
+   Open a new shell so `nix` is on PATH.
+2. **Flakes** need no setup. `setup-home.sh` passes `--extra-experimental-features 'nix-command flakes'`, and the first run links `config/nix/nix.conf` to `~/.config/nix/nix.conf`, which turns them on for every later `nix` command.
+3. **Activate Home Manager** from the checkout:
+   ```bash
+   git clone https://github.com/jasonraimondi/dotfiles ~/dotfiles
+   cd ~/dotfiles && bash setup-home.sh -b
+   ```
+   On Linux it links `bash/dot-profile` to `~/.profile` and `bash/dot-bashrc` to `~/.bashrc`, so bash and sh shells, login or not, source Nix's profile script and get `~/.nix-profile/bin` on PATH. The distribution ships its own copies of both files, and `-b` moves them to `~/.profile.hm-backup` and `~/.bashrc.hm-backup`; copy anything you want to keep into `~/.zsh/99-custom.zsh`.
+4. **Switch the login shell to zsh** from the distribution, not from Nix:
+   ```bash
+   sudo apt install zsh     # or the distribution's package manager
+   chsh -s "$(command -pv zsh)"
+   ```
+   Never `chsh` to a `/nix/store/...` path: the next `nix-collect-garbage` deletes it and login fails. `~/.nix-profile/bin/zsh` survives garbage collection but still fails whenever the Nix profile is broken or not yet mounted, and `chsh` refuses any path not listed in `/etc/shells`. The distribution's zsh reads the same `~/.zshrc` and `~/.zsh/`. Keep the current session open and log in from a second terminal before closing it.
 
 ## Post-Install Setup
 

@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-11-25: Linux links ~/.profile and ~/.bashrc
+
+On Linux, Home Manager links `bash/dot-profile` to `~/.profile` and `bash/dot-bashrc` to `~/.bashrc`, so bash and sh shells, login or not, source Nix's profile script and get `~/.nix-profile/bin` on PATH. macOS is unchanged.
+
+### Migrating a Linux machine
+
+The distribution's own `~/.profile` and `~/.bashrc` are in the way, so the next plain `bash setup-home.sh` stops and names them. Move them aside and link:
+
+```bash
+cd ~/dotfiles
+git pull
+bash setup-home.sh -b
+bash -lc 'echo $DOTFILES_HOME; command -v rg'
+```
+
+`-b` keeps the old files as `~/.profile.hm-backup` and `~/.bashrc.hm-backup`. Done when the last command prints `~/dotfiles` and a path under `~/.nix-profile/bin`.
+
 ## 2026-11-13: command-line tools move from Homebrew to Nix
 
 Home Manager now installs the command-line tools, from the list in `nix/packages.nix`, into `~/.nix-profile`. Every machine gets the versions `flake.lock` pins. Homebrew keeps the apps, fonts and a short list of formulae.
