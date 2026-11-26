@@ -22,16 +22,13 @@ in
       zsh
 
       # Shell & utilities
-      atuin
       direnv
       mise
-      asciinema
       fd
       fzf
       jq
       moreutils
       mtr
-      overmind
       ripgrep
       safe-rm
       go-task
@@ -42,16 +39,8 @@ in
       yq-go
 
       # Dev tools
-      agent-browser
-      fdupes
-      mkcert
-      nmap
-      docker-compose
       gitleaks
       shellcheck
-      stripe-cli
-      trufflehog
-      usage
 
       # Git
       diff-so-fancy
@@ -61,23 +50,6 @@ in
       git-extras
       git-lfs
       lazygit
-
-      # Media
-      ffmpeg
-      imagemagick
-      jhead
-      librsvg
-      exiftool
-      gifsicle
-      tesseract
-
-      # CLI utilities
-      fastfetch
-      # immich-go and stripe-cli each ship a stray bin/cmd beside their real
-      # program, and two packages may not provide the same file.
-      (lib.lowPrio immich-go)
-      rclone
-      yt-dlp
     ]
     # On macOS Homebrew supplies gnupg; Linux has no Homebrew.
     ++ lib.optionals stdenv.hostPlatform.isLinux [
@@ -91,8 +63,5 @@ in
       coreutils-prefixed
       (gPrefixed gnused)
       (gPrefixed gnugrep)
-      dockutil
-      switchaudio-osx
-      vim-darwin
     ];
 }

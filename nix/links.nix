@@ -40,27 +40,10 @@ let
     ".zprofile" = "zprezto/dot-zprofile";
     ".zshenv" = "zprezto/dot-zshenv";
 
-    # Whole directories: these apps replace their config file on save, which
-    # would swap a file link for a regular file.
-    ".config/atuin" = "config/atuin";
-    ".config/mise" = "config/mise";
-
     # Single entries: the rest of each directory is runtime state that belongs
     # to the app, not to this repository.
     ".config/gh/config.yml" = "config/gh/config.yml";
-    ".config/herdr/config.toml" = "config/herdr/config.toml";
-    ".config/herdr-app/keys.json" = "config/herdr-app/keys.json";
-    ".config/herdr-app/settings.json" = "config/herdr-app/settings.json";
-    ".config/herdr-app/layouts/notebook-main.json" = "config/herdr-app/layouts/notebook-main.json";
-    ".config/herdr-app/mods/notebook" = "config/herdr-app/mods/notebook";
     ".config/nix/nix.conf" = "config/nix/nix.conf";
-    ".config/zed/settings.json" = "config/zed/settings.json";
-    ".config/zed/themes" = "config/zed/themes";
-
-    ".claude/settings.json" = "claude/settings.json";
-    ".claude/hooks/herdr-tab-title.sh" = "claude/hooks/herdr-tab-title.sh";
-    ".pi/agent/settings.json" = "pi/settings.json";
-    ".pi/agent/extensions" = "pi/extensions";
 
     ".claude/CLAUDE.md" = "GLOBAL_AGENTS.md";
     ".config/opencode/AGENTS.md" = "GLOBAL_AGENTS.md";
@@ -69,8 +52,6 @@ let
 
   darwin = {
     ".gnupg/gpg-agent.conf" = "gnupg/gpg-agent.conf";
-    "Library/Spelling/LocalDictionary" = "dictionary/LocalDictionary";
-    ".config/karabiner" = "config/karabiner";
   };
 
   # Distributions ship their own ~/.profile and ~/.bashrc, which do not know
@@ -100,13 +81,21 @@ let
   present = lib.filterAttrs (_: path: builtins.pathExists "${checkout}/${path}") private;
 in
 {
-  home.file =
-    lib.mapAttrs (_: live) (
-      tracked
-      // present
-      // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin darwin
-      // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux linux
-    )
+  # An option rather than a local set, so that nix/desktop/links.nix can add
+  # links, and a path two layers point at different files fails the build.
+  options.dotfiles.links = lib.mkOption {
+    type = lib.types.attrsOf lib.types.str;
+    description = "Live links into the checkout: path in $HOME = path in this repository.";
+  };
+
+  config.dotfiles.links =
+    tracked
+    // present
+    // lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin darwin
+    // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux linux;
+
+  config.home.file =
+    lib.mapAttrs (_: live) config.dotfiles.links
     // lib.optionalAttrs (pkgs.stdenv.hostPlatform.isLinux && builtins.pathExists gpgAgent) {
       ".gnupg/gpg-agent.conf".text = linuxGpgAgent;
     }
@@ -117,7 +106,7 @@ in
 
   # Home Manager would create these with the default mode when it links into
   # them, and gpg and ssh reject a directory that others can read.
-  home.activation.privateDirectories = lib.hm.dag.entryBefore [ "linkGeneration" ] ''
+  config.home.activation.privateDirectories = lib.hm.dag.entryBefore [ "linkGeneration" ] ''
     run install -d -m 700 "$HOME/.gnupg" "$HOME/.ssh"
   '';
 }

@@ -43,10 +43,7 @@ let
     in
     lib.genAttrs (skillsIn source) (name: "${patched}/${name}");
 
-  packages = [
-    (live "personal")
-    (live "work")
-    (live "vendor-mattpocock")
+  packages = map live config.dotfiles.liveSkillPackages ++ [
     (withPolicy "disable" "vendor")
     (withPolicy "auto" "vendor-auto")
   ];
@@ -55,7 +52,18 @@ let
     target: lib.mapAttrs' (name: source: lib.nameValuePair "${target}/${name}" { inherit source; });
 in
 {
+  # nix/desktop/skills.nix adds the work package to these.
+  options.dotfiles.liveSkillPackages = lib.mkOption {
+    type = lib.types.listOf lib.types.str;
+    description = "Packages under skills/ linked live into the checkout.";
+  };
+
+  config.dotfiles.liveSkillPackages = [
+    "personal"
+    "vendor-mattpocock"
+  ];
+
   # mkMerge, not //, so that a skill name present in two packages is a
   # conflicting definition and fails the build instead of one silently winning.
-  home.file = lib.mkMerge (lib.concatMap (target: map (linkInto target) packages) targets);
+  config.home.file = lib.mkMerge (lib.concatMap (target: map (linkInto target) packages) targets);
 }

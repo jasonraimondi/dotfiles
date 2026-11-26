@@ -14,6 +14,7 @@ bash setup-home.sh               # Re-apply all symlinks (dotfiles, agent skills
 bash setup-home.sh -n            # Build, then print what activating would do
 bash setup-home.sh -D            # Delete all symlinks
 bash setup-home.sh -b            # Move a file in the way to FILE.hm-backup, then link
+bash setup-home.sh -p server     # Headless profile: core dotfiles, no desktop links, packages or work skills
 bash tests/setup-home.test.sh    # Activate into throwaway homes and check the links
 brew bundle --file brew/Brewfile  # Install a specific Brewfile category
 mise install --yes && mise reshim # Install/update language versions
@@ -24,9 +25,13 @@ bin/secrets-sync                 # Render 00-SECRETS.zsh from 1Password (--check
 
 ## Architecture
 
+### Profiles
+
+`flake.nix` exposes three profiles, picked with `setup-home.sh -p`. `server` is the shared base: `nix/packages.nix`, `nix/links.nix` and `nix/skills.nix`. `desktop` adds the workstation layer in `nix/desktop/` (apps' config, media and dev tools, `work/` skills) and `nix/launchd.nix`. `default` is `desktop`. Put a new link, package or skill package in the base only if a headless machine needs it.
+
 ### Home Manager Links
 
-`nix/links.nix` is the manifest: one `"path in $HOME" = "path in this repository"` line per link. Nothing is linked by convention, so a new file or directory needs its own line there, then `bash setup-home.sh`.
+`nix/links.nix` (with `nix/desktop/links.nix`) is the manifest: one `"path in $HOME" = "path in this repository"` line per link. Nothing is linked by convention, so a new file or directory needs its own line there, then `bash setup-home.sh`.
 
 - **Live links.** Every file written in this repository links to the checkout, not to a copy in the Nix store. Editing an already-linked file needs no rebuild, and apps can write their settings back.
 - **Private files** sit in the `private` set of `nix/links.nix` and are linked only where they exist. Keep them out of the Nix store, which every user on the machine can read.
@@ -37,7 +42,7 @@ bin/secrets-sync                 # Render 00-SECRETS.zsh from 1Password (--check
 
 ### Packages
 
-`nix/packages.nix` lists the command-line tools by nixpkgs attribute. `setup-home.sh` installs them into `~/.nix-profile`, and `-D` leaves them installed. Every machine gets the versions `flake.lock` pins, and they move only on `nix flake update nixpkgs`.
+`nix/packages.nix` and `nix/desktop/packages.nix` list the command-line tools by nixpkgs attribute. `setup-home.sh` installs them into `~/.nix-profile`, and `-D` leaves them installed. Every machine gets the versions `flake.lock` pins, and they move only on `nix flake update nixpkgs`.
 
 - **A nixpkgs attribute is not always the Homebrew name**: `yq` is `yq-go`, `stripe` is `stripe-cli`, `gnu-sed` is `gnused`. Find it with `nix search nixpkgs NAME`.
 - **On macOS, GNU sed and grep are installed as `gsed` and `ggrep`** through the `gPrefixed` helper, and coreutils with the `g` prefix, so `sed`, `grep` and `ls` stay the BSD tools macOS ships. Linux gets them under their plain names.
@@ -47,7 +52,7 @@ bin/secrets-sync                 # Render 00-SECRETS.zsh from 1Password (--check
 ### Agent Skills
 
 Each directory under `skills/` is a package of skills, one folder per skill. `nix/skills.nix` links every skill in the installed packages into `~/.claude/skills` and `~/.agents/skills`, and a skill name present in two packages fails the build:
-- `personal/`, `work/` — written here, linked live
+- `personal/`, `work/` — written here, linked live; `work/` only in the desktop profile
 - `vendor/` — third-party, user-invoked only: the store copy gets `disable-model-invocation: true` in each `SKILL.md`, and the tracked file stays as it is
 - `vendor-auto/` — third-party, model-invoked: the store copy has that key stripped
 - `vendor-mattpocock/` — synced from upstream by the repo-level `sync-mattpocock-skills` skill in `.claude/skills/`, linked live with its frontmatter as written
