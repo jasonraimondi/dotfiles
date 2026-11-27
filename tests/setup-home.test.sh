@@ -170,6 +170,42 @@ run_skills_case() {
   rm -rf "$src" "$home" "$home.log"
 }
 
+run_skills_only_case() {
+  local src home dir
+  src="$(new_dir)"
+  home="$(new_dir)"
+  echo "case: -s links the skills and nothing else"
+  make_fixture "$src"
+  setup_home "$home" "$src" -s || { fail "exit nonzero"; tail -5 "$home.log" >&2; }
+  for dir in .claude/skills .agents/skills; do
+    assert_links_to "$home" "$dir/alpha" "$src/skills/personal/alpha"
+    grep -qx 'disable-model-invocation: true' "$home/$dir/beta/SKILL.md" || fail "$dir/beta is still model-invocable"
+  done
+  [[ ! -e "$home/.claude/CLAUDE.md" && ! -e "$home/.git-user" ]] || fail "-s linked more than the skills"
+
+  echo "case: -s links a new skill and unlinks a removed one"
+  write_skill "$src/skills/personal/zeta"
+  rm -rf "$src/skills/personal/alpha"
+  setup_home "$home" "$src" -s || { fail "exit nonzero"; tail -5 "$home.log" >&2; }
+  for dir in .claude/skills .agents/skills; do
+    assert_links_to "$home" "$dir/zeta" "$src/skills/personal/zeta"
+    [[ ! -L "$home/$dir/alpha" ]] || fail "$dir/alpha is still linked"
+  done
+
+  echo "case: a full run takes over the links -s made"
+  setup_home "$home" "$src" || { fail "exit nonzero"; tail -5 "$home.log" >&2; }
+  assert_links_to "$home" .claude/skills/zeta "$src/skills/personal/zeta"
+  assert_links_to "$home" .claude/CLAUDE.md "$src/GLOBAL_AGENTS.md"
+
+  echo "case: -s stops on a real directory where a skill goes"
+  write_skill "$src/skills/personal/eta"
+  mkdir -p "$home/.claude/skills/eta"
+  ! setup_home "$home" "$src" -s || fail "exit zero"
+  grep -q 'skills/eta is in the way' "$home.log" || { fail "the directory in the way is not named"; tail -5 "$home.log" >&2; }
+  [[ -d "$home/.claude/skills/eta" && ! -L "$home/.claude/skills/eta" ]] || fail "the directory was replaced"
+  rm -rf "$src" "$home" "$home.log"
+}
+
 run_server_case() {
   local home left profile path
   home="$(new_dir)"
@@ -285,6 +321,7 @@ run_backup_case() {
 run_repo_case
 run_dry_run_case
 run_skills_case
+run_skills_only_case
 run_server_case
 run_server_skills_case
 run_unknown_profile_case

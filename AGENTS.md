@@ -11,6 +11,7 @@ macOS development environment linked into `$HOME` by [Home Manager](https://gith
 ```bash
 bash setup.sh                    # Full setup (requires sudo)
 bash setup-home.sh               # Re-apply all symlinks (dotfiles, agent skills, GLOBAL_AGENTS.md)
+bash setup-home.sh -s            # Relink only the agent skills (after adding or removing one)
 bash setup-home.sh -n            # Build, then print what activating would do
 bash setup-home.sh -D            # Delete all symlinks
 bash setup-home.sh -b            # Move a file in the way to FILE.hm-backup, then link
