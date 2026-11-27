@@ -55,9 +55,10 @@ make_fixture() {
   local src=$1
   cp -R "$REPO/flake.nix" "$REPO/flake.lock" "$REPO/nix" "$REPO/setup-home.sh" "$src/"
   echo "global instructions" > "$src/GLOBAL_AGENTS.md"
-  mkdir -p "$src/skills/work" "$src/skills/vendor-mattpocock" "$src/git"
+  mkdir -p "$src/skills/vendor-mattpocock" "$src/git"
   echo "[user]" > "$src/git/dot-git-user"
   write_skill "$src/skills/personal/alpha"
+  write_skill "$src/skills/work/epsilon"
   write_skill "$src/skills/vendor/beta"
   write_skill "$src/skills/vendor-auto/gamma" $'disable-model-invocation: true\n'
   write_skill "$src/skills/pending/delta"
@@ -156,6 +157,7 @@ run_skills_case() {
 
   for dir in .claude/skills .agents/skills; do
     assert_links_to "$home" "$dir/alpha" "$src/skills/personal/alpha"
+    assert_links_to "$home" "$dir/epsilon" "$src/skills/work/epsilon"
     grep -qx 'disable-model-invocation: true' "$home/$dir/beta/SKILL.md" || fail "$dir/beta is still model-invocable"
     ! grep -q 'disable-model-invocation' "$home/$dir/gamma/SKILL.md" || fail "$dir/gamma is still user-invoked only"
     [[ ! -e "$home/$dir/delta" ]] || fail "$dir/delta was linked from pending/"
@@ -166,6 +168,76 @@ run_skills_case() {
   assert_links_to "$home" .git-user "$src/git/dot-git-user"
   [[ ! -L "$home/.ssh/config" ]] || fail ".ssh/config was linked although ssh/config does not exist"
   rm -rf "$src" "$home" "$home.log"
+}
+
+run_server_case() {
+  local home left profile path
+  home="$(new_dir)"
+  echo "case: -p server links the core dotfiles and leaves out the desktop ones"
+  setup_home "$home" "$REPO" -p server || { fail "exit nonzero"; tail -5 "$home.log" >&2; }
+
+  assert_links_to "$home" .zshrc "$REPO/zsh/dot-zshrc"
+  assert_links_to "$home" .zsh "$REPO/zsh/dot-zsh"
+  assert_links_to "$home" .zprofile "$REPO/zprezto/dot-zprofile"
+  assert_links_to "$home" .gitconfig "$REPO/git/dot-gitconfig"
+  assert_links_to "$home" .tmux.conf "$REPO/tmux/dot-tmux.conf"
+  assert_links_to "$home" .vimrc "$REPO/vim/dot-vimrc"
+  assert_links_to "$home" .config/gh/config.yml "$REPO/config/gh/config.yml"
+  assert_links_to "$home" .config/nix/nix.conf "$REPO/config/nix/nix.conf"
+  assert_links_to "$home" .claude/CLAUDE.md "$REPO/GLOBAL_AGENTS.md"
+  assert_links_to "$home" .config/opencode/AGENTS.md "$REPO/GLOBAL_AGENTS.md"
+  assert_links_to "$home" .pi/agent/AGENTS.md "$REPO/GLOBAL_AGENTS.md"
+  assert_links_to "$home" .claude/skills/dotfiles "$REPO/skills/personal/dotfiles"
+  assert_links_to "$home" .agents/skills/dotfiles "$REPO/skills/personal/dotfiles"
+  [[ -f "$home/.zprezto/init.zsh" ]] || fail ".zprezto holds no init.zsh"
+  [[ -f "$home/.vim/pack/themes/start/dracula/colors/dracula.vim" ]] || fail "the dracula vim theme is missing"
+  [[ -n "$(find "$home/.gnupg" -maxdepth 0 -perm 700)" ]] || fail ".gnupg mode is not 700"
+  if [[ "$(uname)" != Darwin ]]; then
+    grep -q '^pinentry-program /nix/store/.*/bin/pinentry-curses$' "$home/.gnupg/gpg-agent.conf" || fail "gpg-agent.conf does not name pinentry-curses on Linux"
+  fi
+
+  for path in .config/zed .config/herdr .config/herdr-app .config/mise .config/atuin .claude/settings.json .claude/hooks .pi/agent/settings.json .pi/agent/extensions .config/karabiner Library; do
+    [[ ! -e "$home/$path" ]] || fail "$path is linked on a server"
+  done
+  [[ -z "$(links_into "$home" "$REPO/skills/work")" ]] || fail "a work skill is linked on a server"
+
+  profile="$home/.nix-profile/bin"
+  "$profile/rg" --version > /dev/null 2>&1 || fail "ripgrep does not run from the profile"
+  [[ ! -e "$profile/atuin" && ! -e "$profile/ffmpeg" ]] || fail "a desktop package is installed on a server"
+
+  echo "case: -p server -D removes what the server run linked"
+  setup_home "$home" "$REPO" -p server -D || { fail "exit nonzero"; tail -5 "$home.log" >&2; }
+  left="$(links_into "$home" "$REPO")"
+  [[ -z "$left" ]] || fail "-D left: $left"
+  [[ -x "$profile/rg" ]] || fail "-D uninstalled the packages"
+  [[ ! -e "$profile/atuin" ]] || fail "-D installed the desktop packages on a server"
+  rm -rf "$home" "$home.log"
+}
+
+run_server_skills_case() {
+  local src home dir
+  src="$(new_dir)"
+  home="$(new_dir)"
+  echo "case: -p server links every skill package but work"
+  make_fixture "$src"
+  setup_home "$home" "$src" -p server || { fail "exit nonzero"; tail -5 "$home.log" >&2; }
+  for dir in .claude/skills .agents/skills; do
+    assert_links_to "$home" "$dir/alpha" "$src/skills/personal/alpha"
+    [[ -f "$home/$dir/beta/SKILL.md" ]] || fail "$dir/beta from vendor/ is missing"
+    [[ -f "$home/$dir/gamma/SKILL.md" ]] || fail "$dir/gamma from vendor-auto/ is missing"
+    [[ ! -e "$home/$dir/epsilon" ]] || fail "$dir/epsilon was linked from work/"
+  done
+  rm -rf "$src" "$home" "$home.log"
+}
+
+run_unknown_profile_case() {
+  local home
+  home="$(new_dir)"
+  echo "case: an unknown profile is rejected before anything is built"
+  ! setup_home "$home" "$REPO" -p unlinked || fail "exit zero"
+  grep -q 'unknown profile: unlinked' "$home.log" || { fail "the profile is not named"; tail -5 "$home.log" >&2; }
+  [[ -z "$(find_outside_nix_state "$home" | head -3)" ]] || fail "created files for an unknown profile"
+  rm -rf "$home" "$home.log"
 }
 
 run_duplicate_skill_case() {
@@ -213,6 +285,9 @@ run_backup_case() {
 run_repo_case
 run_dry_run_case
 run_skills_case
+run_server_case
+run_server_skills_case
+run_unknown_profile_case
 run_duplicate_skill_case
 run_existing_file_case
 run_backup_case

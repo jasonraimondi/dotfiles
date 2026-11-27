@@ -47,18 +47,32 @@
           ]
           ++ modules;
         };
+
+      # Each profile is the server layer plus, for desktop, the workstation
+      # layer under nix/desktop/.
+      serverPackages = [ ./nix/packages.nix ];
+      desktopPackages = serverPackages ++ [ ./nix/desktop/packages.nix ];
+      serverHome = [
+        ./nix/links.nix
+        ./nix/skills.nix
+      ];
+      desktopHome = serverHome ++ [
+        ./nix/desktop/links.nix
+        ./nix/desktop/skills.nix
+        ./nix/launchd.nix
+      ];
+
+      desktop = homeWith (desktopPackages ++ desktopHome);
     in
     {
       homeConfigurations = {
-        default = homeWith [
-          ./nix/packages.nix
-          ./nix/links.nix
-          ./nix/skills.nix
-          ./nix/launchd.nix
-        ];
+        inherit desktop;
+        default = desktop;
+        server = homeWith (serverPackages ++ serverHome);
         # Activating a generation with no files removes every link the previous
         # generation created. The packages stay installed.
-        unlinked = homeWith [ ./nix/packages.nix ];
+        unlinked = homeWith desktopPackages;
+        server-unlinked = homeWith serverPackages;
       };
     };
 }
