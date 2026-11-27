@@ -8,7 +8,6 @@ Local paths are relative to `skills/` in the dotfiles repo; upstream paths are r
 
 | Local | Upstream | Kept divergence |
 |---|---|---|
-| `vendor-pending/claude-handoff` | `skills/in-progress/claude-handoff` | parked in `vendor-pending/` (not installed) |
 | `vendor-mattpocock/grill-me` | `skills/productivity/grill-me` | none |
 | `vendor-mattpocock/grill-with-docs` | `skills/engineering/grill-with-docs` | none |
 | `vendor-mattpocock/handoff` | `skills/productivity/handoff` | files a `handoff` note through the notebook skill, not the OS temp dir |
@@ -30,6 +29,5 @@ Local paths are relative to `skills/` in the dotfiles repo; upstream paths are r
 
 ## Related, not tracked
 
-- `vendor-auto/resolving-merge-conflicts`: upstream removed it in v1.3. Kept locally on purpose.
 - `vendor/show-me`: credited to humanlayer, not upstream. Upstream's `skills/engineering/pr` adapts its Summary visuals and overlaps `personal/pr-template`. Compare for ideas.
 - `personal/agent-fleet`: overlaps upstream's `skills/in-progress/chief-of-staff` (one session coordinating subagents toward a long-running goal). Compare for ideas.
