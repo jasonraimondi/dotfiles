@@ -23,11 +23,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794715309,
-        "narHash": "sha256-awkBBs5ctFKgEYjpNGpi3t/VqF589n5EWfdinRb2gNI=",
+        "lastModified": 1795748630,
+        "narHash": "sha256-J1iQ1QMnkFwZFXnlPt2t3Qx7TsGjw08/0L3QMqNt+Wg=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "a1293da7dd8e497e08d26173f97e2976b36a31ea",
+        "rev": "54f903fdaaf5d5720ed36706fe75332af69eb793",
         "type": "github"
       },
       "original": {
@@ -38,11 +38,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1794644783,
-        "narHash": "sha256-3GnIGIy15bMduoS9RnWqKTmsJLWThla42UFtm0S7+us=",
+        "lastModified": 1795371335,
+        "narHash": "sha256-oa2P5WZer1A4wuhatl92JyHHEjrrOdIyuvTuI5LUi9Q=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "5d2b81a7a3be3e2f832879028e4d60abbf58e9a0",
+        "rev": "619c39f6eac5d1ed6b8f073a9414baf7034b2356",
         "type": "github"
       },
       "original": {
@@ -55,11 +55,11 @@
     "prezto": {
       "flake": false,
       "locked": {
-        "lastModified": 1777062554,
-        "narHash": "sha256-TgdyG1XiQh61F2JPUChXe2srUxnJYOa5K1wLaRnmTlA=",
+        "lastModified": 1795084084,
+        "narHash": "sha256-Z0wtehWgaY++/TavVKrh7vIVqDfeZLI9jFdSgUZzNjI=",
         "ref": "refs/heads/master",
-        "rev": "cff2d01871425b1b80710f8ec6a475c5a53145b4",
-        "revCount": 2071,
+        "rev": "a7c61670c3492358bfe1dd793cb891987bbb4f49",
+        "revCount": 2072,
         "submodules": true,
         "type": "git",
         "url": "https://github.com/sorin-ionescu/prezto"
