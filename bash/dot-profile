@@ -1,0 +1,32 @@
+# shellcheck shell=sh
+#
+# Login shells other than zsh: sh, dash, and bash, which reads this file
+# because no ~/.bash_profile exists. Linked on Linux only.
+#
+
+export DOTFILES_HOME="$HOME/dotfiles"
+
+if [ -r /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
+  . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+fi
+
+# Listed last to first, so the first one ends up at the front of PATH.
+for dir in \
+  /nix/var/nix/profiles/default/bin \
+  "$HOME/.nix-profile/bin" \
+  "$HOME/.local/bin" \
+  "$DOTFILES_HOME/bin"; do
+  case ":$PATH:" in
+    *":$dir:"*) ;;
+    *) [ -d "$dir" ] && PATH="$dir:$PATH" ;;
+  esac
+done
+unset dir
+export PATH
+
+# A login bash reads only this file, so hand interactive shells their bashrc.
+if [ -n "${BASH_VERSION:-}" ] && [ -r "$HOME/.bashrc" ]; then
+  case $- in
+    *i*) . "$HOME/.bashrc" ;;
+  esac
+fi

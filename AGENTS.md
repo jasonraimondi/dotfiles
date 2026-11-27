@@ -69,6 +69,8 @@ A change to a `vendor/` or `vendor-auto/` skill reaches `$HOME` on the next `bas
 
 PATH, `DOTFILES_HOME`, `brew shellenv` and Nix's profile script live in `zprezto/dot-zprofile`, which login shells source; non-login shells source it through `zprezto/dot-zshenv` when `DOTFILES_HOME` is unset.
 
+On Linux only, `bash/dot-profile` (`~/.profile`) does the same for bash and sh login shells, and `bash/dot-bashrc` (`~/.bashrc`) sources it for non-login bash when `DOTFILES_HOME` is unset.
+
 ### Homebrew
 
 Separated Brewfiles in `brew/`: `Requirefile` (essentials installed first), `Brewfile`, `Caskfile`, `CaskfileQuicklook`, `Fontfile`, `Macfile`. `CaskfileExtended` holds optional apps and is installed manually.

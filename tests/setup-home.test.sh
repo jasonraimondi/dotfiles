@@ -104,6 +104,7 @@ run_repo_case() {
     "$profile/ggrep" --version 2> /dev/null | grep -q 'GNU grep' || fail "ggrep is not GNU grep"
     [[ -x "$profile/gls" ]] || fail "coreutils is not installed with the g prefix"
     [[ ! -e "$profile/sed" && ! -e "$profile/grep" && ! -e "$profile/ls" ]] || fail "a GNU tool shadows the one macOS ships"
+    [[ ! -L "$home/.profile" && ! -L "$home/.bashrc" ]] || fail "a Linux-only shell profile is linked on macOS"
   else
     [[ ! -e "$home/.config/karabiner" && ! -e "$home/Library" ]] || fail "a macOS-only path is linked on Linux"
     grep -q '^pinentry-program /nix/store/.*/bin/pinentry-curses$' "$home/.gnupg/gpg-agent.conf" || fail "gpg-agent.conf does not name pinentry-curses on Linux"
@@ -112,6 +113,17 @@ run_repo_case() {
     "$profile/sed" --version 2> /dev/null | grep -q 'GNU sed' || fail "sed is not GNU sed"
     "$profile/grep" --version 2> /dev/null | grep -q 'GNU grep' || fail "grep is not GNU grep"
     [[ -x "$profile/ls" && ! -e "$profile/gsed" ]] || fail "GNU tools are installed with the g prefix on Linux"
+    assert_links_to "$home" .profile "$REPO/bash/dot-profile"
+    assert_links_to "$home" .bashrc "$REPO/bash/dot-bashrc"
+    # The distribution's /etc files may load Nix too, so DOTFILES_HOME is the
+    # proof that the linked file ran. BASH_ENV stands in for sshd running a
+    # command, the one case where a non-interactive bash reads ~/.bashrc. Only
+    # the last line counts, since /etc/profile.d scripts may print a banner.
+    for shell in "bash -l" "bash -i" "BASH_ENV=$home/.bashrc bash" "sh -l"; do
+      shell_env="$(env -i HOME="$home" PATH=/usr/bin:/bin $shell -c 'echo "$DOTFILES_HOME $PATH"' 2> /dev/null | tail -n 1)" || true
+      [[ "$shell_env" == "$home/dotfiles "* ]] || fail "$shell does not read the linked profile: $shell_env"
+      [[ ":${shell_env#* }:" == *":$profile:"* ]] || fail "$shell does not put ~/.nix-profile/bin on PATH: $shell_env"
+    done
   fi
 
   echo "case: -D removes what the real run linked"

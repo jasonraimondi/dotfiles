@@ -1,0 +1,11 @@
+# shellcheck shell=bash
+#
+# Non-login bash: terminals, `bash -c`, and commands sshd runs. Linked on
+# Linux only.
+#
+
+# Keyed on the environment ~/.profile exports, as zprezto/dot-zshenv is: a
+# shell started from an initialized one keeps the PATH it was given.
+if [[ -z "${DOTFILES_HOME:-}" && -r "$HOME/.profile" ]]; then
+  source "$HOME/.profile"
+fi
