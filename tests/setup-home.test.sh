@@ -196,7 +196,7 @@ run_server_case() {
     grep -q '^pinentry-program /nix/store/.*/bin/pinentry-curses$' "$home/.gnupg/gpg-agent.conf" || fail "gpg-agent.conf does not name pinentry-curses on Linux"
   fi
 
-  for path in .config/zed .config/herdr .config/herdr-app .config/mise .config/atuin .claude/settings.json .claude/hooks .pi/agent/settings.json .pi/agent/extensions .config/karabiner Library; do
+  for path in .config/zed .config/herdr .config/herdr-app .config/mise .config/atuin .claude/settings.json .claude/hooks .pi/agent/settings.json .pi/agent/extensions .config/karabiner Library/Spelling; do
     [[ ! -e "$home/$path" ]] || fail "$path is linked on a server"
   done
   [[ -z "$(links_into "$home" "$REPO/skills/work")" ]] || fail "a work skill is linked on a server"
